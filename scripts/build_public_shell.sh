@@ -28,6 +28,7 @@ copy_if_exists "$ROOT_DIR/scripts/public_leak_guard.sh" "$OUT_DIR/scripts/"
 copy_if_exists "$ROOT_DIR/scripts/verify_repo_links.sh" "$OUT_DIR/scripts/"
 copy_if_exists "$ROOT_DIR/demos/mirror10-flora-phase-shift.html" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/demos/world-bridge-map.html" "$OUT_DIR/"
+copy_if_exists "$ROOT_DIR/demos/world-3d-blockout.html" "$OUT_DIR/"
 
 cat > "$OUT_DIR/PUBLIC_SHELL_PROFILE.txt" <<'EOF'
 Profile: world-shaped interface experiment

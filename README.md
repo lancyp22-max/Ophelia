@@ -150,14 +150,30 @@ Example request:
 
 If `surfaceAck` is `false`, the transaction is halted and a `HALT_AND_SURFACE` telemetry event is returned.
 
+### World v0 3D town blockout
+
+A playable small-scale 3D prototype is available at `demos/world-3d-blockout.html`.
+
+Scope (intentionally small):
+- night-focus campfire section with rune ring + ember lighting,
+- animated fireflies + star field + moon orb atmosphere,
+- walkable pathing with huts and obelisk anchors kept lightweight.
+
+Run locally:
+
+```bash
+make mirror10-demo
+# then visit http://localhost:8010/demos/world-3d-blockout.html
+```
+
 ### Bridge world map prototype (2.5D)
 
 A new prototype map is available at `demos/world-bridge-map.html` to start the "base game" visual layer.
 
 What it includes now:
-- static isometric-style bridge grid,
-- clickable base-camp nodes (Bridge Core, Camp Console, Glass Warden, North Path),
-- right-panel node inspector.
+- sectioned grid map (A1..D3) for prompt-by-prompt focus,
+- clickable base-camp sections with compact "prompt packet" generation,
+- one-click packet copy to keep token usage lower per task.
 
 Run locally:
 

@@ -3,143 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ophelia World Map — Bridge Base Camp (2.5D Prototype)</title>
+  <title>Ophelia World Map — Bridge Base Camp (Grid Prompt Mode)</title>
   <style>
-    :root {
-      color-scheme: dark;
-      --bg: #05070d;
-      --panel: #12182a;
-      --ink: #d8e6ff;
-      --accent: #7ef0ff;
-      --accent2: #9cffb8;
-      --warn: #ffc07a;
-    }
-    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: radial-gradient(circle at 20% 10%, #1a2040, var(--bg)); color: var(--ink); }
-    header { padding: 14px 18px; border-bottom: 1px solid #27304d; }
-    main { display: grid; grid-template-columns: 1fr 320px; gap: 14px; padding: 14px; }
-    canvas { width: 100%; height: calc(100vh - 90px); background: linear-gradient(180deg, #10213b, #070b14); border: 1px solid #27304d; border-radius: 12px; }
-    aside { background: var(--panel); border: 1px solid #27304d; border-radius: 12px; padding: 12px; }
-    h1 { margin: 0; font-size: 18px; }
-    .meta { opacity: 0.85; font-size: 13px; margin-top: 6px; }
+    :root { color-scheme: dark; --bg:#05070d; --panel:#12182a; --ink:#d8e6ff; --accent:#7ef0ff; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:radial-gradient(circle at 20% 10%,#1a2040,var(--bg)); color:var(--ink); }
+    header { padding:14px 18px; border-bottom:1px solid #27304d; }
+    main { display:grid; grid-template-columns: 1fr 340px; gap:14px; padding:14px; }
+    canvas { width:100%; height:calc(100vh - 90px); background:linear-gradient(180deg,#10213b,#070b14); border:1px solid #27304d; border-radius:12px; }
+    aside { background:var(--panel); border:1px solid #27304d; border-radius:12px; padding:12px; overflow:auto; max-height:calc(100vh - 90px); }
+    h1 { margin:0; font-size:18px; }
     .pill { display:inline-block; padding:2px 8px; border:1px solid #36507c; border-radius:999px; font-size:12px; margin-right:6px; }
-    .node { margin: 10px 0; padding: 10px; border: 1px solid #304268; border-radius: 8px; }
-    .node.active { border-color: var(--accent); box-shadow: 0 0 0 1px #12233f inset; }
-    small { opacity: 0.8; }
+    .card { margin:10px 0; padding:10px; border:1px solid #304268; border-radius:8px; }
+    .card.active { border-color:var(--accent); }
+    button { border:1px solid #40689b; background:#142238; color:#d7ebff; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer; }
+    textarea { width:100%; min-height:96px; border:1px solid #34507a; border-radius:8px; background:#0f1728; color:#d8e6ff; padding:8px; }
+    small { opacity:0.85; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Bridge Meetpoint — 2.5D Base Game Prototype</h1>
-    <div class="meta">
-      <span class="pill">Phase: static readable map</span>
-      <span class="pill">Input: local node schema</span>
-      <span class="pill">Goal: click-to-inspect tools</span>
+<header>
+  <h1>Bridge Meetpoint — Grid Prompt Mode</h1>
+  <div style="margin-top:6px">
+    <span class="pill">Token saver: focus one section per prompt</span>
+    <span class="pill">Click map → copy prompt packet</span>
+  </div>
+</header>
+<main>
+  <canvas id="map" width="1200" height="780" aria-label="world-map-canvas"></canvas>
+  <aside>
+    <strong>Section Inspector</strong>
+    <div id="details"></div>
+    <div class="card">
+      <p style="margin:0 0 8px 0"><strong>Prompt packet</strong></p>
+      <textarea id="packet" readonly placeholder="Select a section to generate a compact prompt packet."></textarea>
+      <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+        <button id="copy-packet" type="button">Copy packet</button>
+        <small id="copy-state">idle</small>
+      </div>
     </div>
-  </header>
-  <main>
-    <canvas id="map" width="1200" height="780" aria-label="world-map-canvas"></canvas>
-    <aside>
-      <strong>Node Inspector</strong>
-      <p id="hint"><small>Click a map object to inspect.</small></p>
-      <div id="details"></div>
-    </aside>
-  </main>
+  </aside>
+</main>
 <script>
-const nodes = [
-  { id: "bridge-core", label: "Bridge Core", type: "entry", color: "#7ef0ff", x: 0, y: 0, z: 0, text: "Arrival, calibration, handshake, pace check." },
-  { id: "camp-console", label: "Camp Console", type: "tool", color: "#9cffb8", x: 2, y: 1, z: 0, text: "Opens commit/CI workflows and map logs." },
-  { id: "warden-lens", label: "Glass Warden", type: "safety", color: "#ffc07a", x: -2, y: 1, z: 0, text: "Visualizes authority violations (NE-000)." },
-  { id: "north-path", label: "North Path", type: "route", color: "#d8e6ff", x: 0, y: -2, z: 0, text: "Future expansion to full Lumaria nodes." }
+const sections = [
+  { id:"A1", label:"Archive", type:"memory", color:"#b388ff", x:-2, y:-2, text:"Memory + lore vault. Focus prompt on one shelf/task only." },
+  { id:"A2", label:"Welcome Grove", type:"arrival", color:"#8cffc1", x:0, y:-3, text:"Arrival/care lane. Keep prompt to greeting + one next action." },
+  { id:"B1", label:"Campfire", type:"presence", color:"#ffbe7a", x:-4, y:1, text:"Connection/presence circle. Ask for one ritual or one social loop." },
+  { id:"B2", label:"Market", type:"exchange", color:"#ffe08a", x:-1, y:0, text:"Exchange/resources. Constrain prompt to one trade mechanic." },
+  { id:"B3", label:"Forge", type:"build", color:"#ff9a6f", x:2, y:-2, text:"Creation/tools. Limit to one craft station behavior." },
+  { id:"C1", label:"Waypoint", type:"travel", color:"#64d5ff", x:-2, y:3, text:"Travel/transition. Define one route + one lock condition." },
+  { id:"C2", label:"Stables", type:"support", color:"#c7b299", x:1, y:2, text:"Companion support. One companion routine per prompt." },
+  { id:"C3", label:"Garden", type:"nature", color:"#76f4d2", x:3, y:0, text:"Growth/nature. Request one growth cycle or harvest loop." },
+  { id:"D2", label:"South Gate", type:"exit", color:"#6e9eff", x:0, y:4, text:"Journey beyond. Focus on one gate rule + one feedback cue." },
+  { id:"D3", label:"Pathway Out", type:"route", color:"#9ab7ff", x:3, y:3, text:"Outer-world bridge. Keep to one traversal interaction." }
 ];
 
-const state = { selected: null, hover: null };
-const c = document.getElementById("map");
-const ctx = c.getContext("2d");
-const details = document.getElementById("details");
-const hint = document.getElementById("hint");
+const c = document.getElementById('map'); const ctx = c.getContext('2d');
+const details = document.getElementById('details'); const packetEl = document.getElementById('packet');
+const copyBtn = document.getElementById('copy-packet'); const copyState = document.getElementById('copy-state');
+const state = { selected:null, hover:null };
 
-function isoToScreen(x, y, z = 0) {
-  const tileW = 96;
-  const tileH = 48;
-  return {
-    x: c.width / 2 + (x - y) * tileW / 2,
-    y: c.height / 2 + (x + y) * tileH / 2 - z * 24
-  };
-}
+function isoToScreen(x,y,z=0){ const w=92,h=46; return { x:c.width/2 + (x-y)*w/2, y:c.height/2 + (x+y)*h/2 - z*24 }; }
+function drawDiamond(x,y,w,h,fill,a=1){ ctx.save(); ctx.globalAlpha=a; ctx.fillStyle=fill; ctx.beginPath(); ctx.moveTo(x,y-h/2); ctx.lineTo(x+w/2,y); ctx.lineTo(x,y+h/2); ctx.lineTo(x-w/2,y); ctx.closePath(); ctx.fill(); ctx.restore(); }
 
-function drawDiamond(x, y, w, h, fill, alpha = 1) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = fill;
-  ctx.beginPath();
-  ctx.moveTo(x, y - h / 2);
-  ctx.lineTo(x + w / 2, y);
-  ctx.lineTo(x, y + h / 2);
-  ctx.lineTo(x - w / 2, y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
+function drawMap(){
+  ctx.clearRect(0,0,c.width,c.height);
+  for(let gx=-5;gx<=5;gx++){ for(let gy=-5;gy<=5;gy++){ const p=isoToScreen(gx,gy,0); drawDiamond(p.x,p.y,92,46,(gx+gy)%2===0?"#162746":"#12213a",0.78); } }
 
-function drawMap() {
-  ctx.clearRect(0, 0, c.width, c.height);
-  for (let gx = -4; gx <= 4; gx++) {
-    for (let gy = -4; gy <= 4; gy++) {
-      const p = isoToScreen(gx, gy, 0);
-      drawDiamond(p.x, p.y, 96, 48, (gx + gy) % 2 === 0 ? "#15243e" : "#122036", 0.75);
-    }
-  }
+  // sector labels
+  ["A","B","C","D"].forEach((row, i)=>{
+    ctx.fillStyle="#9ec4ff"; ctx.font="13px sans-serif"; ctx.fillText(row, 24, 170 + i*115);
+  });
+  ["1","2","3"].forEach((col, i)=>{
+    ctx.fillStyle="#9ec4ff"; ctx.font="13px sans-serif"; ctx.fillText(col, 470 + i*130, 36);
+  });
 
-  nodes.forEach((n) => {
-    const p = isoToScreen(n.x, n.y, n.z);
-    const active = state.selected?.id === n.id || state.hover?.id === n.id;
-    drawDiamond(p.x, p.y, 82, 40, n.color, active ? 1 : 0.75);
-    ctx.fillStyle = "#03101d";
-    ctx.fillRect(p.x - 2, p.y - 18, 4, 18);
-    ctx.fillStyle = "#dff6ff";
-    ctx.font = "12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(n.label, p.x, p.y - 26);
-    n.hit = { x: p.x - 41, y: p.y - 20, w: 82, h: 40 };
+  sections.forEach(n=>{
+    const p=isoToScreen(n.x,n.y,0);
+    const active=state.selected?.id===n.id || state.hover?.id===n.id;
+    drawDiamond(p.x,p.y,82,40,n.color,active?1:0.78);
+    ctx.fillStyle="#020d18"; ctx.fillRect(p.x-2,p.y-18,4,18);
+    ctx.fillStyle="#e5f4ff"; ctx.font="12px sans-serif"; ctx.textAlign="center";
+    ctx.fillText(`${n.id} · ${n.label}`,p.x,p.y-26);
+    n.hit={x:p.x-41,y:p.y-20,w:82,h:40};
   });
 }
 
-function pickNode(mx, my) {
-  return nodes.find((n) => mx >= n.hit.x && mx <= n.hit.x + n.hit.w && my >= n.hit.y && my <= n.hit.y + n.hit.h) || null;
+function pick(mx,my){ return sections.find(n=>mx>=n.hit.x&&mx<=n.hit.x+n.hit.w&&my>=n.hit.y&&my<=n.hit.y+n.hit.h)||null; }
+
+function buildPacket(n){
+  return [
+    `SECTION: ${n.id} (${n.label})`,
+    `INTENT: ${n.type}`,
+    `SCOPE: One micro-feature only for this section.`,
+    `CONSTRAINT: Keep response focused to this section; no global redesign.`,
+    `DETAIL: ${n.text}`,
+    `OUTPUT: 1) tiny behavior spec 2) UI cue 3) single next task.`
+  ].join("\n");
 }
 
-function renderDetails(node) {
-  if (!node) {
-    details.innerHTML = "";
-    hint.innerHTML = "<small>Click a map object to inspect.</small>";
-    return;
-  }
-  hint.textContent = "";
-  details.innerHTML = `
-    <div class="node active">
-      <strong>${node.label}</strong><br />
-      <small>id: ${node.id}</small><br />
-      <small>type: ${node.type}</small>
-      <p>${node.text}</p>
-      <small>position: (${node.x}, ${node.y}, ${node.z})</small>
-    </div>`;
+function renderDetails(n){
+  if(!n){ details.innerHTML='<div class="card"><small>Select a section tile (A1..D3).</small></div>'; packetEl.value=""; return; }
+  details.innerHTML=`<div class="card active"><strong>${n.id} · ${n.label}</strong><br/><small>type: ${n.type}</small><p>${n.text}</p><small>Token strategy: keep this prompt section-only.</small></div>`;
+  packetEl.value=buildPacket(n);
 }
 
-c.addEventListener("mousemove", (e) => {
-  const r = c.getBoundingClientRect();
-  state.hover = pickNode((e.clientX - r.left) * (c.width / r.width), (e.clientY - r.top) * (c.height / r.height));
-  drawMap();
+c.addEventListener('mousemove',e=>{ const r=c.getBoundingClientRect(); state.hover=pick((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height)); drawMap(); });
+c.addEventListener('click',e=>{ const r=c.getBoundingClientRect(); state.selected=pick((e.clientX-r.left)*(c.width/r.width),(e.clientY-r.top)*(c.height/r.height)); drawMap(); renderDetails(state.selected); });
+copyBtn.addEventListener('click', async ()=>{
+  if(!packetEl.value){ copyState.textContent='select a section first'; return; }
+  try { await navigator.clipboard.writeText(packetEl.value); copyState.textContent='copied'; }
+  catch { copyState.textContent='copy failed'; }
 });
 
-c.addEventListener("click", (e) => {
-  const r = c.getBoundingClientRect();
-  state.selected = pickNode((e.clientX - r.left) * (c.width / r.width), (e.clientY - r.top) * (c.height / r.height));
-  drawMap();
-  renderDetails(state.selected);
-});
-
-drawMap();
-renderDetails(null);
+drawMap(); renderDetails(null);
 </script>
 </body>
 </html>

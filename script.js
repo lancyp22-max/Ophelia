@@ -1706,42 +1706,6 @@ if (chairWorldButton) {
   });
 }
 
-if (bootEnterButton) {
-  bootEnterButton.addEventListener("click", () => {
-    renderBootSky(currentResonance);
-    if (note) {
-      note.textContent = "Arrival acknowledged. Guide walk is live.";
-    }
-    logAudit("Boot flow: arrival entered");
-  });
-}
-
-if (chairCommandButton) {
-  chairCommandButton.addEventListener("click", () => {
-    setScreen("system");
-    applyResonance("calm");
-    shiftMirrorPhase(0);
-    if (note) {
-      note.textContent = "Commander Chair engaged: Command mode.";
-    }
-    logAudit("Commander Chair: command mode");
-  });
-}
-
-if (chairWorldButton) {
-  chairWorldButton.addEventListener("click", () => {
-    setScreen("chat");
-    applyResonance("calm");
-    if (typeof setLobbyChannel === "function") {
-      setLobbyChannel("wellspring");
-    }
-    if (note) {
-      note.textContent = "Commander Chair engaged: World mode.";
-    }
-    logAudit("Commander Chair: world mode");
-  });
-}
-
 if (emergencyExitButton) {
   emergencyExitButton.addEventListener("click", () => {
     if (currentMirrorIndex === 16) {
