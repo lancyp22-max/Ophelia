@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumaria World v0 · Campfire Night</title>
+  <style>
+    html, body { margin:0; height:100%; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
+    #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
+    header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
+    canvas { display:block; width:100%; height:100%; }
+    .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <strong>Lumaria World v0 · Campfire Night Focus</strong>
+    <div style="margin-top:4px">
+      <span class="pill">WASD / Arrow keys: move</span>
+      <span class="pill">Mouse drag: look</span>
+      <span class="pill">Focus section: B1 Campfire</span>
+    </div>
+  </header>
+  <div id="scene"></div>
+</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+
+const host = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050913);
+scene.fog = new THREE.Fog(0x050913, 15, 80);
+
+const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
+camera.position.set(0, 2.8, 9.5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(host.clientWidth, host.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+host.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0x5870a8, 0.26));
+const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
+moon.position.set(14, 20, -6);
+scene.add(moon);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(140, 140),
+  new THREE.MeshStandardMaterial({ color: 0x0c1b30, roughness: 1, metalness: 0 })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+const path = new THREE.Mesh(
+  new THREE.RingGeometry(2.8, 4.6, 72),
+  new THREE.MeshStandardMaterial({ color: 0x2f2540, roughness: 1 })
+);
+path.rotation.x = -Math.PI / 2;
+path.position.y = 0.03;
+scene.add(path);
+
+const runeRing = new THREE.Mesh(
+  new THREE.RingGeometry(4.75, 5.2, 80),
+  new THREE.MeshBasicMaterial({ color: 0xffb366, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+);
+runeRing.rotation.x = -Math.PI / 2;
+runeRing.position.y = 0.035;
+scene.add(runeRing);
+
+function hut(x, z, c=0x5a4a3a) {
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(3, 2.2, 3), new THREE.MeshStandardMaterial({ color:c, roughness:0.95 }));
+  base.position.y = 1.1;
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(2.4, 1.4, 4), new THREE.MeshStandardMaterial({ color:0x352a24, roughness:1 }));
+  roof.position.y = 2.8;
+  roof.rotation.y = Math.PI / 4;
+  g.add(base, roof);
+  g.position.set(x, 0, z);
+  return g;
+}
+scene.add(hut(-8, -5));
+scene.add(hut(8, -4, 0x4a5a4a));
+scene.add(hut(-6, 7, 0x4a4a62));
+
+const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d }));
+campfireStone.position.set(0, 0.2, 0);
+scene.add(campfireStone);
+
+const logs = [];
+for (let i = 0; i < 4; i++) {
+  const log = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.14, 1.4, 10),
+    new THREE.MeshStandardMaterial({ color: 0x4a2f1e, roughness: 1 })
+  );
+  log.position.set(Math.cos(i * Math.PI / 2) * 0.4, 0.45, Math.sin(i * Math.PI / 2) * 0.4);
+  log.rotation.z = Math.PI / 2.6;
+  log.rotation.y = i * Math.PI / 2;
+  logs.push(log);
+  scene.add(log);
+}
+
+const flame = new THREE.PointLight(0xffa85c, 2.7, 18, 2);
+flame.position.set(0, 1.5, 0);
+scene.add(flame);
+const ember = new THREE.PointLight(0xff6a00, 1.4, 10, 2);
+ember.position.set(0, 0.7, 0);
+scene.add(ember);
+
+const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.95, 5.5, 6), new THREE.MeshStandardMaterial({ color:0x1f3654, emissive:0x1d3f6f, emissiveIntensity:0.5 }));
+obelisk.position.set(11, 2.75, 2);
+scene.add(obelisk);
+
+const moonOrb = new THREE.Mesh(
+  new THREE.SphereGeometry(1.25, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0x98c7ff, transparent: true, opacity: 0.8 })
+);
+moonOrb.position.set(13, 10, -10);
+scene.add(moonOrb);
+
+const stars = new THREE.BufferGeometry();
+const starCount = 900;
+const starPos = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount; i++) {
+  starPos[i * 3] = (Math.random() - 0.5) * 220;
+  starPos[i * 3 + 1] = Math.random() * 120 + 8;
+  starPos[i * 3 + 2] = (Math.random() - 0.5) * 220;
+}
+stars.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35 }));
+scene.add(starField);
+
+const fireflies = [];
+for (let i = 0; i < 36; i++) {
+  const f = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc266 }));
+  f.userData.seed = Math.random() * Math.PI * 2;
+  f.userData.radius = 1 + Math.random() * 7;
+  f.userData.height = 0.3 + Math.random() * 2.7;
+  fireflies.push(f);
+  scene.add(f);
+}
+
+const keys = new Set();
+window.addEventListener('keydown', e => keys.add(e.key.toLowerCase()));
+window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+let yaw = Math.PI;
+let pitch = -0.16;
+let drag = false;
+let lx = 0, ly = 0;
+renderer.domElement.addEventListener('mousedown', e => { drag = true; lx = e.clientX; ly = e.clientY; });
+window.addEventListener('mouseup', () => drag = false);
+window.addEventListener('mousemove', e => {
+  if (!drag) return;
+  yaw -= (e.clientX - lx) * 0.004;
+  pitch = Math.max(-0.72, Math.min(0.4, pitch - (e.clientY - ly) * 0.003));
+  lx = e.clientX; ly = e.clientY;
+});
+
+function animate(t = 0) {
+  const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+  const right = new THREE.Vector3(dir.z, 0, -dir.x);
+  const speed = 0.09;
+  if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
+  if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
+  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, -speed);
+  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, speed);
+
+  const flicker = 1.9 + Math.sin(t * 0.012) * 0.45 + Math.sin(t * 0.039) * 0.25;
+  flame.intensity = flicker;
+  ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
+  runeRing.material.opacity = 0.36 + Math.sin(t * 0.006) * 0.12;
+  moonOrb.material.opacity = 0.6 + Math.sin(t * 0.002) * 0.15;
+
+  fireflies.forEach((f, i) => {
+    const tt = t * 0.0011 + f.userData.seed + i * 0.13;
+    f.position.set(Math.cos(tt) * f.userData.radius, f.userData.height + Math.sin(tt * 2) * 0.3, Math.sin(tt) * f.userData.radius);
+    f.material.opacity = 0.5 + Math.sin(tt * 5) * 0.5;
+  });
+
+  const target = new THREE.Vector3(camera.position.x + Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 7, camera.position.z + Math.cos(yaw) * 10);
+  camera.lookAt(target);
+
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = host.clientWidth / host.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(host.clientWidth, host.clientHeight);
+});
+</script>
+</body>
+</html>
