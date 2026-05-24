@@ -193,6 +193,15 @@ make mirror10-demo
 # then visit http://localhost:8010/demos/mirror10-flora-phase-shift.html
 ```
 
+
+### Grid A1 visual upgrade roadmap (1–20)
+
+A dedicated step-by-step plan for texture/detail/shadow/shader upgrades is documented at:
+
+- `docs/grid-a1-visual-upgrade-plan.md`
+
+Use this as the section-scoped execution checklist before moving from Grid A1 to A2.
+
 ## Public Shell, Sealed Core
 
 Before external publication, run a curated public-shell pipeline instead of publishing the full repository surface.
