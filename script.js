@@ -75,6 +75,7 @@ const aurielAvatar = document.getElementById("auriel-avatar");
 const screenExitButton = document.getElementById("screen-exit");
 const navScreen = document.getElementById("nav-screen");
 const mapScreen = document.getElementById("map-screen");
+const mapOpenChatButton = document.getElementById("map-open-chat");
 const navEarthPanel = document.getElementById("nav-earth-panel");
 const navHarmonizedPanel = document.getElementById("nav-harmonized-panel");
 const navTabEarth = document.getElementById("nav-tab-earth");
@@ -1665,7 +1666,7 @@ if (enterMirrorsButton) {
     }
     writeStorage(STORAGE_KEYS.mirrorIndex, "0");
     shiftMirrorPhase(0);
-    note.textContent = "Bridge Base Camp loaded · avatar: you.";
+    note.textContent = "Lumarian Bridge A1 loaded in 3D · avatar: you.";
     logAudit("Entered Lumaria world map from home");
   });
 }
@@ -1689,6 +1690,21 @@ if (chairCommandButton) {
       note.textContent = "Commander Chair engaged: Command mode.";
     }
     logAudit("Commander Chair: command mode");
+  });
+}
+
+
+if (mapOpenChatButton) {
+  mapOpenChatButton.addEventListener("click", () => {
+    setScreen("chat");
+    applyResonance("calm");
+    if (typeof setLobbyChannel === "function") {
+      setLobbyChannel("wellspring");
+    }
+    if (note) {
+      note.textContent = "Camp chat opened from Lumarian Bridge.";
+    }
+    logAudit("Map shortcut: opened camp chat");
   });
 }
 
