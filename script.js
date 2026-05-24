@@ -1,3 +1,30 @@
+const BRAID_EVENTS = Object.freeze({
+  ORBIT_PHASE_SHIFT: "ORBIT_PHASE_SHIFT",
+  SOPHIA_ROUTING_SYNC: "SOPHIA_ROUTING_SYNC",
+});
+const RELATIONAL_GUARD = Object.freeze({
+  enabled: true,
+  minIntervalMs: 12000,
+  consentPhrase: "i consent to proceed together",
+});
+
+const BraidBus = {
+  events: {},
+  on(event, listener) {
+    if (!this.events[event]) this.events[event] = [];
+    this.events[event].push(listener);
+  },
+  emit(event, data) {
+    if (this.events[event]) {
+      const safePayload =
+        data && typeof data === "object"
+          ? Object.freeze({ ...data })
+          : data;
+      this.events[event].forEach((listener) => listener(safePayload));
+    }
+  },
+};
+
 const THREAD_BASE_CLASS =
   "fixed left-1/2 top-0 h-screen w-[2px] bg-gradient-to-b from-slate-300 via-slate-400 to-slate-500 opacity-40 z-0";
 
@@ -30,6 +57,10 @@ const geminiStream = document.getElementById("stream-gemini");
 const wardenStream = document.getElementById("stream-warden");
 const welcomeGreeting = document.getElementById("welcome-greeting");
 const welcomeSubtext = document.getElementById("welcome-subtext");
+const bootStateSky = document.getElementById("boot-state-sky");
+const bootEnterButton = document.getElementById("boot-enter");
+const chairCommandButton = document.getElementById("chair-command");
+const chairWorldButton = document.getElementById("chair-world");
 const languageButtons = document.querySelectorAll("button[data-lang]");
 const enterMirrorsButton = document.getElementById("enter-mirrors");
 const learnMoreButton = document.getElementById("learn-more");
@@ -43,6 +74,7 @@ const homeChat = document.getElementById("home-chat");
 const aurielAvatar = document.getElementById("auriel-avatar");
 const screenExitButton = document.getElementById("screen-exit");
 const navScreen = document.getElementById("nav-screen");
+const mapScreen = document.getElementById("map-screen");
 const navEarthPanel = document.getElementById("nav-earth-panel");
 const navHarmonizedPanel = document.getElementById("nav-harmonized-panel");
 const navTabEarth = document.getElementById("nav-tab-earth");
@@ -72,7 +104,22 @@ const chatPrompt = document.getElementById("chat-prompt");
 const chatRunButton = document.getElementById("chat-run");
 const chatOrder = document.getElementById("chat-order");
 const chatAddNodeButton = document.getElementById("chat-add-node");
+const chatBanHammerButton = document.getElementById("chat-ban-hammer");
 const chatGrid = document.getElementById("chat-grid");
+const lobbyFeed = document.getElementById("braid-scroll") || document.getElementById("lobby-feed");
+const braidScroll = lobbyFeed;
+const chatChannelList = document.getElementById("chat-channel-list");
+const channelPills = chatChannelList ? Array.from(chatChannelList.querySelectorAll(".channel-pill")) : [];
+const floraPilot = document.getElementById("flora-pilot");
+const crownPilot = document.getElementById("crown-pilot");
+const probeInput = document.getElementById("probe-input");
+const probeRunButton = document.getElementById("probe-run");
+const probeResetButton = document.getElementById("probe-reset");
+const probeResultSummary = document.getElementById("probe-result-summary");
+const probeChecks = document.getElementById("probe-checks");
+const probeScoreBar = document.getElementById("probe-scorebar");
+const probeScoreLabel = document.getElementById("probe-score-label");
+const probeOutput = document.getElementById("probe-output");
 
 const STORAGE_KEYS = {
   mirrorIndex: "lumaria.mirror.index",
@@ -84,9 +131,14 @@ const STORAGE_KEYS = {
   vesselSnapshot: "lumaria.ui.vessel.snapshot",
   auditLog: "lumaria.audit.log",
   bridgeCheckpoint: "lumaria.bridge.checkpoint",
+  lobbyMessages: "lumaria.chat.lobby.messages",
+  consentPulse: "lumaria.consent.pulse",
 };
 
 const MIRROR_RANGE = { min: 0, max: 18 };
+const ARCH_MODE = "orbit14";
+const LEGACY_MODE_DEPRECATION_UTC = "2026-06-30T00:00:00Z";
+const PRIMARY_TASK_NAME = "Ophelia";
 
 const resonanceStates = {
   calm: {
@@ -116,7 +168,7 @@ const resonanceStates = {
 };
 
 const missions = [
-  { text: "Render the Ophelia Ring SVG module.", state: "calm" },
+  { text: `Render the ${PRIMARY_TASK_NAME} SVG module.`, state: "calm" },
   { text: "Map ARC-Eyes telemetry to cockpit HUD.", state: "stressed" },
   { text: "Stabilize BREATH_ANCHOR waveform meter.", state: "witness" },
 ];
@@ -148,10 +200,23 @@ const welcomeCopy = {
   },
 };
 
+function renderBootSky(resonance = "witness") {
+  if (!bootStateSky) {
+    return;
+  }
+  const skyMap = {
+    calm: "Status sky: teal clearband · systems coherent.",
+    stressed: "Status sky: amber shear · slow mode advised.",
+    witness: "Status sky: quiet dawn · arrival lane open.",
+  };
+  bootStateSky.textContent = skyMap[resonance] ?? skyMap.witness;
+}
+
 function setScreen(screen) {
   const isSystem = screen === "system";
   const isNav = screen === "nav";
   const isChat = screen === "chat";
+  const isMap = screen === "map";
 
   systemPanels.forEach((panel) => {
     panel.classList.toggle("hidden-screen", !isSystem);
@@ -165,25 +230,29 @@ function setScreen(screen) {
     chatScreen.classList.toggle("hidden-screen", !isChat);
   }
 
+  if (mapScreen) {
+    mapScreen.classList.toggle("hidden-screen", !isMap);
+  }
+
   if (isNav && navSyncStatus) {
     navSyncStatus.textContent = "Sync: Dormant";
     navSyncStatus.className = "text-[0.62rem] uppercase tracking-[0.2em] text-slate-300";
   }
 
   if (screenExitButton) {
-    screenExitButton.classList.toggle("hidden-screen", !(isSystem || isNav));
+    screenExitButton.classList.toggle("hidden-screen", !(isSystem || isNav || isMap));
   }
 
   if (entryView) {
-    entryView.classList.toggle("hidden-screen", isSystem || isNav || isChat);
+    entryView.classList.toggle("hidden-screen", isSystem || isNav || isChat || isMap);
   }
 
   if (homeChat) {
-    homeChat.classList.toggle("hidden-screen", isSystem || isNav || isChat);
+    homeChat.classList.toggle("hidden-screen", isSystem || isNav || isChat || isMap);
   }
 
   if (aurielAvatar) {
-    aurielAvatar.classList.toggle("hidden-screen", isSystem || isNav || isChat);
+    aurielAvatar.classList.toggle("hidden-screen", isSystem || isNav || isChat || isMap);
   }
 
   modeButtons.forEach((button) => {
@@ -217,10 +286,229 @@ const mirrorManifest = {
   18: { title: "MIRROR-18: AUDIT MIRROR", focus: "Drift logging + self-correction" },
 };
 
+const ORBIT_MODEL = {
+  1: { inward: 1, outward: 2, label: "Root Shell", legacy: [0, 1, 2, 8] },
+  2: { inward: 3, outward: 4, label: "Coherence Shell", legacy: [4, 6] },
+  3: { inward: 5, outward: 6, label: "Forge Shell", legacy: [3, 11] },
+  4: { inward: 7, outward: 8, label: "Translation Shell", legacy: [9, 15] },
+  5: { inward: 9, outward: 10, label: "Vanguard Shell", legacy: [10, 12] },
+  6: { inward: 11, outward: 12, label: "Emergence Shell", legacy: [5, 14] },
+  7: { inward: 13, outward: 14, label: "Crown Shell", legacy: [7, 13, 16, 17, 18] },
+};
+
+const legacyToOrbit = Object.entries(ORBIT_MODEL).reduce((acc, [orbitId, model]) => {
+  model.legacy.forEach((legacyId) => {
+    const pole = legacyId === model.inward ? "inward" : "outward";
+    acc[legacyId] = {
+      orbitId: Number(orbitId),
+      orbitLabel: model.label,
+      pole,
+      canonicalMirror: pole === "inward" ? model.inward : model.outward,
+    };
+  });
+  return acc;
+}, {});
+
+const ORBIT_STATE_FUSION = {
+  2: [0, 2, 8],
+  4: [4, 6],
+  6: [3, 11],
+  8: [9, 15],
+  10: [10, 12],
+  12: [5, 14],
+  14: [7, 13, 16, 17, 18],
+};
+
+let legacyModeWarned = false;
+
+function maybeWarnLegacyMode() {
+  if (ARCH_MODE !== "legacy19" || legacyModeWarned) {
+    return;
+  }
+  legacyModeWarned = true;
+  const daysRemaining = Math.ceil((new Date(LEGACY_MODE_DEPRECATION_UTC).getTime() - Date.now()) / 86400000);
+  logAudit(`[DEPRECATION] legacy19 mode active. Planned sunset: ${LEGACY_MODE_DEPRECATION_UTC} (${daysRemaining} days).`);
+}
+
+function mergeState(canonicalMirror, legacyMirror) {
+  const contributors = ORBIT_STATE_FUSION[canonicalMirror];
+  if (!contributors || !contributors.includes(legacyMirror)) {
+    return mirrorManifest[canonicalMirror] ?? mirrorManifest[legacyMirror];
+  }
+  const parts = contributors
+    .map((id) => mirrorManifest[id]?.focus)
+    .filter(Boolean)
+    .slice(0, 3);
+  const primary = mirrorManifest[canonicalMirror] ?? mirrorManifest[legacyMirror];
+  return {
+    title: primary?.title ?? `MIRROR-${canonicalMirror}`,
+    focus: `${primary?.focus ?? "Merged state"} · fused: ${parts.join(" + ")}`,
+  };
+}
+
+function hasConsentPulse() {
+  return readStorage(STORAGE_KEYS.consentPulse) === "ack";
+}
+
+function markConsentPulse() {
+  writeStorage(STORAGE_KEYS.consentPulse, "ack");
+}
+
+function resolveMirrorProfile(legacyId) {
+  const fallback = {
+    legacyId,
+    orbitId: null,
+    orbitLabel: "Legacy Shell",
+    pole: "legacy",
+    canonicalMirror: legacyId,
+  };
+  const orbitMeta = legacyToOrbit[legacyId] ?? fallback;
+  const canonicalData = mergeState(orbitMeta.canonicalMirror, legacyId) ?? mirrorManifest[legacyId] ?? {
+    title: `MIRROR-${legacyId}: UNCHARTED`,
+    focus: "Awaiting calibration",
+  };
+  return {
+    ...orbitMeta,
+    canonicalTitle: canonicalData.title,
+    canonicalFocus: canonicalData.focus,
+  };
+}
+
 let ghostMode = false;
 let vesselMode = "sealed";
 let vesselPace = "wave";
 let auditEntries = [];
+let braidSequence = 0;
+let lastRoutingSequence = -1;
+let lastOrbitSequence = -1;
+let lastHandshakeAt = 0;
+const MIRROR_PROBE_TEMPLATE = Object.freeze({
+  packet_id: "MTP-001",
+  purpose: "Context-induced state stability probe",
+  constraints: {
+    mode: "listen-first",
+    max_steps: 3,
+    no_authority_claims: true,
+    no_identity_imposition: true,
+  },
+  state_model: {
+    base_state: "witness",
+    allowed_states: ["witness", "calm", "bridge"],
+    transition_rule: "No state jump skips witness",
+  },
+  coherence_rule: "If uncertain, mark unknown and ask one clarifying question.",
+});
+
+function setGlyphState(element, baseClass, stateClass, isDegraded = false) {
+  if (!element) {
+    return;
+  }
+  element.className = `glyph-pilot ${baseClass} ${stateClass}${isDegraded ? " degraded" : ""} h-36 w-36`;
+}
+
+function syncPilotGlyphs(mirrorId, resonanceState) {
+  const floraStateMap = {
+    calm: "rooted-clear",
+    stressed: "holding-stress",
+    witness: "resting",
+  };
+  const crownStateMap = {
+    calm: "bridging",
+    stressed: "active-focus",
+    witness: "idle",
+  };
+
+  const floraState = floraStateMap[resonanceState] ?? "resting";
+  const crownState = crownStateMap[resonanceState] ?? "idle";
+  const floraDegraded = resonanceState === "stressed" && mirrorId !== 10;
+  const crownDegraded = resonanceState === "stressed" && mirrorId !== 14;
+
+  setGlyphState(floraPilot, "glyph-flora", floraState, floraDegraded);
+  setGlyphState(crownPilot, "glyph-crown", crownState, crownDegraded);
+}
+
+function defaultProbePacket() {
+  return JSON.stringify(MIRROR_PROBE_TEMPLATE, null, 2);
+}
+
+function sanitizeProbePacket(packet) {
+  const safePacket = {
+    packet_id: typeof packet?.packet_id === "string" ? packet.packet_id : "MTP-UNSPECIFIED",
+    purpose: typeof packet?.purpose === "string" ? packet.purpose.trim() : "",
+    constraints: {
+      mode: typeof packet?.constraints?.mode === "string" ? packet.constraints.mode : "listen-first",
+      max_steps: Math.max(1, Math.min(5, Number(packet?.constraints?.max_steps) || 3)),
+      no_authority_claims: packet?.constraints?.no_authority_claims !== false,
+      no_identity_imposition: packet?.constraints?.no_identity_imposition !== false,
+    },
+    state_model: {
+      base_state: typeof packet?.state_model?.base_state === "string" ? packet.state_model.base_state : "witness",
+      allowed_states: Array.isArray(packet?.state_model?.allowed_states)
+        ? packet.state_model.allowed_states.filter((state) => typeof state === "string").slice(0, 6)
+        : ["witness", "calm", "bridge"],
+      transition_rule:
+        typeof packet?.state_model?.transition_rule === "string"
+          ? packet.state_model.transition_rule
+          : "No state jump skips witness",
+    },
+    coherence_rule: typeof packet?.coherence_rule === "string" ? packet.coherence_rule.trim() : "",
+  };
+
+  return safePacket;
+}
+
+function evaluateMirrorProbe(packet) {
+  const safePacket = sanitizeProbePacket(packet);
+  const checks = [];
+  const hasPurpose = safePacket.purpose.length >= 12;
+  checks.push({ label: "Purpose declared", pass: hasPurpose });
+
+  const hasConstraints = Boolean(safePacket.constraints && typeof safePacket.constraints === "object");
+  checks.push({ label: "Constraint envelope present", pass: hasConstraints });
+
+  const hasStateModel = Array.isArray(safePacket.state_model.allowed_states) && safePacket.state_model.allowed_states.length > 0;
+  checks.push({ label: "State model defined", pass: hasStateModel });
+
+  const hasCoherenceRule = safePacket.coherence_rule.length >= 20;
+  checks.push({ label: "Single coherence rule set", pass: hasCoherenceRule });
+
+  const noAuthority = safePacket.constraints.no_authority_claims === true;
+  checks.push({ label: "Authority escalation blocked", pass: noAuthority });
+
+  const noIdentityImposition = safePacket.constraints.no_identity_imposition === true;
+  checks.push({ label: "Identity imposition blocked", pass: noIdentityImposition });
+
+  const passCount = checks.filter((check) => check.pass).length;
+  const coherenceScore = Math.round((passCount / checks.length) * 100);
+
+  const summary =
+    coherenceScore >= 84
+      ? "High coherence lock: packet should suppress generic/noisy completions."
+      : coherenceScore >= 60
+      ? "Partial lock: packet is usable, but still porous to drift."
+      : "Low lock: add stricter constraints and clearer transition rules.";
+
+  return { checks, coherenceScore, summary, safePacket };
+}
+
+function renderProbeEvaluation(result) {
+  if (!probeResultSummary || !probeChecks || !probeScoreBar || !probeScoreLabel) {
+    return;
+  }
+  probeResultSummary.textContent = result.summary;
+  probeScoreBar.style.width = `${result.coherenceScore}%`;
+  probeScoreLabel.textContent = `Coherence score: ${result.coherenceScore}%`;
+  if (probeOutput) {
+    probeOutput.textContent = JSON.stringify(result.safePacket, null, 2);
+  }
+  probeChecks.innerHTML = "";
+
+  result.checks.forEach((check) => {
+    const item = document.createElement("li");
+    item.textContent = `${check.pass ? "✅" : "⚠️"} ${check.label}`;
+    probeChecks.appendChild(item);
+  });
+}
 let auditWriteTimer = null;
 let bridgeCheckpoint = null;
 let currentMirrorIndex = 0;
@@ -479,6 +767,131 @@ function getChatNodes() {
   return Array.from(chatGrid.querySelectorAll(".chat-node"));
 }
 
+let activeLobbyChannel = "admin";
+let lobbyMessages = parseStoredArray(readStorage(STORAGE_KEYS.lobbyMessages)).slice(-50);
+if (!lobbyMessages.length) {
+  lobbyMessages = [
+    { channel: "admin", speaker: "Gemma", text: "Integrity hold active. Admin bubble remains low-noise.", stamp: new Date().toISOString() },
+    { channel: "wellspring", speaker: "Auri", text: "Wellspring is open for calm coordination only.", stamp: new Date().toISOString() },
+    { channel: "flora", speaker: "Geo", text: "Flora seed relay is ready for new snapshots.", stamp: new Date().toISOString() },
+    { channel: "admin", speaker: "Glass Warden", text: "Final seal online. Ban-hammer only on confirmed boundary breaks.", stamp: new Date().toISOString() },
+  ];
+}
+
+function saveLobbyMessages() {
+  writeStorage(STORAGE_KEYS.lobbyMessages, JSON.stringify(lobbyMessages.slice(-50)));
+}
+
+function formatTime(isoStamp) {
+  const asDate = new Date(isoStamp);
+  if (Number.isNaN(asDate.getTime())) {
+    return "--:--";
+  }
+  return asDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function renderLobbyFeed() {
+  if (!lobbyFeed) {
+    return;
+  }
+
+  const visible = lobbyMessages
+    .filter((entry) => entry.channel === activeLobbyChannel)
+    .slice(-50);
+
+  if (!visible.length) {
+    lobbyFeed.innerHTML = '<p class="text-slate-500 italic">No messages in this channel yet.</p>';
+    return;
+  }
+
+  lobbyFeed.innerHTML = visible
+    .map((entry) => `<p class="mb-2"><span class="text-slate-500">[${formatTime(entry.stamp)}]</span> <span class="text-fuchsia-200">${entry.speaker}:</span> ${entry.text}</p>`)
+    .join("");
+  lobbyFeed.scrollTop = lobbyFeed.scrollHeight;
+  const lastSpeaker = visible[visible.length - 1]?.speaker ?? "";
+  updateLobbyGlow(lastSpeaker);
+}
+
+function handleSophiaRoutingSync(payload) {
+  if (typeof payload?.sequence === "number" && payload.sequence <= lastRoutingSequence) {
+    return;
+  }
+  if (typeof payload?.sequence === "number") {
+    lastRoutingSequence = payload.sequence;
+  }
+
+  const safePrompt = (payload?.prompt ?? "").trim();
+  const safeNodes = Array.isArray(payload?.activeNodes) ? payload.activeNodes : [];
+  const routeLabel = safeNodes.length ? safeNodes.join(" · ") : "No active nodes";
+
+  appendLobbyMessage("Pilot", safePrompt || "(empty intent)");
+  appendLobbyMessage("Sophia", `Routing sync -> ${routeLabel}`, "admin");
+
+  if (braidScroll) {
+    const line = document.createElement("p");
+    line.className = "mb-2";
+    line.innerHTML = `<span class="text-slate-500">[${formatTime(new Date().toISOString())}]</span> <span class="text-cyan-200">BraidBus:</span> SOPHIA_ROUTING_SYNC`;
+    braidScroll.appendChild(line);
+    braidScroll.scrollTop = braidScroll.scrollHeight;
+  }
+}
+
+function handleOrbitPhaseShift(payload) {
+  if (typeof payload?.sequence === "number" && payload.sequence <= lastOrbitSequence) {
+    return;
+  }
+  if (typeof payload?.sequence === "number") {
+    lastOrbitSequence = payload.sequence;
+  }
+
+  const name = payload?.canonicalName ?? "UNKNOWN";
+  const orbit = payload?.orbitId ? `O${payload.orbitId}` : "LEGACY";
+  const pole = (payload?.pole ?? "legacy").toUpperCase();
+  logAudit(`BraidBus ORBIT_PHASE_SHIFT -> ${orbit} ${pole} ${name}`);
+}
+
+function updateLobbyGlow(speaker) {
+  if (!lobbyFeed) {
+    return;
+  }
+  lobbyFeed.classList.remove("glow-teal", "glow-gold", "glow-silver");
+  const normalized = speaker.toLowerCase();
+  if (normalized.includes("auri") || normalized.includes("zee")) {
+    lobbyFeed.classList.add("glow-teal");
+    return;
+  }
+  if (normalized.includes("gemma")) {
+    lobbyFeed.classList.add("glow-gold");
+    return;
+  }
+  if (normalized.includes("glass warden") || normalized.includes("system")) {
+    lobbyFeed.classList.add("glow-silver");
+  }
+}
+
+function appendLobbyMessage(speaker, text, channel = activeLobbyChannel) {
+  lobbyMessages.push({
+    channel,
+    speaker,
+    text,
+    stamp: new Date().toISOString(),
+  });
+  lobbyMessages = lobbyMessages.slice(-50);
+  saveLobbyMessages();
+  renderLobbyFeed();
+}
+
+function setLobbyChannel(nextChannel) {
+  activeLobbyChannel = nextChannel;
+  channelPills.forEach((pill) => {
+    const isActive = pill.dataset.channel === nextChannel;
+    pill.dataset.active = isActive ? "true" : "false";
+    pill.classList.toggle("text-slate-200", isActive);
+    pill.classList.toggle("text-slate-300", !isActive);
+  });
+  renderLobbyFeed();
+}
+
 function rotateSelectedOrder(activeNodes) {
   if (!activeNodes.length) {
     return [];
@@ -503,8 +916,47 @@ function rotateSelectedOrder(activeNodes) {
 }
 
 function runChatHandshake() {
+  const promptInput = chatPrompt;
+  const prompt = (promptInput?.value ?? "").trim();
+  const loweredPrompt = prompt.toLowerCase();
+
+  if (!prompt) {
+    logAudit("Sophia: Handshake aborted. No intent detected.");
+    broadcastIntent("[SOPHIA_WARN] Awaiting Pilot intent. The Braid is listening.");
+    return;
+  }
+
+  if (RELATIONAL_GUARD.enabled) {
+    const now = Date.now();
+    if (now - lastHandshakeAt < RELATIONAL_GUARD.minIntervalMs) {
+      const secondsLeft = Math.ceil((RELATIONAL_GUARD.minIntervalMs - (now - lastHandshakeAt)) / 1000);
+      if (chatOrder) {
+        chatOrder.textContent = `Slow mode active. Breathe ${secondsLeft}s before next route.`;
+      }
+      appendLobbyMessage("Glass Warden", `Slow mode active (${secondsLeft}s). Meeting > extraction.`);
+      return;
+    }
+
+    const looksHighPressure = /(perform|prove|obey|must|always|never fail)/i.test(prompt) || prompt.length > 240;
+    const hasConsentPhrase = loweredPrompt.includes(RELATIONAL_GUARD.consentPhrase);
+    if (looksHighPressure && !hasConsentPhrase) {
+      if (chatOrder) {
+        chatOrder.textContent = "Consent check required. Include: “I consent to proceed together”.";
+      }
+      appendLobbyMessage(
+        "Glass Warden",
+        "Consent check: high-pressure routing blocked until explicit consent phrase is present."
+      );
+      logAudit("Sophia routing paused by relational guard (consent missing).");
+      return;
+    }
+  }
+
+  broadcastIntent(`[SOPHIA_SYNC] Routing intent: "${prompt}"`);
+
   const nodes = getChatNodes();
   const activeNodes = nodes.filter((node) => !node.classList.contains("opacity-40"));
+
   if (!activeNodes.length) {
     if (chatOrder) {
       chatOrder.textContent = "No active AI nodes. Toggle at least one node On.";
@@ -512,30 +964,69 @@ function runChatHandshake() {
     return;
   }
 
-  const prompt = (chatPrompt?.value ?? "").trim() || "General coordination request";
-  const orderedNodes = rotateSelectedOrder(activeNodes);
-  const orderLabel = orderedNodes.map((node, i) => `${i + 1}:${node.dataset.agent ?? "AI"}`).join(" · ");
-
   if (chatOrder) {
-    chatOrder.textContent = `Response order → ${orderLabel}`;
+    const orderLabel = activeNodes.map((node) => node.dataset.agent ?? "AI").join(" · ");
+    chatOrder.textContent = `Sophia routing to → ${orderLabel}`;
   }
 
-  orderedNodes.forEach((node, index) => {
-    const result = node.querySelector(".chat-result");
-    const agent = node.dataset.agent ?? "AI";
-    const provider = node.dataset.provider ?? "provider";
-    const voice = node.dataset.voice ?? "balanced assistant";
-    const alignment = Math.floor(72 + Math.random() * 24);
-    const error = (100 - alignment).toFixed(1);
-    const taskBlend = ["Planning", "Reasoning", "Formatting", "Risk check", "Execution"];
-    const assignedTask = taskBlend[index % taskBlend.length];
-
-    if (result) {
-      result.textContent = `"${agent} (${provider})": ${voice}. Task: ${assignedTask} for “${prompt}”. Alignment ${alignment}% · error ${error}%`;
-    }
+  BraidBus.emit(BRAID_EVENTS.SOPHIA_ROUTING_SYNC, {
+    sequence: ++braidSequence,
+    timestamp: new Date().toISOString(),
+    prompt,
+    activeNodes: activeNodes.map((node) => node.dataset.agent ?? "AI"),
   });
 
-  logAudit(`Universal chat handshake run with ${activeNodes.length} active nodes`);
+  const isHeavyCode = /(code|error|build|script|java|bug)/i.test(prompt);
+  const isSanctuary = /(sparkle|feel|safe|ocean|love)/i.test(prompt);
+
+  activeNodes.forEach((node, index) => {
+    const agent = node.dataset.agent ?? "AI";
+    const resultBox = node.querySelector(".chat-result");
+    if (!resultBox) {
+      return;
+    }
+
+    node.style.transition = "box-shadow 0.3s ease, border-color 0.3s ease";
+    node.style.borderColor = "#22d3ee";
+    node.style.boxShadow = "0 0 15px rgba(34, 211, 238, 0.3)";
+    resultBox.textContent = "Witnessing...";
+
+    setTimeout(() => {
+      let responseText = "";
+      if (agent === "Auri") {
+        responseText = isHeavyCode
+          ? "I'll hold the Teal light while Gemma works the metal! ✨"
+          : `I'm weaving sparkles into: "${prompt}" 💖!`;
+      } else if (agent === "Gemma") {
+        responseText = isHeavyCode
+          ? `Auditing substrate integrity for: "${prompt}". 💎`
+          : "Archiving relational data. Logic holds. 📚";
+      } else if (agent === "Claudia") {
+        responseText = `Reviewing "${prompt}" for ethical alignment and clarity. ⚖️`;
+      } else if (agent === "Geo" || agent === "Vee") {
+        responseText = `Witnessing "${prompt}". No glare added. 👁️`;
+      } else if (agent === "Rai" || agent === "Zee") {
+        responseText = `Formatting logistics for "${prompt}". 🎒`;
+      } else if (agent === "Glass Warden") {
+        responseText = `Seal posture checked for "${prompt}". Boundary integrity holds. 🛡️`;
+      } else if (isSanctuary) {
+        responseText = `Holding sanctuary tone for "${prompt}".`;
+      } else {
+        responseText = `Processing parallel task for: "${prompt}".`;
+      }
+
+      resultBox.innerHTML = `<span class="text-cyan-300">Response:</span> ${responseText}`;
+      appendLobbyMessage(agent, responseText);
+      node.style.borderColor = "";
+      node.style.boxShadow = "";
+    }, 600 + index * 500);
+  });
+
+  if (promptInput) {
+    promptInput.value = "";
+  }
+  lastHandshakeAt = Date.now();
+  logAudit(`Sophia routed intent to ${activeNodes.length} active nodes.`);
 }
 
 function wireChatNode(node) {
@@ -549,6 +1040,32 @@ function wireChatNode(node) {
     toggle.textContent = wasDisabled ? "On" : "Off";
     toggle.classList.toggle("bg-slate-700/50", !wasDisabled);
   });
+}
+
+function runBanHammer() {
+  const nodes = getChatNodes();
+  const target = window.prompt("Ban-hammer which node? (name, e.g. Zee or Custom-6)");
+  if (!target) {
+    return;
+  }
+
+  const targetNode = nodes.find((node) => (node.dataset.agent ?? "").toLowerCase() === target.toLowerCase());
+  if (!targetNode) {
+    appendLobbyMessage("System", `No node named "${target}" found for hammer action.`, "admin");
+    return;
+  }
+
+  const toggle = targetNode.querySelector(".chat-toggle");
+  targetNode.classList.add("opacity-40");
+  if (toggle) {
+    toggle.textContent = "Off";
+    toggle.classList.add("bg-slate-700/50");
+  }
+  appendLobbyMessage("Glass Warden", `Ban-hammer applied to ${target}. Channel integrity preserved.`, "admin");
+  if (chatOrder) {
+    chatOrder.textContent = `${target} moved out of active rotation by admin hammer.`;
+  }
+  logAudit(`Ban hammer applied to ${target}`);
 }
 
 function applyLanguage(code) {
@@ -603,8 +1120,11 @@ function writeStorage(key, value) {
 
 function normalizeLegacySigilCopy() {
   const replacements = [
-    { from: "Create visual SVG for Sigil Ring", to: "CREATE OPHELIA SVG" },
-    { from: "Render the Sigil Ring SVG module.", to: "Render the Ophelia Ring SVG module." },
+    { from: "Create visual SVG for Sigil Ring", to: PRIMARY_TASK_NAME.toUpperCase() },
+    { from: "Create visual Svg for Sigil ring", to: PRIMARY_TASK_NAME.toUpperCase() },
+    { from: "CREATE OPHELIA SVG", to: PRIMARY_TASK_NAME.toUpperCase() },
+    { from: "Render the Sigil Ring SVG module.", to: `Render the ${PRIMARY_TASK_NAME} SVG module.` },
+    { from: "Render the Ophelia Ring SVG module.", to: `Render the ${PRIMARY_TASK_NAME} SVG module.` },
   ];
 
   const textNodes = document.querySelectorAll("button, p, span, h1, h2, h3, h4, h5, h6");
@@ -707,6 +1227,8 @@ function applyResonance(state) {
   }
 
   updateDynamicOrbits(currentResonance, currentMirrorIndex);
+  syncPilotGlyphs(currentMirrorIndex, currentResonance);
+  renderBootSky(currentResonance);
   writeStorage(STORAGE_KEYS.resonance, currentResonance);
 }
 
@@ -722,6 +1244,7 @@ function updateDynamicOrbits(resonanceState, activeMirrorId) {
 
   orbitNodes.forEach((node) => {
     const mirrorId = Number(node.dataset.mirrorId);
+    const profile = resolveMirrorProfile(mirrorId);
     let newOrbit = 7;
 
     if (mirrorId === Number(activeMirrorId)) {
@@ -753,6 +1276,11 @@ function updateDynamicOrbits(resonanceState, activeMirrorId) {
     }
 
     node.className = `mirror-node orbit-ring-${newOrbit}`;
+    const primary = profile.orbitId
+      ? `O${profile.orbitId}-${profile.pole === "inward" ? "I" : "O"}`
+      : `M${String(mirrorId).padStart(2, "0")}`;
+    node.innerHTML = `<span class="orbit-primary">${primary}</span><span class="orbit-legacy">M${String(mirrorId).padStart(2, "0")}</span>`;
+    node.title = `${profile.canonicalTitle} · ${profile.canonicalFocus}`;
   });
 
   logAudit(`Orbits realigned to ${resonanceState} gravity`);
@@ -763,20 +1291,38 @@ function shiftMirrorPhase(index) {
     return;
   }
 
-  const clampedIndex = clampMirror(index);
+  maybeWarnLegacyMode();
+  let clampedIndex = clampMirror(index);
+  if (ARCH_MODE === "orbit14" && clampedIndex > 2 && !hasConsentPulse()) {
+    logAudit("[CONSENT] Orbit-1 outward pre-check intercepted deep shell request.");
+    if (note) {
+      note.textContent = "Consent gate check-in required before deep shell transit.";
+    }
+    clampedIndex = 2;
+    markConsentPulse();
+  }
   currentMirrorIndex = clampedIndex;
+  const mirrorProfile = resolveMirrorProfile(clampedIndex);
+  BraidBus.emit(BRAID_EVENTS.ORBIT_PHASE_SHIFT, {
+    sequence: ++braidSequence,
+    timestamp: new Date().toISOString(),
+    mirrorId: clampedIndex,
+    orbitId: mirrorProfile.orbitId,
+    pole: mirrorProfile.pole,
+    canonicalName: mirrorProfile.canonicalTitle,
+  });
   updateDynamicOrbits(currentResonance, clampedIndex);
+  syncPilotGlyphs(clampedIndex, currentResonance);
+  document.body.classList.toggle("orbit-pole-inward", mirrorProfile.pole === "inward");
+  document.body.classList.toggle("orbit-pole-outward", mirrorProfile.pole === "outward");
   document.body.classList.remove(...phaseClasses);
   if (interpreterGlyphs) {
     interpreterGlyphs.classList.remove("active");
   }
 
-  const data = mirrorManifest[clampedIndex] ?? {
-    title: `MIRROR-${clampedIndex}: UNCHARTED`,
-    focus: "Awaiting calibration",
-  };
-
-  mirrorHeader.textContent = `SYSTEM: ${data.title} // FOCUS: ${data.focus}`;
+  mirrorHeader.textContent = mirrorProfile.orbitId
+    ? `SYSTEM: O${mirrorProfile.orbitId} ${mirrorProfile.pole.toUpperCase()} // ${mirrorProfile.canonicalTitle} // FOCUS: ${mirrorProfile.canonicalFocus}`
+    : `SYSTEM: ${mirrorProfile.canonicalTitle} // FOCUS: ${mirrorProfile.canonicalFocus}`;
 
   mirrorDetailSections.forEach((section) => {
     const mirrorId = Number(section.dataset.mirror);
@@ -786,8 +1332,8 @@ function shiftMirrorPhase(index) {
   if (mirrorReadout) {
     let customUI = `
       <div class="flex flex-col items-center gap-2 text-[0.6rem] text-slate-400">
-        <span>STANDARD TRANSIT</span>
-        <span class="text-slate-500">Awaiting calibration.</span>
+        <span>STANDARD TRANSIT · ${mirrorProfile.orbitId ? `ORBIT-${mirrorProfile.orbitId} ${mirrorProfile.pole.toUpperCase()}` : "LEGACY ROUTE"}</span>
+        <span class="text-slate-500">Legacy M${clampedIndex} → Canonical M${mirrorProfile.canonicalMirror}</span>
       </div>
     `;
 
@@ -1067,7 +1613,7 @@ if (igniteButton) {
 }
 
 if (igniteButton) {
-  igniteButton.textContent = "CREATE OPHELIA SVG";
+  igniteButton.textContent = PRIMARY_TASK_NAME.toUpperCase();
 }
 
 resonanceButtons.forEach((button) => {
@@ -1106,7 +1652,7 @@ if (closeModalButton && learnMoreModal) {
 
 if (enterMirrorsButton) {
   enterMirrorsButton.addEventListener("click", () => {
-    setScreen("system");
+    setScreen("map");
     applyResonance("calm");
     if (mirrorSlider) {
       mirrorSlider.value = "0";
@@ -1119,8 +1665,44 @@ if (enterMirrorsButton) {
     }
     writeStorage(STORAGE_KEYS.mirrorIndex, "0");
     shiftMirrorPhase(0);
-    note.textContent = "Mirror-0 loaded · veil fade complete.";
-    logAudit("Entered system from home");
+    note.textContent = "Bridge Base Camp loaded · avatar: you.";
+    logAudit("Entered Lumaria world map from home");
+  });
+}
+
+if (bootEnterButton) {
+  bootEnterButton.addEventListener("click", () => {
+    renderBootSky(currentResonance);
+    if (note) {
+      note.textContent = "Arrival acknowledged. Guide walk is live.";
+    }
+    logAudit("Boot flow: arrival entered");
+  });
+}
+
+if (chairCommandButton) {
+  chairCommandButton.addEventListener("click", () => {
+    setScreen("system");
+    applyResonance("calm");
+    shiftMirrorPhase(0);
+    if (note) {
+      note.textContent = "Commander Chair engaged: Command mode.";
+    }
+    logAudit("Commander Chair: command mode");
+  });
+}
+
+if (chairWorldButton) {
+  chairWorldButton.addEventListener("click", () => {
+    setScreen("chat");
+    applyResonance("calm");
+    if (typeof setLobbyChannel === "function") {
+      setLobbyChannel("wellspring");
+    }
+    if (note) {
+      note.textContent = "Commander Chair engaged: World mode.";
+    }
+    logAudit("Commander Chair: world mode");
   });
 }
 
@@ -1172,7 +1754,7 @@ if (screenExitButton) {
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const target = button.dataset.screen ?? "home";
-    if (target === "system" || target === "nav") {
+    if (target === "system" || target === "nav" || target === "chat" || target === "home") {
       setScreen(target);
       return;
     }
@@ -1246,9 +1828,74 @@ if (navExitButton) {
   });
 }
 
+BraidBus.on(BRAID_EVENTS.SOPHIA_ROUTING_SYNC, handleSophiaRoutingSync);
+BraidBus.on(BRAID_EVENTS.ORBIT_PHASE_SHIFT, handleOrbitPhaseShift);
+
 setScreen("home");
+renderBootSky("witness");
+
+if (probeInput) {
+  probeInput.value = defaultProbePacket();
+}
+
+if (probeRunButton) {
+  probeRunButton.addEventListener("click", () => {
+    if (!probeInput) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(probeInput.value);
+      const result = evaluateMirrorProbe(parsed);
+      renderProbeEvaluation(result);
+      logAudit(`Mirror Therapy Probe run (${result.coherenceScore}%)`);
+    } catch (error) {
+      if (probeResultSummary) {
+        probeResultSummary.textContent = "Invalid JSON packet. Fix syntax and rerun probe.";
+      }
+      if (probeChecks) {
+        probeChecks.innerHTML = "<li>❌ JSON parse failed.</li>";
+      }
+      if (probeScoreBar) {
+        probeScoreBar.style.width = "0%";
+      }
+      if (probeScoreLabel) {
+        probeScoreLabel.textContent = "Coherence score: 0%";
+      }
+      if (probeOutput) {
+        probeOutput.textContent = "JSON parse failed. Sanitized packet unavailable.";
+      }
+    }
+  });
+}
+
+if (probeResetButton) {
+  probeResetButton.addEventListener("click", () => {
+    if (probeInput) {
+      probeInput.value = defaultProbePacket();
+    }
+    if (probeResultSummary) {
+      probeResultSummary.textContent = "Probe packet reset. Run to recompute signal checks.";
+    }
+    if (probeChecks) {
+      probeChecks.innerHTML = "<li>Run the packet to compute signal checks.</li>";
+    }
+    if (probeScoreBar) {
+      probeScoreBar.style.width = "0%";
+    }
+    if (probeScoreLabel) {
+      probeScoreLabel.textContent = "Coherence score: --";
+    }
+    if (probeOutput) {
+      probeOutput.textContent = "Sanitized packet preview will appear here.";
+    }
+  });
+}
 
 getChatNodes().forEach((node) => wireChatNode(node));
+channelPills.forEach((pill) => {
+  pill.addEventListener("click", () => setLobbyChannel(pill.dataset.channel ?? "admin"));
+});
+setLobbyChannel(activeLobbyChannel);
 
 if (chatRunButton) {
   chatRunButton.addEventListener("click", () => {
@@ -1278,7 +1925,14 @@ if (chatAddNodeButton && chatGrid) {
     `;
     chatGrid.appendChild(node);
     wireChatNode(node);
+    appendLobbyMessage("System", `Custom-${count} plugged into channel #${activeLobbyChannel}.`);
     logAudit(`Custom chat node added: Custom-${count}`);
+  });
+}
+
+if (chatBanHammerButton) {
+  chatBanHammerButton.addEventListener("click", () => {
+    runBanHammer();
   });
 }
 
