@@ -157,7 +157,8 @@ A playable small-scale 3D prototype is available at `demos/world-3d-blockout.htm
 Scope (intentionally small):
 - night-focus campfire section with rune ring + ember lighting,
 - animated fireflies + star field + moon orb atmosphere,
-- walkable pathing with huts and obelisk anchors kept lightweight.
+- walkable pathing with huts and obelisk anchors kept lightweight,
+- built-in day/night toggle for quick lighting iteration before full time system.
 
 Run locally:
 

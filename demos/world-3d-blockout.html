@@ -20,6 +20,7 @@
       <span class="pill">WASD / Arrow keys: move</span>
       <span class="pill">Mouse drag: look</span>
       <span class="pill">Focus section: B1 Campfire</span>
+      <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
   </header>
   <div id="scene"></div>
@@ -40,7 +41,31 @@ renderer.setSize(host.clientWidth, host.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 host.appendChild(renderer.domElement);
 
-scene.add(new THREE.AmbientLight(0x5870a8, 0.26));
+let timeMode = "night";
+const timeToggleButton = document.getElementById("time-toggle");
+
+function applyTimeMode(mode) {
+  timeMode = mode;
+  const isDay = mode === "day";
+  scene.background.set(isDay ? 0x87c6ff : 0x050913);
+  scene.fog.color.set(isDay ? 0x9fd0ff : 0x050913);
+  scene.fog.near = isDay ? 30 : 15;
+  scene.fog.far = isDay ? 130 : 80;
+  moon.color.set(isDay ? 0xfff5d6 : 0x7ca8ff);
+  moon.intensity = isDay ? 1.2 : 0.65;
+  ambient.intensity = isDay ? 0.55 : 0.26;
+  flame.color.set(isDay ? 0xff9a4a : 0xffa85c);
+  runeRing.material.color.set(isDay ? 0xffcf7a : 0xffb366);
+  moonOrb.visible = !isDay;
+  starField.visible = !isDay;
+  fireflies.forEach((f) => { f.visible = !isDay; });
+  if (timeToggleButton) {
+    timeToggleButton.textContent = `Mode: ${isDay ? "Day" : "Night"}`;
+  }
+}
+
+const ambient = new THREE.AmbientLight(0x5870a8, 0.26);
+scene.add(ambient);
 const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
 moon.position.set(14, 20, -6);
 scene.add(moon);
@@ -141,6 +166,10 @@ for (let i = 0; i < 36; i++) {
 }
 
 const keys = new Set();
+
+if (timeToggleButton) {
+  timeToggleButton.addEventListener("click", () => applyTimeMode(timeMode === "night" ? "day" : "night"));
+}
 window.addEventListener('keydown', e => keys.add(e.key.toLowerCase()));
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
@@ -167,10 +196,16 @@ function animate(t = 0) {
   if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, speed);
 
   const flicker = 1.9 + Math.sin(t * 0.012) * 0.45 + Math.sin(t * 0.039) * 0.25;
-  flame.intensity = flicker;
-  ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
-  runeRing.material.opacity = 0.36 + Math.sin(t * 0.006) * 0.12;
-  moonOrb.material.opacity = 0.6 + Math.sin(t * 0.002) * 0.15;
+  if (timeMode === "night") {
+    flame.intensity = flicker;
+    ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
+    runeRing.material.opacity = 0.36 + Math.sin(t * 0.006) * 0.12;
+    moonOrb.material.opacity = 0.6 + Math.sin(t * 0.002) * 0.15;
+  } else {
+    flame.intensity = 1.25 + Math.sin(t * 0.006) * 0.15;
+    ember.intensity = 0.45;
+    runeRing.material.opacity = 0.28 + Math.sin(t * 0.004) * 0.05;
+  }
 
   fireflies.forEach((f, i) => {
     const tt = t * 0.0011 + f.userData.seed + i * 0.13;
@@ -184,6 +219,7 @@ function animate(t = 0) {
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
+applyTimeMode("night");
 animate();
 
 window.addEventListener('resize', () => {
