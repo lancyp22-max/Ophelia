@@ -88,6 +88,7 @@ const navExitButton = document.getElementById("nav-exit");
 const navSyncSettingsButton = document.getElementById("nav-sync-settings");
 const navEnableSensorsButton = document.getElementById("nav-enable-sensors");
 const ghostToggle = document.getElementById("ghost-toggle");
+const globalTimeToggleButton = document.getElementById("time-toggle-global");
 const vesselToggle = document.getElementById("vessel-toggle");
 const vesselState = document.getElementById("vessel-state");
 const vesselPaceSelect = document.getElementById("vessel-pace");
@@ -211,6 +212,18 @@ function renderBootSky(resonance = "witness") {
     witness: "Status sky: quiet dawn · arrival lane open.",
   };
   bootStateSky.textContent = skyMap[resonance] ?? skyMap.witness;
+}
+
+
+function syncWorldTimeMode(mode) {
+  currentWorldTimeMode = mode;
+  if (globalTimeToggleButton) {
+    globalTimeToggleButton.textContent = mode === "day" ? "Day" : "Night";
+  }
+  const worldFrame = document.querySelector('#map-screen iframe');
+  if (worldFrame && worldFrame.contentWindow) {
+    worldFrame.contentWindow.postMessage({ type: 'lumaria-time-mode', mode }, '*');
+  }
 }
 
 function setScreen(screen) {
@@ -1694,6 +1707,13 @@ if (chairCommandButton) {
 }
 
 
+if (globalTimeToggleButton) {
+  globalTimeToggleButton.addEventListener("click", () => {
+    syncWorldTimeMode(currentWorldTimeMode === "night" ? "day" : "night");
+    logAudit(`World time mode set to ${currentWorldTimeMode}`);
+  });
+}
+
 if (mapOpenChatButton) {
   mapOpenChatButton.addEventListener("click", () => {
     setScreen("chat");
@@ -1728,6 +1748,7 @@ if (emergencyExitButton) {
       saveBridgeCheckpoint("emergency exit");
     }
     setScreen("home");
+syncWorldTimeMode("night");
     applyResonance("witness");
     if (mirrorSlider) {
       mirrorSlider.value = "0";

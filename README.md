@@ -158,7 +158,9 @@ Scope (intentionally small):
 - night-focus campfire section with rune ring + ember lighting,
 - animated fireflies + star field + moon orb atmosphere,
 - walkable pathing with huts and obelisk anchors kept lightweight,
-- built-in day/night toggle for quick lighting iteration before full time system.
+- built-in day/night toggle for quick lighting iteration before full time system,
+- touch drag camera look support for mobile,
+- lantern micro-light + waterfall glow pass for richer A1 depth cues.
 
 Run locally:
 
