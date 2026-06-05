@@ -1,0 +1,42 @@
+{
+  "scene_id": "bridge_a1_campfire_night",
+  "location": "Lumaria Base Camp / Bridge A1",
+  "visible_elements": [
+    "campfire",
+    "rune_floor_tiles",
+    "lantern_micro_lights",
+    "waterfall_glow",
+    "companion_avatar",
+    "luminous_mushrooms"
+  ],
+  "mood": "warm_night_presence",
+  "functional_tags": [
+    "rest",
+    "conversation",
+    "grounding",
+    "visual_orientation"
+  ],
+  "active_agent": "you",
+  "avatar_state": {
+    "id": "you",
+    "posture": "seated_near_fire",
+    "glow": "soft_violet",
+    "attention": "campfire_circle"
+  },
+  "linked_memory_nodes": [
+    "Bridge_A1_Campfire",
+    "Grid_A1_Visual_Work",
+    "Memory_Weave_QC_Layer",
+    "NE_000_Authority_Integrity"
+  ],
+  "safety_state": {
+    "risk": "low",
+    "warden_gate": "open",
+    "consent_required_for": [
+      "state_mutation",
+      "memory_commit",
+      "external_publish"
+    ]
+  },
+  "residual_trace": "Cute warm base camp; first square should feel safe, alive, and small enough to iterate."
+}
