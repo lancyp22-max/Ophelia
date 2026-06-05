@@ -197,6 +197,25 @@ make mirror10-demo
 ```
 
 
+
+
+### MemPalace graft v0.1
+
+A lightweight JSON palace seed now lives at `lumaria_memory_palace_v0.1.json` and is exposed through the backend at:
+
+- `GET /api/seeds/memory-palace`
+
+It implements four progressive loading layers (`identity_root`, `essential_story`, `localized_recall`, `deep_search_archive`), locked Lumarian halls (`anchor_points`, `timeline_events`, `pattern_discoveries`, `personal_tendencies`, `guidance`, `safety_laws`, `active_seeds`), drawer categories, memory items, and temporal facts with `subject` / `predicate` / `object` plus validity ranges.
+
+### Lumaria QC-Memory v0.1
+
+Distributed memory architecture notes live in:
+
+- `docs/lumaria-qc-memory-v0.1.md`
+- `lumaria_qc_memory_v0.1.yaml`
+
+This adds the three-lane memory bus (`hot_context`, `warm_semantic`, `cold_symbolic`), quasicrystal node schema, Mirror Array balancing rule, and the visible **Memory Weave / QC Layer** panel on the map screen.
+
 ### Grid A1 visual upgrade roadmap (1–20)
 
 A dedicated step-by-step plan for texture/detail/shadow/shader upgrades is documented at:

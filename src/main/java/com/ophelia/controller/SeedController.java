@@ -2,8 +2,10 @@ package com.ophelia.controller;
 
 import com.ophelia.model.AuthorityTxRequest;
 import com.ophelia.model.AuthorityTxResponse;
+import com.ophelia.model.MemoryPalaceSnapshot;
 import com.ophelia.model.SeedDto;
 import com.ophelia.service.AuthorityService;
+import com.ophelia.service.MemoryPalaceService;
 import com.ophelia.service.SeedService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +21,12 @@ import java.util.Map;
 public class SeedController {
     private final SeedService seedService;
     private final AuthorityService authorityService;
+    private final MemoryPalaceService memoryPalaceService;
 
-    public SeedController(SeedService seedService, AuthorityService authorityService) {
+    public SeedController(SeedService seedService, AuthorityService authorityService, MemoryPalaceService memoryPalaceService) {
         this.seedService = seedService;
         this.authorityService = authorityService;
+        this.memoryPalaceService = memoryPalaceService;
     }
 
     @GetMapping("/sample")
@@ -53,6 +57,11 @@ public class SeedController {
     @GetMapping("/integrity")
     public Map<String, Object> integrity() {
         return seedService.integrity();
+    }
+
+    @GetMapping("/memory-palace")
+    public MemoryPalaceSnapshot memoryPalace() {
+        return memoryPalaceService.snapshot();
     }
 
     @PostMapping("/authority/verify")
