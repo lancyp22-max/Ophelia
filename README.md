@@ -199,6 +199,37 @@ make mirror10-demo
 
 
 
+
+
+### Visual Semantic State v0.1
+
+Visual state schema notes live in:
+
+- `docs/visual-semantic-state.md`
+- `data/visual-state/sample-scene.json`
+- `data/visual-state/sample-avatar-state.json`
+
+This keeps the VGT-inspired idea at the interface/state layer: visuals carry semantic memory and UI state, but the project does not add VGT dependencies, image generation, model training, or external API calls.
+
+### Visual Intelligence Roadmap v0.1
+
+Stateful visual causality notes live in:
+
+- `docs/visual-intelligence-roadmap.md`
+- `data/visual-state/visual-elements.schema.json`
+- `data/visual-state/sample-bridge-camp-state.json`
+
+This ladder keeps A1 Bridge Camp moving from pretty camp → consistent camp → remembered camp → responsive camp → living camp, with stable element IDs, allowed transitions, causal links, and safety notes for each major visual object.
+
+### Reasoning Loop Controller v0.1
+
+Controlled review-depth notes live in:
+
+- `docs/reasoning-loop-controller.md`
+- `data/reasoning-loops/sample-review-loop.json`
+
+This adds schema-only support for bounded reasoning passes (`understand`, `critique`, `compare_memory`, `propose`, `verify`) with explicit stop conditions and Glass Warden overthinking guards. It does not connect to live agents or add ML dependencies.
+
 ### MemPalace graft v0.1
 
 A lightweight JSON palace seed now lives at `lumaria_memory_palace_v0.1.json` and is exposed through the backend at:

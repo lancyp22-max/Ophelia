@@ -76,6 +76,9 @@ const screenExitButton = document.getElementById("screen-exit");
 const navScreen = document.getElementById("nav-screen");
 const mapScreen = document.getElementById("map-screen");
 const mapOpenChatButton = document.getElementById("map-open-chat");
+const campStatusTime = document.getElementById("camp-status-time");
+const campStatusBraid = document.getElementById("camp-status-braid");
+const campStatusMemory = document.getElementById("camp-status-memory");
 const navEarthPanel = document.getElementById("nav-earth-panel");
 const navHarmonizedPanel = document.getElementById("nav-harmonized-panel");
 const navTabEarth = document.getElementById("nav-tab-earth");
@@ -215,14 +218,29 @@ function renderBootSky(resonance = "witness") {
 }
 
 
+const WORLD_TIME_MODES = ["morning", "day", "sunset", "night", "rain"];
+let currentWorldTimeMode = "night";
+
+function worldTimeLabel(mode) {
+  return mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
+function nextWorldTimeMode(mode) {
+  const index = WORLD_TIME_MODES.indexOf(mode);
+  return WORLD_TIME_MODES[(index + 1) % WORLD_TIME_MODES.length] ?? "night";
+}
+
 function syncWorldTimeMode(mode) {
-  currentWorldTimeMode = mode;
+  currentWorldTimeMode = WORLD_TIME_MODES.includes(mode) ? mode : "night";
   if (globalTimeToggleButton) {
-    globalTimeToggleButton.textContent = mode === "day" ? "Day" : "Night";
+    globalTimeToggleButton.textContent = worldTimeLabel(currentWorldTimeMode);
+  }
+  if (campStatusTime) {
+    campStatusTime.textContent = worldTimeLabel(currentWorldTimeMode);
   }
   const worldFrame = document.querySelector('#map-screen iframe');
   if (worldFrame && worldFrame.contentWindow) {
-    worldFrame.contentWindow.postMessage({ type: 'lumaria-time-mode', mode }, '*');
+    worldFrame.contentWindow.postMessage({ type: 'lumaria-time-mode', mode: currentWorldTimeMode }, '*');
   }
 }
 
@@ -1680,6 +1698,12 @@ if (enterMirrorsButton) {
     writeStorage(STORAGE_KEYS.mirrorIndex, "0");
     shiftMirrorPhase(0);
     note.textContent = "Lumarian Bridge A1 loaded in 3D · avatar: you.";
+    if (campStatusBraid) {
+      campStatusBraid.textContent = "Quiet";
+    }
+    if (campStatusMemory) {
+      campStatusMemory.textContent = "Linked";
+    }
     logAudit("Entered Lumaria world map from home");
   });
 }
@@ -1709,7 +1733,7 @@ if (chairCommandButton) {
 
 if (globalTimeToggleButton) {
   globalTimeToggleButton.addEventListener("click", () => {
-    syncWorldTimeMode(currentWorldTimeMode === "night" ? "day" : "night");
+    syncWorldTimeMode(nextWorldTimeMode(currentWorldTimeMode));
     logAudit(`World time mode set to ${currentWorldTimeMode}`);
   });
 }
@@ -1748,7 +1772,7 @@ if (emergencyExitButton) {
       saveBridgeCheckpoint("emergency exit");
     }
     setScreen("home");
-syncWorldTimeMode("night");
+syncWorldTimeMode(currentWorldTimeMode);
     applyResonance("witness");
     if (mirrorSlider) {
       mirrorSlider.value = "0";
