@@ -30,6 +30,7 @@
       <span class="pill">Reference 4: cozy detail pass</span>
       <span class="pill">Lighting pass: fire + lanterns</span>
       <span class="pill">Campfire agent: Auri detail pass</span>
+      <span class="pill">Auri pass: staff + nameplate</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -196,6 +197,30 @@ function makeSignTexture(title, subtitle) {
   return texture;
 }
 
+
+function makeAgentNameTexture(name, role) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 160;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(12, 10, 28, 0.72)";
+  ctx.fillRect(0, 0, 512, 160);
+  ctx.strokeStyle = "rgba(196, 181, 253, 0.9)";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(14, 14, 484, 132);
+  ctx.fillStyle = "#f7e5ff";
+  ctx.font = "bold 42px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(name, 256, 70);
+  ctx.fillStyle = "#ffd58a";
+  ctx.font = "bold 22px Inter, sans-serif";
+  ctx.fillText(role, 256, 108);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = "campfire_agent_nameplate";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 const textureSet = {
   ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 18, repeatY: 18, count: 150 }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 7, repeatY: 7, count: 120 }),
@@ -203,7 +228,8 @@ const textureSet = {
   wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 3, repeatY: 1, count: 110 }),
   cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 2, repeatY: 2, count: 90 }),
   soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 3, repeatY: 2, count: 120 }),
-  sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP")
+  sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
+  auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
 };
 
 
@@ -254,6 +280,12 @@ function applyTimeMode(mode) {
   });
   campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
   campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  if (avatarYou) {
+    avatarYou.agentLight.intensity = isDay ? 0.22 : isRain ? 0.58 : 0.72;
+    avatarYou.nameplate.material.opacity = isDay ? 0.58 : 0.78;
+    avatarYou.robeMat.emissiveIntensity = isDay ? 0.08 : 0.22;
+    avatarYou.hairMat.emissiveIntensity = isDay ? 0.06 : 0.14;
+  }
   pathMaterial.color.set(isRain ? 0x35415a : isDay ? 0x6f5a3b : 0x2f2540);
   groundMaterial.color.set(isRain ? 0x17283a : isDay ? 0x27452f : 0x0c1b30);
   mushrooms.forEach((cluster) => {
@@ -530,6 +562,27 @@ function makeAvatarYou() {
     eyes.push(eye);
     g.add(eye);
   });
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.012, 0.012), new THREE.MeshBasicMaterial({ color: 0x6b3b4f, transparent: true, opacity: 0.78 }));
+  mouth.position.set(0, 1.06, 0.365);
+  const cheeks = [];
+  [-0.2, 0.2].forEach((x) => {
+    const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), new THREE.MeshBasicMaterial({ color: 0xff9cc7, transparent: true, opacity: 0.36 }));
+    cheek.position.set(x, 1.1, 0.35);
+    cheek.scale.set(1.35, 0.72, 0.25);
+    cheeks.push(cheek);
+    g.add(cheek);
+  });
+  g.add(mouth);
+
+  const frontBangs = [];
+  [-0.18, 0, 0.18].forEach((x, i) => {
+    const bang = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.48 + i * 0.05, 9), hairMat);
+    bang.position.set(x, 1.18, 0.28);
+    bang.rotation.x = 0.58;
+    bang.rotation.z = -x * 1.6;
+    frontBangs.push(bang);
+    g.add(bang);
+  });
 
   const halo = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.018, 8, 56), trimMat);
   halo.rotation.x = Math.PI / 2;
@@ -549,6 +602,33 @@ function makeAvatarYou() {
   });
   const orbGlow = warmGlowBillboard("campfire_agent_hand_orb_glow", 2.7, 0.78, 1.55, 0.72, 0xc4b5fd, 0.22);
 
+  const staff = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 1.25, 8), new THREE.MeshStandardMaterial({ color: 0xc59148, roughness: 0.58, metalness: 0.12 }));
+  staff.position.set(0.52, 0.86, 0.18);
+  staff.rotation.z = -0.22;
+  const staffGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.12), new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.9 }));
+  staffGem.position.set(0.66, 1.5, 0.18);
+  const staffHalo = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.014, 8, 36), trimMat);
+  staffHalo.position.set(0.66, 1.5, 0.18);
+  staffHalo.rotation.x = Math.PI / 2;
+  const staffGlow = warmGlowBillboard("campfire_agent_staff_glow", 3.36, 1.5, 1.28, 0.82, 0xc084fc, 0.2);
+  g.add(staff, staffGem, staffHalo);
+
+  [-0.26, 0, 0.26].forEach((x, i) => {
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.55, 0.012), trimMat);
+    trim.position.set(x, 0.36, 0.48);
+    trim.rotation.z = x * -0.25;
+    trim.rotation.x = 0.18;
+    g.add(trim);
+  });
+
+  const nameplate = new THREE.Sprite(new THREE.SpriteMaterial({ map: textureSet.auriName, transparent: true, opacity: 0.78, depthWrite: false }));
+  nameplate.position.set(2.7, 2.35, 1.08);
+  nameplate.scale.set(1.35, 0.42, 1);
+  scene.add(nameplate);
+  const agentLight = new THREE.PointLight(0xc084fc, 0.62, 5.5, 2.2);
+  agentLight.position.set(0.05, 1.25, 0.38);
+  g.add(agentLight);
+
   const label = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.75, 48), new THREE.MeshBasicMaterial({ color: 0x9b7cff, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
   label.rotation.x = -Math.PI / 2;
   label.position.y = 0.04;
@@ -559,7 +639,7 @@ function makeAvatarYou() {
   markShadows(g);
   scene.add(g);
   softShadow("avatar_shadow_you", 2.7, 1.1, 0.95, 0.6, 0.34);
-  return { group: g, halo, body: robe, head, eyes, crownGem, crownGlow, heldOrb, orbGlow, hairStrands };
+  return { group: g, halo, body: robe, head, eyes, crownGem, crownGlow, heldOrb, orbGlow, hairStrands, frontBangs, cheeks, staffGem, staffHalo, staffGlow, nameplate, agentLight, robeMat, hairMat };
 }
 
 function makeMemoryGate() {
@@ -1101,7 +1181,14 @@ function animate(t = 0) {
   avatarYou.crownGlow.material.opacity = 0.2 + Math.sin(t * 0.004) * 0.08;
   avatarYou.heldOrb.material.opacity = 0.68 + Math.sin(t * 0.005) * 0.18;
   avatarYou.orbGlow.material.opacity = 0.16 + Math.sin(t * 0.006) * 0.08;
+  avatarYou.staffGem.rotation.y -= 0.016;
+  avatarYou.staffHalo.rotation.z += 0.014;
+  avatarYou.staffGlow.material.opacity = 0.14 + Math.sin(t * 0.005) * 0.08;
+  avatarYou.nameplate.position.y = 2.35 + Math.sin(t * 0.0018) * 0.035;
+  avatarYou.nameplate.material.opacity = (timeMode === "day" ? 0.48 : 0.72) + Math.sin(t * 0.003) * 0.07;
+  avatarYou.cheeks.forEach((cheek, idx) => { cheek.material.opacity = 0.26 + Math.sin(t * 0.003 + idx) * 0.08; });
   avatarYou.hairStrands.forEach((strand, idx) => { strand.rotation.z += Math.sin(t * 0.002 + idx) * 0.0008; });
+  avatarYou.frontBangs.forEach((bang, idx) => { bang.rotation.z += Math.sin(t * 0.0025 + idx) * 0.0007; });
   memoryGate.ring.rotation.z -= 0.006;
   gardenBed.children.forEach((child, i) => {
     if (i > 1) child.rotation.z = Math.sin(t * 0.0015 + i) * 0.08;

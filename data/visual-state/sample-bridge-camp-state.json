@@ -71,9 +71,9 @@
       "location": "Bridge_A1_Campfire",
       "visible_state": {
         "label": "Auri · Campfire Agent",
-        "glow": "violet eyes, held orb, crown gem",
+        "glow": "violet eyes, held orb, crown gem, staff gem",
         "posture": "seated_guardian_near_fire",
-        "silhouette": "long lavender hair, soft elf ears, gold crown arc"
+        "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate"
       },
       "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship"],
       "mood_tags": ["gentle", "unforced", "cozy_guardian"],
