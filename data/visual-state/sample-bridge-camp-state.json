@@ -84,6 +84,23 @@
       "residual_trace": "resident, not prompt source"
     },
     {
+      "id": "sky_light_layer_01",
+      "type": "time_of_day_sky_lighting",
+      "location": "Bridge_A1_Overhead",
+      "visible_state": {
+        "moon": "soft visible night orb with blue halo",
+        "sun": "morning/day/sunset orb with warm halo",
+        "clouds": "slow drifting low-poly puff banks",
+        "rays": "gentle sun shafts for day and sunset modes"
+      },
+      "functional_role": ["atmosphere", "time_orientation", "scene_depth"],
+      "mood_tags": ["soft", "storybook_sky", "cozy_not_harsh"],
+      "causal_links": ["time_of_day", "rain_state", "campfire_contrast"],
+      "allowed_transitions": ["morning", "day", "sunset", "night", "rain"],
+      "safety_notes": ["avoid_strobe", "keep_sky_light_readable_on_mobile"],
+      "residual_trace": "the sky changes the camp mood before asking the pilot to do anything"
+    },
+    {
       "id": "close_texture_ring_01",
       "type": "six_foot_biome_detail_radius",
       "location": "Bridge_A1_Campfire_User_Radius",

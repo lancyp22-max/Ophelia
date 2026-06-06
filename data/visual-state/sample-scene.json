@@ -7,14 +7,19 @@
     "lantern_micro_lights",
     "waterfall_glow",
     "companion_avatar",
-    "luminous_mushrooms"
+    "luminous_mushrooms",
+    "moon_halo",
+    "sun_halo",
+    "soft_cloud_banks",
+    "sky_rays"
   ],
   "mood": "warm_night_presence",
   "functional_tags": [
     "rest",
     "conversation",
     "grounding",
-    "visual_orientation"
+    "visual_orientation",
+    "sky_light_state"
   ],
   "active_agent": "you",
   "avatar_state": {

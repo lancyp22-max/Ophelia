@@ -33,6 +33,7 @@
       <span class="pill">Auri pass: staff + nameplate</span>
       <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
       <span class="pill">Material pass: visible model textures</span>
+      <span class="pill">Sky pass: moon + clouds</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -321,8 +322,24 @@ function applyTimeMode(mode) {
   renderer.toneMappingExposure = isRain ? 0.95 : isSunset ? 1.03 : isDay ? 1.12 : 1.08;
   flame.color.set(isRain ? 0xff8f42 : isDay ? 0xff9a4a : 0xffa85c);
   runeRing.material.color.set(isRain ? 0x9bdcff : isDay ? 0xffcf7a : 0xffb366);
-  moonOrb.visible = !isDay && !isRain;
+  const moonVisible = mode === "night";
+  moonOrb.visible = moonVisible;
+  moonHalo.visible = moonVisible;
+  sunOrb.visible = isDay || isSunset;
+  sunHalo.visible = isDay || isSunset;
   starField.visible = !isDay && !isSunset && !isRain;
+  starField.material.opacity = mode === "night" ? 0.92 : 0.42;
+  cloudBanks.forEach((cloud, idx) => {
+    cloud.visible = isDay || isSunset || isRain || idx < 2;
+    cloud.userData.mat.color.set(isRain ? 0x9fb4c7 : isSunset ? 0xffc1a3 : isDay ? 0xf4fbff : 0x617291);
+    cloud.userData.mat.opacity = isRain ? 0.42 : isSunset ? 0.34 : isDay ? 0.32 : 0.18;
+  });
+  skyRays.forEach((ray, idx) => {
+    ray.visible = isDay || isSunset || mode === "morning";
+    ray.material.color.set(isSunset ? 0xff9a6d : 0xffe7a6);
+    ray.userData.baseOpacity = (isSunset ? 0.18 : 0.11) - idx * 0.025;
+    ray.material.opacity = ray.userData.baseOpacity;
+  });
   rainVeil.visible = isRain;
   fireflies.forEach((f) => { f.visible = !isDay; });
   lanterns.forEach((l) => { l.userData.core.material.color.set(isDay ? 0xffe2a8 : 0xffc979); });
@@ -624,6 +641,37 @@ function makePetalScatter(id, x, z, rot = 0, color = 0xd9a7ff) {
   petal.userData.visualId = id;
   scene.add(petal);
   return petal;
+}
+
+function makeCloudBank(id, x, y, z, scale = 1, color = 0xd9ecff, opacity = 0.28) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
+  for (let i = 0; i < 6; i++) {
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(0.72 + (i % 3) * 0.18, 14, 10), mat);
+    puff.position.set((i - 2.5) * 0.64 * scale, Math.sin(i * 1.2) * 0.14 * scale, Math.cos(i * 0.8) * 0.18 * scale);
+    puff.scale.set(1.38 + (i % 2) * 0.28, 0.42, 0.68 + (i % 3) * 0.08);
+    g.add(puff);
+  }
+  g.position.set(x, y, z);
+  g.scale.setScalar(scale);
+  g.userData.visualId = id;
+  g.userData.mat = mat;
+  g.userData.base = new THREE.Vector3(x, y, z);
+  g.userData.drift = 0.18 + scale * 0.08;
+  scene.add(g);
+  return g;
+}
+
+function makeSkyRay(id, x, y, z, rotY, color = 0xffd58a) {
+  const ray = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.4, 15),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.12, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  ray.position.set(x, y, z);
+  ray.rotation.set(-0.45, rotY, 0.18);
+  ray.userData.visualId = id;
+  scene.add(ray);
+  return ray;
 }
 
 function makeAvatarYou() {
@@ -1129,6 +1177,26 @@ const moonOrb = new THREE.Mesh(
 );
 moonOrb.position.set(13, 10, -10);
 scene.add(moonOrb);
+const moonHalo = warmGlowBillboard("moon_halo", 13, 10, -10, 5.2, 0x9ec8ff, 0.24);
+
+const sunOrb = new THREE.Mesh(
+  new THREE.SphereGeometry(1.15, 24, 24),
+  new THREE.MeshBasicMaterial({ color: 0xffe7a6, transparent: true, opacity: 0.82 })
+);
+sunOrb.position.set(-12, 9.2, -9.5);
+scene.add(sunOrb);
+const sunHalo = warmGlowBillboard("sun_halo", -12, 9.2, -9.5, 6.8, 0xffc879, 0.28);
+
+const cloudBanks = [
+  makeCloudBank("cloud_bank_west", -12, 8.4, -14, 1.35, 0xd9ecff, 0.28),
+  makeCloudBank("cloud_bank_moon", 6.5, 9.6, -16, 1.1, 0xc6d8ff, 0.22),
+  makeCloudBank("cloud_bank_garden", 13.5, 7.5, -7, 0.95, 0xf3fbff, 0.24)
+];
+const skyRays = [
+  makeSkyRay("sun_ray_west", -6.8, 6.2, -8.5, -0.42, 0xffdf9a),
+  makeSkyRay("sun_ray_camp", -1.5, 5.5, -6.8, -0.18, 0xffd58a),
+  makeSkyRay("sun_ray_waterfall", 5.6, 5.4, -7.4, 0.22, 0xffe7a6)
+];
 
 const stars = new THREE.BufferGeometry();
 const starCount = 900;
@@ -1139,7 +1207,7 @@ for (let i = 0; i < starCount; i++) {
   starPos[i * 3 + 2] = (Math.random() - 0.5) * 220;
 }
 stars.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35 }));
+const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35, transparent: true, opacity: 0.92 }));
 scene.add(starField);
 
 const fireflies = [];
@@ -1228,6 +1296,7 @@ function animate(t = 0) {
     ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
     runeRing.material.opacity = 0.36 + Math.sin(t * 0.006) * 0.12;
     moonOrb.material.opacity = 0.6 + Math.sin(t * 0.002) * 0.15;
+    moonHalo.material.opacity = 0.2 + Math.sin(t * 0.0018) * 0.08;
   } else {
     flame.intensity = 1.25 + Math.sin(t * 0.006) * 0.15;
     ember.intensity = 0.45;
@@ -1239,6 +1308,18 @@ function animate(t = 0) {
   });
   fireBillboardGlow.material.opacity = (timeMode === "day" ? 0.12 : 0.25) + Math.sin(t * 0.009) * 0.045;
   fireBillboardGlow.scale.setScalar(3.25 + Math.sin(t * 0.007) * 0.28);
+  sunOrb.rotation.y += 0.003;
+  sunHalo.material.opacity = (timeMode === "sunset" ? 0.28 : timeMode === "day" || timeMode === "morning" ? 0.18 : 0) + Math.sin(t * 0.0016) * 0.035;
+  cloudBanks.forEach((cloud, idx) => {
+    const phase = t * 0.00016 + idx * 1.7;
+    cloud.position.x = cloud.userData.base.x + Math.sin(phase) * cloud.userData.drift;
+    cloud.position.z = cloud.userData.base.z + Math.cos(phase * 0.7) * cloud.userData.drift * 0.35;
+    cloud.rotation.y = Math.sin(phase) * 0.035;
+  });
+  skyRays.forEach((ray, idx) => {
+    ray.material.opacity = Math.max(0, (ray.userData.baseOpacity ?? 0.1) + Math.sin(t * 0.0012 + idx) * 0.035);
+    ray.rotation.z = 0.14 + Math.sin(t * 0.0009 + idx) * 0.035;
+  });
 
   lanterns.forEach((l, i) => {
     const pulse = 0.75 + Math.sin(t * 0.006 + i) * 0.2;
