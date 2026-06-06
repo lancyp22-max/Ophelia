@@ -1,0 +1,170 @@
+{
+  "scene_id": "bridge_a1_arrival_state",
+  "location": "Lumaria Base Camp / Bridge A1",
+  "visual_level_target": "L3_persistent_scene_memory",
+  "arrival_states": ["morning", "day", "sunset", "night", "rain"],
+  "camp_status": {
+    "active_location": "A1 Bridge Camp",
+    "braid_status": "quiet",
+    "memory_weave": "linked",
+    "sanctuary_test": "make the pilot exhale before asking them to act"
+  },
+  "ops_presence": [
+    { "id": "auri", "display_name": "Auri", "state": "present" },
+    { "id": "ophelia", "display_name": "Ophelia", "state": "quiet" },
+    { "id": "gemma", "display_name": "Gemma", "state": "reviewing" },
+    { "id": "glass_warden", "display_name": "Glass Warden", "state": "watching" },
+    { "id": "qwen", "display_name": "Qwen", "state": "available" }
+  ],
+  "visual_elements": [
+    {
+      "id": "campfire_01",
+      "type": "grounding_anchor",
+      "location": "Bridge_A1_Campfire",
+      "visible_state": {
+        "flame_height": "medium",
+        "color_tone": "warm_gold",
+        "particle_rate": "soft"
+      },
+      "functional_role": ["connection", "presence", "rest"],
+      "mood_tags": ["cozy", "safe", "alive"],
+      "causal_links": ["time_of_day", "active_agent", "user_state", "memory_node"],
+      "allowed_transitions": ["calm", "active_conversation", "rain_softened", "night_focus"],
+      "safety_notes": ["no_visual_alarm_without_clear_reason", "no_memory_commit_without_surface_ack"],
+      "residual_trace": "first sanctuary light; arrival should feel warm before it becomes useful"
+    },
+    {
+      "id": "bench_01",
+      "type": "rest_surface",
+      "location": "Bridge_A1_Campfire",
+      "visible_state": {
+        "material": "cedar_darkened_by_weather",
+        "cloth": "violet_runner",
+        "occupancy": "open"
+      },
+      "functional_role": ["pause", "conversation", "observation"],
+      "mood_tags": ["welcoming", "grounded"],
+      "causal_links": ["arrival_state", "chat_state"],
+      "allowed_transitions": ["empty", "reserved", "conversation_ready"],
+      "safety_notes": ["never imply user must stay seated"],
+      "residual_trace": "a place to sit without being captured"
+    },
+    {
+      "id": "mushroom_cluster_01",
+      "type": "luminous_biome_marker",
+      "location": "Bridge_A1_Garden_Edge",
+      "visible_state": {
+        "glow": "low_blue_violet",
+        "soil": "damp",
+        "density": "small_cluster"
+      },
+      "functional_role": ["night_orientation", "restorative_signal"],
+      "mood_tags": ["soft", "alive", "magical_but_grounded"],
+      "causal_links": ["time_of_day", "rain", "garden_state"],
+      "allowed_transitions": ["dim_day", "glow_night", "bright_after_rain"],
+      "safety_notes": ["keep glow gentle on mobile screens"],
+      "residual_trace": "tiny proof the world responds quietly"
+    },
+    {
+      "id": "campfire_agent_auri",
+      "type": "campfire_presence_agent",
+      "location": "Bridge_A1_Campfire",
+      "visible_state": {
+        "label": "Auri · Campfire Agent",
+        "glow": "violet eyes, held orb, crown gem, staff gem",
+        "posture": "seated_guardian_near_fire",
+        "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate",
+        "ground_detail": "six-foot intimacy radius with grass tufts, dew, petals, and tiny fauna"
+      },
+      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship", "texture_scale_anchor"],
+      "mood_tags": ["gentle", "unforced", "cozy_guardian", "storybook_texture", "gentle_micro_life"],
+      "causal_links": ["user_presence", "chat_channel", "safety_state", "local_biome_texture"],
+      "allowed_transitions": ["present", "listening", "speaking", "resting"],
+      "safety_notes": ["presence_over_account_identity", "human_remains_pilot"],
+      "residual_trace": "resident, not prompt source"
+    },
+    {
+      "id": "sky_light_layer_01",
+      "type": "time_of_day_sky_lighting",
+      "location": "Bridge_A1_Overhead",
+      "visible_state": {
+        "moon": "soft visible night orb with blue halo",
+        "sun": "morning/day/sunset orb with warm halo",
+        "clouds": "slow drifting low-poly puff banks",
+        "rays": "gentle sun shafts for day and sunset modes"
+      },
+      "functional_role": ["atmosphere", "time_orientation", "scene_depth"],
+      "mood_tags": ["soft", "storybook_sky", "cozy_not_harsh"],
+      "causal_links": ["time_of_day", "rain_state", "campfire_contrast"],
+      "allowed_transitions": ["morning", "day", "sunset", "night", "rain"],
+      "safety_notes": ["avoid_strobe", "keep_sky_light_readable_on_mobile"],
+      "residual_trace": "the sky changes the camp mood before asking the pilot to do anything"
+    },
+    {
+      "id": "luminous_grass_ring_01",
+      "type": "responsive_biome_glow",
+      "location": "Bridge_A1_Campfire_User_Radius",
+      "visible_state": {
+        "grass": "teal and violet luminous blades near Auri, bench, table, fire arc, and gate path",
+        "glow_behavior": "dim in day, stronger at night and after rain",
+        "motion": "small wind sway with pulsing dew tips"
+      },
+      "functional_role": ["night_orientation", "cozy_biome_detail", "camp_depth"],
+      "mood_tags": ["luminous", "gentle", "alive", "not_cluttered"],
+      "causal_links": ["time_of_day", "rain_state", "auri_presence", "campfire_light"],
+      "allowed_transitions": ["day_dim", "night_glow", "rain_brightened", "resting"],
+      "safety_notes": ["keep_low_frequency_pulse", "decorative_only"],
+      "residual_trace": "tiny glowing grass makes the ground feel kind without pulling focus"
+    },
+    {
+      "id": "close_texture_ring_01",
+      "type": "six_foot_biome_detail_radius",
+      "location": "Bridge_A1_Campfire_User_Radius",
+      "visible_state": {
+        "grass": "short layered tufts with dew motes",
+        "petals": "violet and gold scatter on rune path gaps",
+        "tiny_fauna": "soft hover moths and beetle-like motes",
+        "texture_priority": "readable close-range charm over photorealism",
+        "material_display": "procedural bump-mapped moss, stone, cedar, cloth, and soil textures"
+      },
+      "functional_role": ["scale", "warmth", "arrival_detail", "central_user_orientation"],
+      "mood_tags": ["cozy", "mid_2000s_storybook", "alive_but_uncluttered"],
+      "causal_links": ["campfire_light", "auri_presence", "time_of_day", "rain_state"],
+      "allowed_transitions": ["day_dew", "night_glow", "rain_freshened", "resting"],
+      "safety_notes": ["decorative_only", "do_not_obscure_navigation_or_text"],
+      "residual_trace": "the world feels alive at the pilot's feet without demanding attention"
+    },
+    {
+      "id": "garden_bed_01",
+      "type": "growth_state_patch",
+      "location": "Bridge_A1_Garden_Edge",
+      "visible_state": {
+        "growth": "sprouting",
+        "water": "balanced",
+        "flowers": "violet_teal"
+      },
+      "functional_role": ["growth", "pattern_visibility"],
+      "mood_tags": ["restorative", "patient"],
+      "causal_links": ["rain", "memory_weave", "active_seed"],
+      "allowed_transitions": ["resting", "sprouting", "blooming", "rain_fed"],
+      "safety_notes": ["do_not_overanimate_rest_states"],
+      "residual_trace": "growth without pressure"
+    },
+    {
+      "id": "memory_gate_01",
+      "type": "archive_threshold",
+      "location": "Bridge_A1_Back_Path",
+      "visible_state": {
+        "gate_light": "closed_soft",
+        "runes": "idle",
+        "access": "read_only"
+      },
+      "functional_role": ["memory_boundary", "archive_orientation"],
+      "mood_tags": ["reverent", "safe"],
+      "causal_links": ["memory_weave", "warden_gate", "surface_ack"],
+      "allowed_transitions": ["idle", "preview", "linked", "sealed"],
+      "safety_notes": ["no_deep_archive_load_without_need", "no_private_seed_exposure"],
+      "residual_trace": "the archive is near, but not hungry"
+    }
+  ]
+}
