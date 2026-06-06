@@ -1,0 +1,104 @@
+version: "0.1"
+name: "Protected Change Protocol"
+intent: "Make meaningful change slow enough to be true, but possible enough to stay alive."
+
+scope:
+  protected_material:
+    - core_governance
+    - canonical_identity_maps
+    - safety_rails
+    - foundational_mirror_routes
+
+tiers:
+  view_access:
+    requires_gates: [1, 2, 3, 4]
+  write_change_access:
+    requires_gates: [1, 2, 3, 4, 5, 6]
+    explicit_human_approval_required: true
+
+gates:
+  - id: 1
+    key: threshold_sign
+    title: "Threshold Sign Required"
+    rule: "A valid threshold marker must be present before protected access can begin."
+    notes:
+      - "Marker identifies process entry only."
+      - "Marker alone never grants access."
+
+  - id: 2
+    key: live_spatial_context
+    title: "Live Spatial Context Required"
+    rule: "Attempt must occur in a valid present context with meaningful variance from prior attempts."
+    checks:
+      - location_changed_meaningfully
+      - facing_direction_defined
+      - surface_relation_defined
+      - exact_replay_rejected
+    tolerances:
+      minor_environmental_variance_allowed: true
+
+  - id: 3
+    key: unique_conversation
+    title: "Unique Conversation Required"
+    rule: "A live in-presence conversation must generate sufficient unique raw text."
+    rejects:
+      - copied_text
+      - templated_text
+      - replayed_dialog
+    minimums:
+      unique_token_count: 160
+      turn_count: 6
+      stability_score_min: 0.70
+      unresolved_contradiction_flags_max: 1
+
+  - id: 4
+    key: alignment_review
+    title: "Alignment Review Required"
+    rule: "Guide layer confirms coherent intent, alignment, clarity, and no critical unresolved contradiction."
+    reviewers:
+      primary_internal:
+        - auri_lane
+        - gemma_lane
+    critical_blockers:
+      - unresolved_contradiction_critical
+      - coercive_intent_detected
+      - consent_ambiguity_high
+
+  - id: 5
+    key: external_audit
+    title: "External Audit Required"
+    rule: "At least one approved external audit source must challenge the proposal for weaknesses."
+    allowed_sources:
+      - approved_external_reviewer
+      - approved_secondary_model_lane
+      - designated_human_reviewer
+    audit_focus:
+      - coherence_gaps
+      - contradiction_risk
+      - safety_regression
+      - blind_spot_detection
+
+  - id: 6
+    key: delayed_commitment
+    title: "Delayed Commitment / Reversion Window"
+    rule: "Accepted change enters provisional state first; auto-revert if not stabilized."
+    provisional_window_days: 7
+    revert_if_missing:
+      - refinement_event
+      - confirmation_event
+      - stabilization_event
+    exceptions:
+      require_explicit_exception_record: true
+
+enforcement:
+  mode: "consent-first"
+  default_decision: "deny_on_missing_gate"
+  logs_required: true
+  audit_record_fields:
+    - request_id
+    - gate_results
+    - reviewer_set
+    - decision
+    - provisional_expiry_utc
+    - revert_status
+
