@@ -28,6 +28,7 @@
       <span class="pill">Pinch: zoom</span>
       <span class="pill">Wave 10: depth + texture pass</span>
       <span class="pill">Reference 4: cozy detail pass</span>
+      <span class="pill">Lighting pass: fire + lanterns</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -85,6 +86,31 @@ function softShadow(name, x, z, sx, sz, opacity = 0.28) {
   mesh.scale.set(sx, sz, 1);
   scene.add(mesh);
   return mesh;
+}
+
+
+function warmLightPool(name, x, z, sx, sz, color = 0xff9d4d, opacity = 0.22) {
+  const mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 64),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  mesh.name = name;
+  mesh.position.set(x, 0.058, z);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.scale.set(sx, sz, 1);
+  scene.add(mesh);
+  return mesh;
+}
+
+function warmGlowBillboard(name, x, y, z, size, color = 0xffc879, opacity = 0.32) {
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  sprite.name = name;
+  sprite.position.set(x, y, z);
+  sprite.scale.set(size, size, 1);
+  scene.add(sprite);
+  return sprite;
 }
 
 function colorToHex(color) {
@@ -219,6 +245,14 @@ function applyTimeMode(mode) {
   canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
   campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
   moonVine.userData.orb.visible = !isDay;
+  fireLightPools.forEach((pool, idx) => { pool.material.opacity = (isDay ? 0.07 : isRain ? 0.18 : 0.24) - idx * 0.04; });
+  lanterns.forEach((l) => {
+    l.userData.light.intensity = isDay ? 0.22 : isRain ? 0.85 : 1.05;
+    l.userData.pool.material.opacity = isDay ? 0.08 : isRain ? 0.18 : 0.24;
+    l.userData.glow.material.opacity = isDay ? 0.18 : 0.38;
+  });
+  campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
+  campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
   pathMaterial.color.set(isRain ? 0x35415a : isDay ? 0x6f5a3b : 0x2f2540);
   groundMaterial.color.set(isRain ? 0x17283a : isDay ? 0x27452f : 0x0c1b30);
   mushrooms.forEach((cluster) => {
@@ -564,11 +598,16 @@ function makeCampSign(id, x, z, rot = 0) {
   });
   const topLantern = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.34, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.84 }));
   topLantern.position.set(0, 3.02, 0.04);
-  g.add(board, face, topLantern);
+  const signLight = new THREE.PointLight(0xffb66a, 0.7, 7, 2.2);
+  signLight.position.set(0, 2.75, 0.65);
+  const signGlow = warmGlowBillboard(`${id}_glow`, x, 2.8, z + 0.45, 2.25, 0xffc879, 0.34);
+  g.add(board, face, topLantern, signLight);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
   g.userData.lantern = topLantern;
+  g.userData.light = signLight;
+  g.userData.glow = signGlow;
   markShadows(g);
   scene.add(g);
   softShadow(`${id}_shadow`, x, z, 1.8, 0.7, 0.2);
@@ -698,6 +737,12 @@ const fireGlowDisc = new THREE.Mesh(
 fireGlowDisc.rotation.x = -Math.PI / 2;
 fireGlowDisc.position.y = 0.06;
 scene.add(fireGlowDisc);
+const fireLightPools = [
+  warmLightPool("fire_warm_pool_inner", 0, 0, 3.8, 2.35, 0xff8a36, 0.26),
+  warmLightPool("fire_warm_pool_outer", 0, 0, 7.2, 4.4, 0xff5f24, 0.16),
+  warmLightPool("fire_rune_pool_gold", 0, 0, 5.35, 3.2, 0xffcf75, 0.12)
+];
+const fireBillboardGlow = warmGlowBillboard("fire_billboard_glow", 0, 1.25, 0, 3.4, 0xff8f42, 0.24);
 
 const flameMeshes = [];
 [
@@ -747,16 +792,26 @@ softShadow("obelisk_shadow", 11, 2, 1.3, 0.8, 0.28);
 
 const lanterns = [];
 [
-  { x:-6.2, y:1.1, z:2.8 },
-  { x:5.6, y:1.15, z:3.1 },
-  { x:2.8, y:0.95, z:-4.3 }
-].forEach((pos) => {
+  { x:-6.2, y:1.1, z:2.8, pool:[1.45,0.85] },
+  { x:5.6, y:1.15, z:3.1, pool:[1.45,0.9] },
+  { x:2.8, y:0.95, z:-4.3, pool:[1.25,0.75] }
+].forEach((pos, index) => {
   const g = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.34, 0.22), new THREE.MeshStandardMaterial({ color:0x3d2f20, map: textureSet.wood, roughness:0.8 }));
   const core = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), new THREE.MeshBasicMaterial({ color:0xffc979 }));
-  g.add(body, core);
+  const cage = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.012, 6, 18), new THREE.MeshBasicMaterial({ color:0xffd18a, transparent:true, opacity:0.42 }));
+  cage.rotation.x = Math.PI / 2;
+  const light = new THREE.PointLight(0xffb35f, 1.05, 7.5, 2.1);
+  light.position.set(0, 0.12, 0);
+  const glow = warmGlowBillboard(`lantern_glow_${index}`, pos.x, pos.y + 0.04, pos.z, 1.25, 0xffc879, 0.38);
+  const pool = warmLightPool(`lantern_pool_${index}`, pos.x, pos.z, pos.pool[0], pos.pool[1], 0xffb35f, 0.24);
+  g.add(body, core, cage, light);
   g.position.set(pos.x, pos.y, pos.z);
   g.userData.core = core;
+  g.userData.cage = cage;
+  g.userData.light = light;
+  g.userData.glow = glow;
+  g.userData.pool = pool;
   markShadows(g);
   lanterns.push(g);
   scene.add(g);
@@ -890,10 +945,21 @@ function animate(t = 0) {
     ember.intensity = 0.45;
     runeRing.material.opacity = 0.28 + Math.sin(t * 0.004) * 0.05;
   }
+  fireLightPools.forEach((pool, idx) => {
+    const base = timeMode === "day" ? 0.07 : idx === 0 ? 0.25 : idx === 1 ? 0.15 : 0.11;
+    pool.material.opacity = base + Math.sin(t * 0.006 + idx) * 0.025;
+  });
+  fireBillboardGlow.material.opacity = (timeMode === "day" ? 0.12 : 0.25) + Math.sin(t * 0.009) * 0.045;
+  fireBillboardGlow.scale.setScalar(3.25 + Math.sin(t * 0.007) * 0.28);
 
   lanterns.forEach((l, i) => {
     const pulse = 0.75 + Math.sin(t * 0.006 + i) * 0.2;
+    const lightPulse = 0.92 + Math.sin(t * 0.011 + i * 1.7) * 0.18;
     l.userData.core.scale.setScalar(pulse);
+    l.userData.cage.rotation.z += 0.006;
+    l.userData.light.intensity = (timeMode === "day" ? 0.2 : 0.95) * lightPulse;
+    l.userData.glow.material.opacity = (timeMode === "day" ? 0.16 : 0.36) * lightPulse;
+    l.userData.pool.material.opacity = (timeMode === "day" ? 0.07 : 0.22) * lightPulse;
   });
   waterfallGlow.material.opacity += Math.sin(t * 0.0018) * 0.002;
   brook.material.opacity = Math.max(0.12, Math.min(0.36, brook.material.opacity + Math.sin(t * 0.0022) * 0.0015));
@@ -910,7 +976,10 @@ function animate(t = 0) {
     node.userData.halo.material.opacity = 0.28 + Math.sin(t * 0.004 + idx) * 0.16;
   });
 
+  const signPulse = 0.88 + Math.sin(t * 0.005) * 0.12;
   campSign.userData.lantern.scale.setScalar(0.9 + Math.sin(t * 0.006) * 0.08);
+  campSign.userData.light.intensity = (timeMode === "day" ? 0.16 : 0.72) * signPulse;
+  campSign.userData.glow.material.opacity = (timeMode === "day" ? 0.14 : 0.33) * signPulse;
   teaTable.userData.glow.material.opacity = 0.16 + Math.sin(t * 0.005) * 0.06;
   moonVine.userData.orb.material.opacity = 0.62 + Math.sin(t * 0.003) * 0.18;
   moonVine.userData.leaves.forEach((leaf) => {
