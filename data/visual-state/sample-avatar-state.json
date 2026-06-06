@@ -1,0 +1,21 @@
+{
+  "avatar_id": "you",
+  "display_name": "you",
+  "location": "Bridge_A1_Campfire",
+  "pose": "seated_near_fire",
+  "expression": "calm_focus",
+  "glow": "soft_violet",
+  "active_channel": "wellspring",
+  "speaking_state": "listening",
+  "linked_memory_nodes": [
+    "Personal_Tendencies",
+    "Bridge_A1_Campfire",
+    "Wellspring_Chat"
+  ],
+  "safety_state": {
+    "authority": "human_pilot",
+    "can_commit_state": false,
+    "requires_surface_ack": true
+  },
+  "residual_trace": "Present without pressure; companionship before command."
+}
