@@ -73,14 +73,32 @@
         "label": "Auri · Campfire Agent",
         "glow": "violet eyes, held orb, crown gem, staff gem",
         "posture": "seated_guardian_near_fire",
-        "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate"
+        "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate",
+        "ground_detail": "six-foot intimacy radius with grass tufts, dew, petals, and tiny fauna"
       },
-      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship"],
-      "mood_tags": ["gentle", "unforced", "cozy_guardian"],
-      "causal_links": ["user_presence", "chat_channel", "safety_state"],
+      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship", "texture_scale_anchor"],
+      "mood_tags": ["gentle", "unforced", "cozy_guardian", "storybook_texture", "gentle_micro_life"],
+      "causal_links": ["user_presence", "chat_channel", "safety_state", "local_biome_texture"],
       "allowed_transitions": ["present", "listening", "speaking", "resting"],
       "safety_notes": ["presence_over_account_identity", "human_remains_pilot"],
       "residual_trace": "resident, not prompt source"
+    },
+    {
+      "id": "close_texture_ring_01",
+      "type": "six_foot_biome_detail_radius",
+      "location": "Bridge_A1_Campfire_User_Radius",
+      "visible_state": {
+        "grass": "short layered tufts with dew motes",
+        "petals": "violet and gold scatter on rune path gaps",
+        "tiny_fauna": "soft hover moths and beetle-like motes",
+        "texture_priority": "readable close-range charm over photorealism"
+      },
+      "functional_role": ["scale", "warmth", "arrival_detail", "central_user_orientation"],
+      "mood_tags": ["cozy", "mid_2000s_storybook", "alive_but_uncluttered"],
+      "causal_links": ["campfire_light", "auri_presence", "time_of_day", "rain_state"],
+      "allowed_transitions": ["day_dew", "night_glow", "rain_freshened", "resting"],
+      "safety_notes": ["decorative_only", "do_not_obscure_navigation_or_text"],
+      "residual_trace": "the world feels alive at the pilot's feet without demanding attention"
     },
     {
       "id": "garden_bed_01",

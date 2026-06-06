@@ -31,6 +31,7 @@
       <span class="pill">Lighting pass: fire + lanterns</span>
       <span class="pill">Campfire agent: Auri detail pass</span>
       <span class="pill">Auri pass: staff + nameplate</span>
+      <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -508,6 +509,65 @@ function makeGardenBed(id, x, z) {
   return g;
 }
 
+function makeGrassTuft(id, x, z, scale = 1, color = 0x5fbf7a) {
+  const g = new THREE.Group();
+  const bladeMat = new THREE.MeshStandardMaterial({ color, emissive: 0x143b24, emissiveIntensity: 0.04, roughness: 0.95, side: THREE.DoubleSide });
+  const dewMat = new THREE.MeshBasicMaterial({ color: 0xa7f3ff, transparent: true, opacity: 0.42 });
+  for (let i = 0; i < 7; i++) {
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.018 * scale, (0.22 + (i % 3) * 0.05) * scale, 5), bladeMat);
+    const angle = (i / 7) * Math.PI * 2;
+    blade.position.set(Math.cos(angle) * 0.075 * scale, 0.1 * scale, Math.sin(angle) * 0.075 * scale);
+    blade.rotation.z = Math.sin(angle) * 0.34;
+    blade.rotation.x = Math.cos(angle) * 0.22;
+    blade.userData.phase = i * 0.7 + x * 0.2;
+    g.add(blade);
+  }
+  const dew = new THREE.Mesh(new THREE.SphereGeometry(0.025 * scale, 8, 6), dewMat);
+  dew.position.set(0.04 * scale, 0.24 * scale, -0.02 * scale);
+  g.add(dew);
+  g.position.set(x, 0.08, z);
+  g.userData.visualId = id;
+  g.userData.dew = dew;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
+}
+
+function makeTinyFauna(id, x, z, color = 0x8ddcff) {
+  const g = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.16, roughness: 0.64 });
+  const wingMat = new THREE.MeshBasicMaterial({ color: 0xf7d8ff, transparent: true, opacity: 0.44, side: THREE.DoubleSide });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), bodyMat);
+  const leftWing = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.07), wingMat);
+  const rightWing = leftWing.clone();
+  leftWing.position.set(-0.06, 0.025, 0);
+  rightWing.position.set(0.06, 0.025, 0);
+  leftWing.rotation.z = 0.32;
+  rightWing.rotation.z = -0.32;
+  g.add(body, leftWing, rightWing);
+  g.position.set(x, 0.36, z);
+  g.userData.visualId = id;
+  g.userData.body = body;
+  g.userData.wings = [leftWing, rightWing];
+  g.userData.base = new THREE.Vector3(x, 0.36, z);
+  g.userData.phase = x * 0.73 + z * 0.41;
+  scene.add(g);
+  return g;
+}
+
+function makePetalScatter(id, x, z, rot = 0, color = 0xd9a7ff) {
+  const petal = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.16, 0.055),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.58, side: THREE.DoubleSide })
+  );
+  petal.position.set(x, 0.096, z);
+  petal.rotation.x = -Math.PI / 2;
+  petal.rotation.z = rot;
+  petal.userData.visualId = id;
+  scene.add(petal);
+  return petal;
+}
+
 function makeAvatarYou() {
   const g = new THREE.Group();
   const robeMat = new THREE.MeshStandardMaterial({ color: 0xb8a3db, emissive: 0x3b246a, emissiveIntensity: 0.2, roughness: 0.7, metalness: 0.02 });
@@ -870,6 +930,29 @@ const floorCushions = [
   makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
 ];
 
+const closeGrasses = [
+  makeGrassTuft("grass_fire_west", -1.9, 1.2, 1.2, 0x68c17e),
+  makeGrassTuft("grass_fire_south", 0.9, 2.2, 0.9, 0x5fbf7a),
+  makeGrassTuft("grass_auri_left", 2.08, 1.78, 0.95, 0x78d29a),
+  makeGrassTuft("grass_auri_right", 3.28, 1.36, 1.05, 0x4fa86f),
+  makeGrassTuft("grass_table_edge", 3.82, 2.78, 0.8, 0x6bd08a),
+  makeGrassTuft("grass_bench_edge", -2.72, 1.85, 1.0, 0x5fbf7a),
+  makeGrassTuft("grass_rune_gap", -0.42, 2.74, 0.7, 0x86d6a1),
+  makeGrassTuft("grass_cushion_edge", 1.55, 3.32, 0.8, 0x5aa86c)
+];
+const tinyFauna = [
+  makeTinyFauna("fauna_firefly_moth_auri", 2.25, 1.35, 0xc4b5fd),
+  makeTinyFauna("fauna_teal_beetle_path", -1.25, 2.25, 0x7dd3fc),
+  makeTinyFauna("fauna_gold_mote_table", 4.05, 2.54, 0xffd58a)
+];
+const fallenPetals = [
+  makePetalScatter("petal_auri_01", 2.48, 1.82, 0.55, 0xd9a7ff),
+  makePetalScatter("petal_auri_02", 3.18, 1.92, -0.3, 0xffb3d1),
+  makePetalScatter("petal_fire_01", -0.58, 2.28, 1.2, 0xffd58a),
+  makePetalScatter("petal_fire_02", 0.72, 2.78, -0.92, 0xc4b5fd),
+  makePetalScatter("petal_bench_01", -2.1, 2.12, 0.18, 0xd9a7ff)
+];
+
 const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95 }));
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
@@ -1137,6 +1220,30 @@ function animate(t = 0) {
   floorTiles.forEach((tile, idx) => {
     const shade = 0.9 + Math.sin(t * 0.0012 + idx * 0.2) * 0.08;
     tile.material.color.setRGB(0.40 * shade, 0.35 * shade, 0.31 * shade);
+  });
+
+  closeGrasses.forEach((tuft, idx) => {
+    tuft.children.forEach((blade, bladeIdx) => {
+      if (blade.userData.phase === undefined) return;
+      blade.rotation.z += Math.sin(t * 0.0022 + blade.userData.phase + idx) * 0.0009;
+      blade.rotation.x += Math.cos(t * 0.0018 + bladeIdx) * 0.0005;
+    });
+    tuft.userData.dew.material.opacity = 0.28 + Math.sin(t * 0.003 + idx) * 0.16;
+  });
+
+  tinyFauna.forEach((bug, idx) => {
+    const phase = t * 0.002 + bug.userData.phase;
+    bug.position.set(
+      bug.userData.base.x + Math.sin(phase) * 0.09,
+      bug.userData.base.y + Math.sin(phase * 1.7) * 0.07,
+      bug.userData.base.z + Math.cos(phase * 0.8) * 0.07
+    );
+    bug.userData.body.material.emissiveIntensity = 0.12 + Math.sin(t * 0.006 + idx) * 0.08;
+    bug.userData.wings.forEach((wing, wingIdx) => { wing.rotation.y = Math.sin(t * 0.018 + wingIdx) * 0.62; });
+  });
+
+  fallenPetals.forEach((petal, idx) => {
+    petal.material.opacity = 0.42 + Math.sin(t * 0.0015 + idx) * 0.08;
   });
 
   runeStones.forEach((stone) => {

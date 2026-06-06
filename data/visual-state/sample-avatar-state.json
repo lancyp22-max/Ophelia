@@ -8,9 +8,9 @@
   "active_channel": "wellspring",
   "speaking_state": "listening",
   "visual_details": {
-    "silhouette": ["small chibi guardian", "long lavender hair", "soft elf ears", "gold crown arc", "floating nameplate"],
-    "materials": ["cream-violet robe", "gold trim", "purple gem crown", "glowing hand orb", "small staff gem"],
-    "animation": ["eye pulse", "orb shimmer", "crown glow", "staff halo spin", "gentle hair sway"]
+    "silhouette": ["small chibi guardian", "long lavender hair", "soft elf ears", "gold crown arc", "floating nameplate", "close-range grass and petal ring"],
+    "materials": ["cream-violet robe", "gold trim", "purple gem crown", "glowing hand orb", "small staff gem", "dew-lit moss and soft petals"],
+    "animation": ["eye pulse", "orb shimmer", "crown glow", "staff halo spin", "gentle hair sway", "nearby grass sway", "tiny fauna hover"]
   },
   "linked_memory_nodes": [
     "Personal_Tendencies",
