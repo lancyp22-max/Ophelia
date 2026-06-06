@@ -27,6 +27,7 @@
       <span class="pill">Mouse drag / touch drag: look</span>
       <span class="pill">Pinch: zoom</span>
       <span class="pill">Wave 10: depth + texture pass</span>
+      <span class="pill">Reference 4: cozy detail pass</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -133,13 +134,49 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
   return texture;
 }
 
+function makeSignTexture(title, subtitle) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 512, 256);
+  gradient.addColorStop(0, "#10243d");
+  gradient.addColorStop(1, "#1b1230");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 512, 256);
+  ctx.strokeStyle = "#d6a45d";
+  ctx.lineWidth = 12;
+  ctx.strokeRect(18, 18, 476, 220);
+  ctx.strokeStyle = "#6de7ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(256, 74, 38, 0, Math.PI * 2);
+  ctx.moveTo(256, 32);
+  ctx.lineTo(256, 116);
+  ctx.moveTo(214, 74);
+  ctx.lineTo(298, 74);
+  ctx.stroke();
+  ctx.fillStyle = "#ffe38a";
+  ctx.font = "bold 44px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.fillText(title, 256, 157);
+  ctx.fillStyle = "#f8d9a0";
+  ctx.font = "bold 22px Georgia, serif";
+  ctx.fillText(subtitle, 256, 193);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = "lumaria_bridge_sign";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 const textureSet = {
   ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 18, repeatY: 18, count: 150 }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 7, repeatY: 7, count: 120 }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 2, repeatY: 2, count: 80 }),
   wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 3, repeatY: 1, count: 110 }),
   cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 2, repeatY: 2, count: 90 }),
-  soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 3, repeatY: 2, count: 120 })
+  soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 3, repeatY: 2, count: 120 }),
+  sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP")
 };
 
 
@@ -180,6 +217,8 @@ function applyTimeMode(mode) {
   waterfallGlow.material.opacity = isRain ? 0.32 : isDay ? 0.24 : 0.16;
   brook.material.opacity = isRain ? 0.34 : isDay ? 0.22 : 0.16;
   canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
+  campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
+  moonVine.userData.orb.visible = !isDay;
   pathMaterial.color.set(isRain ? 0x35415a : isDay ? 0x6f5a3b : 0x2f2540);
   groundMaterial.color.set(isRain ? 0x17283a : isDay ? 0x27452f : 0x0c1b30);
   mushrooms.forEach((cluster) => {
@@ -507,6 +546,108 @@ function makeRuneShard(id, x, z, rot, color = 0x7dd3fc) {
   return g;
 }
 
+
+function makeCampSign(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x5b3a22, map: textureSet.wood, roughness: 0.86 });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(2.9, 1.0, 0.16), frameMat);
+  board.position.y = 2.25;
+  const face = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.62, 0.82),
+    new THREE.MeshBasicMaterial({ map: textureSet.sign, transparent: true, opacity: 0.94, side: THREE.DoubleSide })
+  );
+  face.position.set(0, 2.25, 0.091);
+  [-1.55, 1.55].forEach((offset) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 2.6, 8), frameMat);
+    post.position.set(offset, 1.28, 0);
+    g.add(post);
+  });
+  const topLantern = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.34, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.84 }));
+  topLantern.position.set(0, 3.02, 0.04);
+  g.add(board, face, topLantern);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.lantern = topLantern;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 1.8, 0.7, 0.2);
+  return g;
+}
+
+function makeFloorCushion(id, x, z, rot = 0, color = 0x8a5f3d) {
+  const cushion = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.62, 0.74, 0.26, 28),
+    new THREE.MeshStandardMaterial({ color, map: textureSet.cloth, roughness: 0.95 })
+  );
+  cushion.position.set(x, 0.2, z);
+  cushion.rotation.y = rot;
+  cushion.scale.z = 0.78;
+  cushion.userData.visualId = id;
+  cushion.castShadow = true;
+  cushion.receiveShadow = true;
+  scene.add(cushion);
+  softShadow(`${id}_shadow`, x, z, 0.9, 0.55, 0.24);
+  return cushion;
+}
+
+function makeTeaTable(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = new THREE.MeshStandardMaterial({ color: 0x4d2f1f, map: textureSet.wood, roughness: 0.88 });
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.16, 0.82), wood);
+  top.position.y = 0.68;
+  [-0.55, 0.55].forEach((lx) => {
+    [-0.26, 0.26].forEach((lz) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 0.62, 8), wood);
+      leg.position.set(lx, 0.34, lz);
+      g.add(leg);
+    });
+  });
+  const book = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.34), new THREE.MeshStandardMaterial({ color: 0x24143d, roughness: 0.75, metalness: 0.04 }));
+  book.position.set(-0.3, 0.79, 0.06);
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0xd8c2a5, roughness: 0.7 }));
+  cup.position.set(0.43, 0.85, -0.1);
+  const glow = new THREE.Mesh(new THREE.CircleGeometry(0.24, 24), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.2, side: THREE.DoubleSide }));
+  glow.rotation.x = -Math.PI / 2;
+  glow.position.set(0.42, 0.805, -0.1);
+  g.add(top, book, cup, glow);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 0.95, 0.55, 0.24);
+  return g;
+}
+
+function makeMoonVine(id, x, z) {
+  const g = new THREE.Group();
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0x1d513c, emissive: 0x0d3c3a, emissiveIntensity: 0.08, roughness: 0.78 });
+  const leafMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 3.8, 8), stemMat);
+  stem.position.y = 1.9;
+  g.add(stem);
+  const leaves = [];
+  for (let i = 0; i < 10; i++) {
+    const leaf = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.16), leafMat.clone());
+    leaf.position.set((i % 2 ? 0.34 : -0.34), 0.55 + i * 0.3, 0);
+    leaf.rotation.z = (i % 2 ? -0.65 : 0.65);
+    leaf.userData.phase = i * 0.5;
+    leaves.push(leaf);
+    g.add(leaf);
+  }
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 20), new THREE.MeshBasicMaterial({ color: 0xbde9ff, transparent: true, opacity: 0.78 }));
+  orb.position.y = 4.12;
+  g.add(orb);
+  g.position.set(x, 0.02, z);
+  g.userData.visualId = id;
+  g.userData.leaves = leaves;
+  g.userData.orb = orb;
+  scene.add(g);
+  return g;
+}
+
 const benches = [
   makeBench("bench_01", -2.6, 2.9, -0.55),
   makeBench("bench_02", 3.3, -2.7, 2.55)
@@ -533,6 +674,14 @@ const runeShards = [
   makeRuneShard("rune_shard_west", -5.15, -0.7, 0.4, 0x8ddcff),
   makeRuneShard("rune_shard_east", 5.15, 0.7, -0.4, 0xc4b5fd),
   makeRuneShard("rune_shard_path", 0.7, -5.55, 0.2, 0xffd58a)
+];
+const campSign = makeCampSign("lumaria_bridge_sign", -3.3, 6.35, 0.36);
+const teaTable = makeTeaTable("tea_table_book_cup", 4.6, 3.15, -0.48);
+const moonVine = makeMoonVine("moon_vine_waterfall", 7.05, -4.95);
+const floorCushions = [
+  makeFloorCushion("cushion_front", -0.9, 4.0, 0.15, 0x8a5f3d),
+  makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
+  makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
 ];
 
 const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95 }));
@@ -759,6 +908,14 @@ function animate(t = 0) {
   runeShards.forEach((node, idx) => {
     node.userData.shard.rotation.y += 0.01 + idx * 0.002;
     node.userData.halo.material.opacity = 0.28 + Math.sin(t * 0.004 + idx) * 0.16;
+  });
+
+  campSign.userData.lantern.scale.setScalar(0.9 + Math.sin(t * 0.006) * 0.08);
+  teaTable.userData.glow.material.opacity = 0.16 + Math.sin(t * 0.005) * 0.06;
+  moonVine.userData.orb.material.opacity = 0.62 + Math.sin(t * 0.003) * 0.18;
+  moonVine.userData.leaves.forEach((leaf) => {
+    leaf.rotation.y = Math.sin(t * 0.002 + leaf.userData.phase) * 0.28;
+    leaf.material.opacity = 0.56 + Math.sin(t * 0.004 + leaf.userData.phase) * 0.18;
   });
 
   floorTiles.forEach((tile, idx) => {
