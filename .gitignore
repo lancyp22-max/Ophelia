@@ -1,0 +1,21 @@
+# Node / web artifacts
+node_modules/
+artifacts/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Java
+target/
+*.class
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
+# Deferred binary assets for split-PR flow
+icon-192.png
+icon-512.png
