@@ -91,7 +91,8 @@
         "grass": "short layered tufts with dew motes",
         "petals": "violet and gold scatter on rune path gaps",
         "tiny_fauna": "soft hover moths and beetle-like motes",
-        "texture_priority": "readable close-range charm over photorealism"
+        "texture_priority": "readable close-range charm over photorealism",
+        "material_display": "procedural bump-mapped moss, stone, cedar, cloth, and soil textures"
       },
       "functional_role": ["scale", "warmth", "arrival_detail", "central_user_orientation"],
       "mood_tags": ["cozy", "mid_2000s_storybook", "alive_but_uncluttered"],
