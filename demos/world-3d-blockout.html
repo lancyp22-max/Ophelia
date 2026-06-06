@@ -34,6 +34,7 @@
       <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
       <span class="pill">Material pass: visible model textures</span>
       <span class="pill">Sky pass: moon + clouds</span>
+      <span class="pill">Biome pass: luminous grass</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -348,6 +349,12 @@ function applyTimeMode(mode) {
   canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
   campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
   moonVine.userData.orb.visible = !isDay;
+  luminousGrass.forEach((patch, idx) => {
+    const glowBoost = isRain ? 0.52 : isDay ? 0.18 : isSunset ? 0.38 : 0.62;
+    patch.userData.bladeMat.emissiveIntensity = glowBoost;
+    patch.userData.glow.material.opacity = (isDay ? 0.08 : isRain ? 0.24 : 0.3) - idx * 0.025;
+    patch.userData.glow.material.color.set(isRain ? 0x8fffe1 : isSunset ? 0xb8f7ff : 0x87f5ff);
+  });
   fireLightPools.forEach((pool, idx) => { pool.material.opacity = (isDay ? 0.07 : isRain ? 0.18 : 0.24) - idx * 0.04; });
   lanterns.forEach((l) => {
     l.userData.light.intensity = isDay ? 0.22 : isRain ? 0.85 : 1.05;
@@ -603,6 +610,34 @@ function makeGrassTuft(id, x, z, scale = 1, color = 0x5fbf7a) {
   g.position.set(x, 0.08, z);
   g.userData.visualId = id;
   g.userData.dew = dew;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
+}
+
+function makeLuminousGrassPatch(id, x, z, scale = 1, color = 0x7dd3fc) {
+  const g = new THREE.Group();
+  const bladeMat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.54, roughness: 0.72, side: THREE.DoubleSide });
+  const tipMat = new THREE.MeshBasicMaterial({ color: 0xd9fff6, transparent: true, opacity: 0.82 });
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    const radius = (0.08 + (i % 4) * 0.035) * scale;
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.014 * scale, (0.28 + (i % 5) * 0.045) * scale, 5), bladeMat);
+    blade.position.set(Math.cos(angle) * radius, 0.13 * scale, Math.sin(angle) * radius);
+    blade.rotation.z = Math.sin(angle) * 0.42;
+    blade.rotation.x = Math.cos(angle) * 0.28;
+    blade.userData.phase = i * 0.43 + z * 0.17;
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.018 * scale, 8, 6), tipMat);
+    tip.position.set(blade.position.x, 0.29 * scale + (i % 3) * 0.025 * scale, blade.position.z);
+    tip.userData.phase = blade.userData.phase + 0.8;
+    g.add(blade, tip);
+  }
+  const glow = warmLightPool(`${id}_glow`, x, z, 0.55 * scale, 0.38 * scale, color, 0.3);
+  g.position.set(x, 0.08, z);
+  g.userData.visualId = id;
+  g.userData.bladeMat = bladeMat;
+  g.userData.tipMat = tipMat;
+  g.userData.glow = glow;
   markShadows(g, true, false);
   scene.add(g);
   return g;
@@ -1046,6 +1081,13 @@ const closeGrasses = [
   makeGrassTuft("grass_rune_gap", -0.42, 2.74, 0.7, 0x86d6a1),
   makeGrassTuft("grass_cushion_edge", 1.55, 3.32, 0.8, 0x5aa86c)
 ];
+const luminousGrass = [
+  makeLuminousGrassPatch("luminous_grass_auri", 2.72, 1.78, 1.12, 0x8fffe1),
+  makeLuminousGrassPatch("luminous_grass_fire_arc", -0.18, 2.56, 0.9, 0x7dd3fc),
+  makeLuminousGrassPatch("luminous_grass_bench", -2.34, 2.42, 0.84, 0xc4b5fd),
+  makeLuminousGrassPatch("luminous_grass_table", 4.1, 2.28, 0.78, 0x9ef7d7),
+  makeLuminousGrassPatch("luminous_grass_gate_path", 0.52, -4.3, 0.92, 0xa7f3ff)
+];
 const tinyFauna = [
   makeTinyFauna("fauna_firefly_moth_auri", 2.25, 1.35, 0xc4b5fd),
   makeTinyFauna("fauna_teal_beetle_path", -1.25, 2.25, 0x7dd3fc),
@@ -1368,6 +1410,16 @@ function animate(t = 0) {
       blade.rotation.x += Math.cos(t * 0.0018 + bladeIdx) * 0.0005;
     });
     tuft.userData.dew.material.opacity = 0.28 + Math.sin(t * 0.003 + idx) * 0.16;
+  });
+
+  luminousGrass.forEach((patch, idx) => {
+    patch.children.forEach((part, partIdx) => {
+      if (part.userData.phase === undefined) return;
+      part.rotation.z += Math.sin(t * 0.0026 + part.userData.phase + idx) * 0.0011;
+      if (part.material && "opacity" in part.material) part.material.opacity = 0.58 + Math.sin(t * 0.004 + part.userData.phase) * 0.22;
+    });
+    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.002;
+    patch.userData.glow.material.opacity = Math.max(0.05, Math.min(0.38, patch.userData.glow.material.opacity + Math.sin(t * 0.003 + idx) * 0.002));
   });
 
   tinyFauna.forEach((bug, idx) => {

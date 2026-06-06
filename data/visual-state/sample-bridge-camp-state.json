@@ -101,6 +101,22 @@
       "residual_trace": "the sky changes the camp mood before asking the pilot to do anything"
     },
     {
+      "id": "luminous_grass_ring_01",
+      "type": "responsive_biome_glow",
+      "location": "Bridge_A1_Campfire_User_Radius",
+      "visible_state": {
+        "grass": "teal and violet luminous blades near Auri, bench, table, fire arc, and gate path",
+        "glow_behavior": "dim in day, stronger at night and after rain",
+        "motion": "small wind sway with pulsing dew tips"
+      },
+      "functional_role": ["night_orientation", "cozy_biome_detail", "camp_depth"],
+      "mood_tags": ["luminous", "gentle", "alive", "not_cluttered"],
+      "causal_links": ["time_of_day", "rain_state", "auri_presence", "campfire_light"],
+      "allowed_transitions": ["day_dim", "night_glow", "rain_brightened", "resting"],
+      "safety_notes": ["keep_low_frequency_pulse", "decorative_only"],
+      "residual_trace": "tiny glowing grass makes the ground feel kind without pulling focus"
+    },
+    {
       "id": "close_texture_ring_01",
       "type": "six_foot_biome_detail_radius",
       "location": "Bridge_A1_Campfire_User_Radius",
