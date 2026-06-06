@@ -35,6 +35,7 @@
       <span class="pill">Material pass: visible model textures</span>
       <span class="pill">Sky pass: moon + clouds</span>
       <span class="pill">Biome pass: luminous grass</span>
+      <span class="pill">Map pass: expanded camp districts</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -280,6 +281,38 @@ function makeAgentNameTexture(name, role) {
   texture.name = "campfire_agent_nameplate";
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
+}
+
+function makeZoneLabelTexture(name, role, color = "#ffd58a") {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 150;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(5, 10, 20, 0.62)";
+  ctx.fillRect(0, 0, 512, 150);
+  ctx.strokeStyle = "rgba(255, 213, 138, 0.68)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(12, 12, 488, 126);
+  ctx.fillStyle = color;
+  ctx.font = "bold 34px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.fillText(name, 256, 62);
+  ctx.fillStyle = "#c7d2fe";
+  ctx.font = "bold 18px Inter, sans-serif";
+  ctx.fillText(role, 256, 98);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = `zone_label_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function makeZoneLabel(name, role, x, y, z, color = "#ffd58a") {
+  const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeZoneLabelTexture(name, role, color), transparent: true, opacity: 0.82, depthWrite: false }));
+  label.position.set(x, y, z);
+  label.scale.set(1.6, 0.48, 1);
+  label.userData.visualId = `label_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
+  scene.add(label);
+  return label;
 }
 
 const textureSet = {
@@ -1008,6 +1041,114 @@ function makeTeaTable(id, x, z, rot = 0) {
   return g;
 }
 
+function makeMarketStall(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
+  const cloth = surfaceMaterial({ color: 0x6f3f8f, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 });
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.28, 0.82), wood);
+  counter.position.y = 0.48;
+  const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.18, 0.55, 4), cloth);
+  canopy.position.y = 1.34;
+  canopy.rotation.y = Math.PI / 4;
+  [-0.62, 0.62].forEach((lx) => {
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.24, 0.32), wood);
+    crate.position.set(lx, 0.23, -0.48);
+    g.add(crate);
+  });
+  const glow = warmGlowBillboard(`${id}_glow`, x, 1.18, z, 1.35, 0xffc879, 0.2);
+  g.add(counter, canopy);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 1.2, 0.72, 0.24);
+  makeZoneLabel("MARKET", "Exchange + Resources", x, 2.05, z, "#ffd58a");
+  return g;
+}
+
+function makeStable(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x5b3b24, map: textureSet.wood, roughness: 0.92, bumpScale: 0.05 });
+  const roof = surfaceMaterial({ color: 0x2f2630, map: textureSet.wood, roughness: 0.96, bumpScale: 0.05 });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.0, 1.45), wood);
+  base.position.y = 0.58;
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(1.55, 0.72, 4), roof);
+  cap.position.y = 1.4;
+  cap.rotation.y = Math.PI / 4;
+  const hay = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.58, 10), new THREE.MeshStandardMaterial({ color: 0xc08a3d, roughness: 0.9 }));
+  hay.position.set(0.78, 0.32, 0.55);
+  hay.rotation.z = Math.PI / 2;
+  const companion = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), new THREE.MeshBasicMaterial({ color: 0xc7d2fe, transparent: true, opacity: 0.78 }));
+  companion.position.set(-0.78, 0.85, 0.42);
+  g.add(base, cap, hay, companion);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.companion = companion;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 1.45, 0.95, 0.25);
+  makeZoneLabel("STABLES", "Companions + Support", x, 2.18, z, "#f8d9a0");
+  return g;
+}
+
+function makeWelcomeGrove(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const postMat = surfaceMaterial({ color: 0x4b3524, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
+  [-0.72, 0.72].forEach((lx) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 1.8, 8), postMat);
+    post.position.set(lx, 0.9, 0);
+    g.add(post);
+  });
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.04, 8, 48, Math.PI), new THREE.MeshBasicMaterial({ color: 0x8ddcff, transparent: true, opacity: 0.62 }));
+  arch.position.y = 1.72;
+  arch.rotation.z = Math.PI;
+  const lantern = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), new THREE.MeshBasicMaterial({ color: 0x8ddcff, transparent: true, opacity: 0.82 }));
+  lantern.position.y = 1.38;
+  const glow = warmGlowBillboard(`${id}_glow`, x, 1.48, z, 1.6, 0x8ddcff, 0.22);
+  g.add(arch, lantern);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.lantern = lantern;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 1.1, 0.65, 0.18);
+  makeZoneLabel("WELCOME GROVE", "Arrival + Care", x, 2.45, z, "#a7f3ff");
+  return g;
+}
+
+function makeSouthGate(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const mat = surfaceMaterial({ color: 0x263454, map: textureSet.stone, roughness: 0.9, metalness: 0.03, bumpScale: 0.04 });
+  [-0.55, 0.55].forEach((lx) => {
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.7, 6), mat);
+    pillar.position.set(lx, 0.85, 0);
+    g.add(pillar);
+  });
+  const gate = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.03, 8, 44), new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.62 }));
+  gate.position.y = 1.05;
+  const pad = new THREE.Mesh(new THREE.CircleGeometry(0.78, 36), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.18, side: THREE.DoubleSide }));
+  pad.rotation.x = -Math.PI / 2;
+  pad.position.y = 0.06;
+  const glow = warmGlowBillboard(`${id}_glow`, x, 1.12, z, 1.8, 0x60a5fa, 0.24);
+  g.add(gate, pad);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.gate = gate;
+  g.userData.pad = pad;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 1.0, 0.62, 0.2);
+  makeZoneLabel("SOUTH GATE", "Journey Beyond", x, 2.0, z, "#93c5fd");
+  return g;
+}
+
 function makeMoonVine(id, x, z) {
   const g = new THREE.Group();
   const stemMat = new THREE.MeshStandardMaterial({ color: 0x1d513c, emissive: 0x0d3c3a, emissiveIntensity: 0.08, roughness: 0.78 });
@@ -1069,6 +1210,12 @@ const floorCushions = [
   makeFloorCushion("cushion_front", -0.9, 4.0, 0.15, 0x8a5f3d),
   makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
   makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
+];
+const campDistricts = [
+  makeMarketStall("market_stall_01", 0.2, 7.6, 0.04),
+  makeStable("stables_companion_support", 4.4, 6.2, -0.38),
+  makeWelcomeGrove("welcome_grove_arrival", -0.6, 10.2, 0.02),
+  makeSouthGate("south_gate_waypoint", 0.4, -7.9, 0.08)
 ];
 
 const closeGrasses = [
@@ -1396,6 +1543,14 @@ function animate(t = 0) {
   moonVine.userData.leaves.forEach((leaf) => {
     leaf.rotation.y = Math.sin(t * 0.002 + leaf.userData.phase) * 0.28;
     leaf.material.opacity = 0.56 + Math.sin(t * 0.004 + leaf.userData.phase) * 0.18;
+  });
+
+  campDistricts.forEach((district, idx) => {
+    if (district.userData.glow) district.userData.glow.material.opacity = 0.14 + Math.sin(t * 0.003 + idx) * 0.07;
+    if (district.userData.lantern) district.userData.lantern.scale.setScalar(0.92 + Math.sin(t * 0.005 + idx) * 0.08);
+    if (district.userData.gate) district.userData.gate.rotation.z += 0.006;
+    if (district.userData.pad) district.userData.pad.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.05;
+    if (district.userData.companion) district.userData.companion.position.y = 0.85 + Math.sin(t * 0.003 + idx) * 0.05;
   });
 
   floorTiles.forEach((tile, idx) => {

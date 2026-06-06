@@ -12,7 +12,12 @@
     "sun_halo",
     "soft_cloud_banks",
     "sky_rays",
-    "luminous_grass_ring"
+    "luminous_grass_ring",
+    "market_stall",
+    "stables_companion_support",
+    "welcome_grove",
+    "south_gate_waypoint",
+    "expanded_camp_districts"
   ],
   "mood": "warm_night_presence",
   "functional_tags": [
@@ -20,7 +25,9 @@
     "conversation",
     "grounding",
     "visual_orientation",
-    "sky_light_state"
+    "sky_light_state",
+    "district_map_expansion",
+    "camp_navigation_preview"
   ],
   "active_agent": "you",
   "avatar_state": {
@@ -33,7 +40,11 @@
     "Bridge_A1_Campfire",
     "Grid_A1_Visual_Work",
     "Memory_Weave_QC_Layer",
-    "NE_000_Authority_Integrity"
+    "NE_000_Authority_Integrity",
+    "Base_Camp_Market",
+    "Base_Camp_Stables",
+    "Welcome_Grove",
+    "South_Gate_Waypoint"
   ],
   "safety_state": {
     "risk": "low",
@@ -44,5 +55,5 @@
       "external_publish"
     ]
   },
-  "residual_trace": "Cute warm base camp; first square should feel safe, alive, and small enough to iterate."
+  "residual_trace": "Cute warm base camp; the first square now hints at a larger town map while keeping the campfire as the anchor."
 }
