@@ -221,6 +221,15 @@ Stateful visual causality notes live in:
 
 This ladder keeps A1 Bridge Camp moving from pretty camp → consistent camp → remembered camp → responsive camp → living camp, with stable element IDs, allowed transitions, causal links, and safety notes for each major visual object.
 
+### Visual RL Harness v0.1
+
+ART-inspired visual curator notes live in:
+
+- `docs/visual-rl-harness.md`
+- `data/visual-state/a1-visual-reward-model.json`
+
+This is schema-only: it borrows trajectory/reward-shaping ideas for future visual agents, but does not add RL training, OpenPipe/ART dependencies, cloud services, or autonomous scene mutation.
+
 ### Reasoning Loop Controller v0.1
 
 Controlled review-depth notes live in:

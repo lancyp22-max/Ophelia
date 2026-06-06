@@ -26,6 +26,7 @@
       <span class="pill">WASD / Arrow keys: move</span>
       <span class="pill">Mouse drag / touch drag: look</span>
       <span class="pill">Pinch: zoom</span>
+      <span class="pill">Wave 10: depth + texture pass</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -177,6 +178,8 @@ function applyTimeMode(mode) {
   fireflies.forEach((f) => { f.visible = !isDay; });
   lanterns.forEach((l) => { l.userData.core.material.color.set(isDay ? 0xffe2a8 : 0xffc979); });
   waterfallGlow.material.opacity = isRain ? 0.32 : isDay ? 0.24 : 0.16;
+  brook.material.opacity = isRain ? 0.34 : isDay ? 0.22 : 0.16;
+  canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
   pathMaterial.color.set(isRain ? 0x35415a : isDay ? 0x6f5a3b : 0x2f2540);
   groundMaterial.color.set(isRain ? 0x17283a : isDay ? 0x27452f : 0x0c1b30);
   mushrooms.forEach((cluster) => {
@@ -438,6 +441,72 @@ function makeMemoryGate() {
   return { group: g, ring };
 }
 
+
+function makeCanopyCluster(id, x, z, scale = 1, color = 0x1f5a3f) {
+  const g = new THREE.Group();
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x382515, map: textureSet.wood, roughness: 0.96 });
+  const leafMaterial = new THREE.MeshStandardMaterial({ color, emissive: 0x0c3027, emissiveIntensity: 0.04, roughness: 0.82 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.32 * scale, 3.6 * scale, 8), trunkMat);
+  trunk.position.set(0, 1.8 * scale, 0);
+  trunk.rotation.z = 0.18;
+  g.add(trunk);
+  for (let i = 0; i < 7; i++) {
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(1.05 * scale, 14, 10), leafMaterial);
+    leaf.scale.set(1.15 + (i % 3) * 0.16, 0.48, 0.78 + (i % 2) * 0.18);
+    leaf.position.set(Math.cos(i * 0.9) * 0.95 * scale, 3.15 * scale + Math.sin(i) * 0.32 * scale, Math.sin(i * 0.9) * 0.85 * scale);
+    leaf.rotation.y = i * 0.7;
+    g.add(leaf);
+  }
+  g.position.set(x, 0, z);
+  g.userData.visualId = id;
+  g.userData.leafMaterial = leafMaterial;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 2.2 * scale, 1.4 * scale, 0.24);
+  return g;
+}
+
+function makeBridgeRail(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const postMat = new THREE.MeshStandardMaterial({ color: 0x685746, map: textureSet.stone, roughness: 0.94, metalness: 0.03 });
+  const railMat = new THREE.MeshStandardMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9 });
+  [-1.1, 0, 1.1].forEach((offset) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.72, 8), postMat);
+    post.position.set(offset, 0.36, 0);
+    g.add(post);
+  });
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(2.65, 0.12, 0.16), railMat);
+  rail.position.y = 0.76;
+  const lower = rail.clone();
+  lower.position.y = 0.48;
+  g.add(rail, lower);
+  g.position.set(x, 0.06, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  markShadows(g);
+  scene.add(g);
+  return g;
+}
+
+function makeRuneShard(id, x, z, rot, color = 0x7dd3fc) {
+  const g = new THREE.Group();
+  const shardMat = new THREE.MeshStandardMaterial({ color: 0x27324a, emissive: color, emissiveIntensity: 0.25, roughness: 0.58, metalness: 0.08 });
+  const shard = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.62, 5), shardMat);
+  shard.position.y = 0.38;
+  const halo = new THREE.Mesh(new THREE.RingGeometry(0.28, 0.34, 24), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.38, side: THREE.DoubleSide }));
+  halo.rotation.x = -Math.PI / 2;
+  halo.position.y = 0.08;
+  g.add(shard, halo);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.shard = shard;
+  g.userData.halo = halo;
+  markShadows(g);
+  scene.add(g);
+  return g;
+}
+
 const benches = [
   makeBench("bench_01", -2.6, 2.9, -0.55),
   makeBench("bench_02", 3.3, -2.7, 2.55)
@@ -450,6 +519,21 @@ const mushrooms = [
 const gardenBed = makeGardenBed("garden_bed_01", 5.4, 5.2);
 const avatarYou = makeAvatarYou();
 const memoryGate = makeMemoryGate();
+const canopyGroups = [
+  makeCanopyCluster("canopy_archive_edge", -10.8, 2.8, 1.2, 0x24523d),
+  makeCanopyCluster("canopy_garden_edge", 10.2, 6.1, 1.05, 0x2e6a46),
+  makeCanopyCluster("canopy_path_depth", -1.2, 10.4, 1.3, 0x1d4738)
+];
+const bridgeRails = [
+  makeBridgeRail("bridge_rail_left", -2.95, -5.05, -0.46),
+  makeBridgeRail("bridge_rail_right", 2.95, -5.05, 0.46),
+  makeBridgeRail("garden_rail", 6.55, 3.85, -0.75)
+];
+const runeShards = [
+  makeRuneShard("rune_shard_west", -5.15, -0.7, 0.4, 0x8ddcff),
+  makeRuneShard("rune_shard_east", 5.15, 0.7, -0.4, 0xc4b5fd),
+  makeRuneShard("rune_shard_path", 0.7, -5.55, 0.2, 0xffd58a)
+];
 
 const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95 }));
 campfireStone.position.set(0, 0.2, 0);
@@ -528,6 +612,15 @@ const lanterns = [];
   lanterns.push(g);
   scene.add(g);
 });
+
+const brook = new THREE.Mesh(
+  new THREE.PlaneGeometry(8.5, 3.2),
+  new THREE.MeshBasicMaterial({ color:0x55c7ff, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthWrite:false })
+);
+brook.position.set(8.4, 0.075, -7.05);
+brook.rotation.x = -Math.PI / 2;
+brook.rotation.z = -0.28;
+scene.add(brook);
 
 const waterfallGlow = new THREE.Mesh(
   new THREE.PlaneGeometry(4.5, 6.5),
@@ -654,6 +747,19 @@ function animate(t = 0) {
     l.userData.core.scale.setScalar(pulse);
   });
   waterfallGlow.material.opacity += Math.sin(t * 0.0018) * 0.002;
+  brook.material.opacity = Math.max(0.12, Math.min(0.36, brook.material.opacity + Math.sin(t * 0.0022) * 0.0015));
+
+  canopyGroups.forEach((cluster, idx) => {
+    cluster.rotation.z = Math.sin(t * 0.0009 + idx) * 0.012;
+    cluster.children.forEach((part, partIndex) => {
+      if (partIndex > 0) part.rotation.y += 0.001 + idx * 0.0003;
+    });
+  });
+
+  runeShards.forEach((node, idx) => {
+    node.userData.shard.rotation.y += 0.01 + idx * 0.002;
+    node.userData.halo.material.opacity = 0.28 + Math.sin(t * 0.004 + idx) * 0.16;
+  });
 
   floorTiles.forEach((tile, idx) => {
     const shade = 0.9 + Math.sin(t * 0.0012 + idx * 0.2) * 0.08;
