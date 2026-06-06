@@ -66,16 +66,17 @@
       "residual_trace": "tiny proof the world responds quietly"
     },
     {
-      "id": "avatar_halo_you",
-      "type": "presence_alignment_ring",
+      "id": "campfire_agent_auri",
+      "type": "campfire_presence_agent",
       "location": "Bridge_A1_Campfire",
       "visible_state": {
-        "label": "you",
-        "glow": "soft_violet",
-        "posture": "arrived"
+        "label": "Auri · Campfire Agent",
+        "glow": "violet eyes, held orb, crown gem",
+        "posture": "seated_guardian_near_fire",
+        "silhouette": "long lavender hair, soft elf ears, gold crown arc"
       },
-      "functional_role": ["orientation", "embodiment_anchor"],
-      "mood_tags": ["gentle", "unforced"],
+      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship"],
+      "mood_tags": ["gentle", "unforced", "cozy_guardian"],
       "causal_links": ["user_presence", "chat_channel", "safety_state"],
       "allowed_transitions": ["present", "listening", "speaking", "resting"],
       "safety_notes": ["presence_over_account_identity", "human_remains_pilot"],

@@ -1057,20 +1057,20 @@
       </section>
 
 
-      <section id="map-screen" class="hidden-screen mt-6 w-full max-w-6xl rounded-3xl border border-cyan-300/30 bg-gradient-to-b from-indigo-950/65 via-slate-950/65 to-sky-950/55 p-4">
+      <section id="map-screen" class="hidden-screen mt-4 w-full max-w-[min(94vw,1500px)] rounded-3xl border border-cyan-300/30 bg-gradient-to-b from-indigo-950/65 via-slate-950/65 to-sky-950/55 p-3 xl:p-4">
         <div class="mb-3 flex items-center justify-between gap-3">
           <h2 class="text-sm uppercase tracking-[0.24em] text-cyan-100">Lumaria Base Camp · Bridge of Currents</h2>
           <span class="rounded-full border border-cyan-300/35 px-3 py-1 text-[0.58rem] uppercase tracking-[0.2em] text-cyan-200">Avatar: You</span>
         </div>
-        <div class="grid gap-4 md:grid-cols-[1fr_280px]">
+        <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px] xl:gap-4">
           <article class="relative overflow-hidden rounded-2xl border border-cyan-400/25 bg-slate-950/50 p-3">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(90,120,255,0.30),transparent_45%),radial-gradient(circle_at_75%_35%,rgba(40,220,255,0.20),transparent_50%),linear-gradient(145deg,rgba(4,10,25,0.95),rgba(12,24,54,0.9))]"></div>
-            <div class="relative z-10 h-[430px] rounded-xl border border-cyan-500/15" style="background-image:url('demos/world-bridge-map.html'); background-size:cover; background-position:center;">
-              <iframe title="Lumarian Bridge 3D" src="demos/world-3d-blockout.html" class="h-full w-full rounded-xl"></iframe>
+            <div class="relative z-10 h-[clamp(420px,56vh,680px)] overflow-hidden rounded-xl border border-cyan-500/15" style="background-image:url('demos/world-bridge-map.html'); background-size:cover; background-position:center;">
+              <iframe title="Lumarian Bridge 3D" src="demos/world-3d-blockout.html" class="block h-full w-full rounded-xl border-0"></iframe>
             </div>
-            <div class="relative z-10 mt-3 text-[0.62rem] uppercase tracking-[0.2em] text-slate-300">Lumarian Bridge · Grid Square A1 · 3D live space. Use C to open full chat interface.</div>
+            <div class="relative z-10 mt-2 text-[0.58rem] uppercase tracking-[0.18em] text-slate-300">Lumarian Bridge · Grid Square A1 · 3D live space · 2560×1440-friendly fit. Use C to open full chat interface.</div>
           </article>
-          <aside class="rounded-2xl border border-cyan-300/25 bg-slate-900/55 p-3 text-[0.65rem] uppercase tracking-[0.2em] text-slate-300">
+          <aside class="custom-scrollbar max-h-[clamp(420px,56vh,680px)] overflow-y-auto rounded-2xl border border-cyan-300/25 bg-slate-900/55 p-3 text-[0.62rem] uppercase tracking-[0.18em] text-slate-300">
             <div class="rounded-xl border border-amber-300/25 bg-amber-900/10 p-3">
               <p class="text-amber-100">Camp Status</p>
               <div class="mt-2 grid gap-1 text-[0.54rem] text-slate-300">

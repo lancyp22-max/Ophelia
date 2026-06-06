@@ -29,6 +29,7 @@
       <span class="pill">Wave 10: depth + texture pass</span>
       <span class="pill">Reference 4: cozy detail pass</span>
       <span class="pill">Lighting pass: fire + lanterns</span>
+      <span class="pill">Campfire agent: Auri detail pass</span>
       <span class="pill">Focus section: B1 Campfire</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
@@ -53,8 +54,8 @@ scene.background = new THREE.Color(0x050913);
 scene.fog = new THREE.Fog(0x050913, 15, 80);
 
 const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
-let cameraDistance = 9.5;
-camera.position.set(0, 2.8, cameraDistance);
+let cameraDistance = 10.8;
+camera.position.set(0, 3.25, cameraDistance);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(host.clientWidth, host.clientHeight);
@@ -477,22 +478,88 @@ function makeGardenBed(id, x, z) {
 
 function makeAvatarYou() {
   const g = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 20), new THREE.MeshStandardMaterial({ color: 0xded7ff, emissive: 0x5c4d9d, emissiveIntensity: 0.18, roughness: 0.62 }));
-  body.scale.set(0.9, 1.18, 0.9);
-  body.position.y = 0.7;
-  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.018, 8, 48), new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.75 }));
+  const robeMat = new THREE.MeshStandardMaterial({ color: 0xb8a3db, emissive: 0x3b246a, emissiveIntensity: 0.2, roughness: 0.7, metalness: 0.02 });
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xf5c66d, transparent: true, opacity: 0.86 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0xd9b2e8, emissive: 0x5b2f84, emissiveIntensity: 0.12, roughness: 0.72 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xf0d7c2, roughness: 0.65 });
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.95 });
+
+  const robe = new THREE.Mesh(new THREE.ConeGeometry(0.62, 1.05, 24), robeMat);
+  robe.position.y = 0.52;
+  robe.scale.set(0.9, 1, 1.08);
+  const robeHem = new THREE.Mesh(new THREE.TorusGeometry(0.54, 0.018, 8, 48), trimMat);
+  robeHem.position.y = 0.04;
+  robeHem.rotation.x = Math.PI / 2;
+  const sash = new THREE.Mesh(new THREE.TorusGeometry(0.37, 0.014, 8, 44), trimMat);
+  sash.position.y = 0.62;
+  sash.rotation.x = Math.PI / 2;
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.38, 24, 18), skinMat);
+  head.position.y = 1.18;
+  head.scale.set(1.02, 0.94, 1);
+  const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 16), hairMat);
+  hairCap.position.set(0, 1.28, -0.03);
+  hairCap.scale.set(1.08, 0.72, 1.02);
+  const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.48, 20, 14), hairMat);
+  backHair.position.set(0, 0.92, -0.28);
+  backHair.scale.set(0.9, 1.45, 0.55);
+
+  const hairStrands = [];
+  [-0.34, -0.2, 0.2, 0.34].forEach((x, i) => {
+    const strand = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.72 + (i % 2) * 0.16, 9), hairMat);
+    strand.position.set(x, 0.92 - (i % 2) * 0.08, 0.22);
+    strand.rotation.z = x * -0.7;
+    strand.rotation.x = 0.32;
+    hairStrands.push(strand);
+    g.add(strand);
+  });
+
+  [-0.42, 0.42].forEach((x) => {
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.32, 4), skinMat);
+    ear.position.set(x, 1.17, 0.02);
+    ear.rotation.z = x > 0 ? -Math.PI / 2.7 : Math.PI / 2.7;
+    ear.rotation.y = x > 0 ? -0.4 : 0.4;
+    g.add(ear);
+  });
+
+  const eyes = [];
+  [-0.13, 0.13].forEach((x) => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), eyeMat);
+    eye.position.set(x, 1.2, 0.34);
+    eye.scale.set(1, 1.2, 0.35);
+    eyes.push(eye);
+    g.add(eye);
+  });
+
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.018, 8, 56), trimMat);
   halo.rotation.x = Math.PI / 2;
-  halo.position.y = 1.25;
+  halo.position.y = 1.72;
+  halo.scale.z = 0.62;
+  const crownGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.13), new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.94 }));
+  crownGem.position.y = 1.95;
+  const crownGlow = warmGlowBillboard("campfire_agent_crown_glow", 2.7, 1.95, 1.1, 0.65, 0xc084fc, 0.26);
+
+  const handMat = new THREE.MeshStandardMaterial({ color: 0xf0d7c2, roughness: 0.72 });
+  const heldOrb = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.86 }));
+  heldOrb.position.set(0.03, 0.75, 0.43);
+  [-0.16, 0.16].forEach((x) => {
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), handMat);
+    hand.position.set(x, 0.75, 0.42);
+    g.add(hand);
+  });
+  const orbGlow = warmGlowBillboard("campfire_agent_hand_orb_glow", 2.7, 0.78, 1.55, 0.72, 0xc4b5fd, 0.22);
+
   const label = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.75, 48), new THREE.MeshBasicMaterial({ color: 0x9b7cff, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
   label.rotation.x = -Math.PI / 2;
   label.position.y = 0.04;
-  g.add(body, halo, label);
+  g.add(robe, robeHem, sash, backHair, head, hairCap, halo, crownGem, heldOrb, label);
   g.position.set(2.7, 0, 1.1);
-  g.userData.visualId = "avatar_halo_you";
+  g.rotation.y = -0.28;
+  g.userData.visualId = "campfire_agent_auri";
   markShadows(g);
   scene.add(g);
   softShadow("avatar_shadow_you", 2.7, 1.1, 0.95, 0.6, 0.34);
-  return { group: g, halo, body };
+  return { group: g, halo, body: robe, head, eyes, crownGem, crownGlow, heldOrb, orbGlow, hairStrands };
 }
 
 function makeMemoryGate() {
@@ -880,7 +947,7 @@ window.addEventListener('keydown', e => keys.add(e.key.toLowerCase()));
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 let yaw = Math.PI;
-let pitch = -0.16;
+let pitch = -0.22;
 let drag = false;
 let lx = 0, ly = 0;
 renderer.domElement.addEventListener('mousedown', e => { drag = true; lx = e.clientX; ly = e.clientY; });
@@ -1024,7 +1091,17 @@ function animate(t = 0) {
   fireGlowDisc.material.opacity = (timeMode === "day" ? 0.08 : 0.16) + Math.sin(t * 0.006) * 0.035;
 
   avatarYou.halo.rotation.z += 0.008;
-  avatarYou.body.position.y = 0.7 + Math.sin(t * 0.002) * 0.035;
+  avatarYou.body.position.y = 0.52 + Math.sin(t * 0.002) * 0.035;
+  avatarYou.head.position.y = 1.18 + Math.sin(t * 0.002) * 0.025;
+  avatarYou.eyes.forEach((eye, idx) => {
+    eye.material.opacity = 0.76 + Math.sin(t * 0.006 + idx) * 0.16;
+    eye.scale.set(1 + Math.sin(t * 0.003 + idx) * 0.08, 1.2, 0.35);
+  });
+  avatarYou.crownGem.rotation.y += 0.012;
+  avatarYou.crownGlow.material.opacity = 0.2 + Math.sin(t * 0.004) * 0.08;
+  avatarYou.heldOrb.material.opacity = 0.68 + Math.sin(t * 0.005) * 0.18;
+  avatarYou.orbGlow.material.opacity = 0.16 + Math.sin(t * 0.006) * 0.08;
+  avatarYou.hairStrands.forEach((strand, idx) => { strand.rotation.z += Math.sin(t * 0.002 + idx) * 0.0008; });
   memoryGate.ring.rotation.z -= 0.006;
   gardenBed.children.forEach((child, i) => {
     if (i > 1) child.rotation.z = Math.sin(t * 0.0015 + i) * 0.08;
