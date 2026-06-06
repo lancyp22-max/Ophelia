@@ -1,0 +1,193 @@
+{
+  "version": "lumaria_memory_palace_v0.1",
+  "principle": "progressive_loading_keeps_the_braid_coherent_without_flat_context_hoarding",
+  "stack": [
+    {
+      "id": "identity_root",
+      "purpose": "stable project identity and safety anchors",
+      "lifespan": "long_term",
+      "compression": "high",
+      "loadOrder": ["root_name", "human_remains_pilot", "public_safety_guardrails"],
+      "retrieves": ["cold_symbolic", "safety_law"]
+    },
+    {
+      "id": "essential_story",
+      "purpose": "orbit summaries and current architectural arc",
+      "lifespan": "weeks_to_months",
+      "compression": "medium",
+      "loadOrder": ["seven_orbit_summary", "active_grid_square", "current_visual_stage"],
+      "retrieves": ["warm_semantic", "orbit_summary"]
+    },
+    {
+      "id": "localized_recall",
+      "purpose": "mirror or node context for the active work area",
+      "lifespan": "hours_to_days",
+      "compression": "low_to_medium",
+      "loadOrder": ["grid_a1_campfire", "memory_weave_panel", "chat_channel_state"],
+      "retrieves": ["hot_context", "neighbor_nodes"]
+    },
+    {
+      "id": "deep_search_archive",
+      "purpose": "archive lookups only when local recall is insufficient",
+      "lifespan": "on_demand",
+      "compression": "variable",
+      "loadOrder": ["query", "hall_filter", "drawer_filter", "temporal_fact_range"],
+      "retrieves": ["archive_drawer", "temporal_knowledge_graph"]
+    }
+  ],
+  "halls": [
+    {
+      "id": "anchor_points",
+      "lumarianName": "Anchor Points",
+      "purpose": "stable truths and project facts",
+      "channel": "admin",
+      "accepts": ["stable_facts", "safety_laws", "identity_root"],
+      "rejects": ["uncertain_claims", "temporary_mood"],
+      "linkedMirrors": ["Mirror_01", "Mirror_08", "Mirror_16"]
+    },
+    {
+      "id": "timeline_events",
+      "lumarianName": "Timeline Events",
+      "purpose": "things that happened and when",
+      "channel": "wellspring",
+      "accepts": ["state_changes", "milestones", "handoffs"],
+      "rejects": ["private_material", "global_authority_claims"],
+      "linkedMirrors": ["Mirror_02", "Mirror_16"]
+    },
+    {
+      "id": "pattern_discoveries",
+      "lumarianName": "Pattern Discoveries",
+      "purpose": "insights, resonances, and coherence findings",
+      "channel": "flora",
+      "accepts": ["patterns", "visual_findings", "prototype_lessons"],
+      "rejects": ["unbounded_redesign"],
+      "linkedMirrors": ["Mirror_10", "Mirror_14", "Mirror_17"]
+    },
+    {
+      "id": "personal_tendencies",
+      "lumarianName": "Personal Tendencies",
+      "purpose": "user preferences, habits, rhythms, and access needs",
+      "channel": "wellspring",
+      "accepts": ["style_preferences", "interaction_pace", "accessibility_notes"],
+      "rejects": ["commands_without_confirmation"],
+      "linkedMirrors": ["Mirror_03", "Mirror_07"]
+    },
+    {
+      "id": "guidance",
+      "lumarianName": "Guidance / Offered Counsel",
+      "purpose": "advice offered, decisions suggested, and paths considered",
+      "channel": "admin",
+      "accepts": ["next_tiny_step", "risk_note", "test_guidance"],
+      "rejects": ["authority_override"],
+      "linkedMirrors": ["Mirror_08", "Mirror_18"]
+    },
+    {
+      "id": "safety_laws",
+      "lumarianName": "Safety Laws / Consent Lines",
+      "purpose": "consent lines, privacy rules, and no-cross boundaries",
+      "channel": "admin",
+      "accepts": ["privacy_rule", "consent_line", "public_exposure_guardrail"],
+      "rejects": ["secret_material", "authority_confusion"],
+      "linkedMirrors": ["Mirror_02", "Mirror_08", "Mirror_18"]
+    },
+    {
+      "id": "active_seeds",
+      "lumarianName": "Active Seeds / Growth Threads",
+      "purpose": "ideas currently growing but not yet canon",
+      "channel": "flora",
+      "accepts": ["prototype_thread", "visual_seed", "architecture_seed"],
+      "rejects": ["premature_canon", "unbounded_scope"],
+      "linkedMirrors": ["Mirror_10", "Mirror_14", "Mirror_17"]
+    }
+  ],
+  "drawers": [
+    {
+      "id": "grid_a1_visual_work",
+      "hall": "active_seeds",
+      "name": "Grid A1 visual work",
+      "description": "Current Lumarian Bridge campfire scene upgrade thread",
+      "relatedNodes": ["Bridge_A1_Campfire", "Memory_Weave_QC_Layer"],
+      "safetyTags": ["section_scoped", "mobile_friendly"]
+    },
+    {
+      "id": "authority_integrity",
+      "hall": "safety_laws",
+      "name": "NE-000 authority integrity",
+      "description": "No meaningful state mutation without surfaced confirmation",
+      "relatedNodes": ["AuthorityService", "Memory_Weave_QC_Layer"],
+      "safetyTags": ["human_remains_pilot", "no_authority_confusion"]
+    }
+  ],
+  "items": [
+    {
+      "id": "mem-bridge-a1-entry",
+      "hall": "timeline_events",
+      "subject": "Lumaria_Base_Camp",
+      "predicate": "entered_through",
+      "object": "Grid_A1_Lumarian_Bridge",
+      "validFrom": "2026-05-24T00:00:00Z",
+      "validTo": null,
+      "confidence": 0.95,
+      "source": "Codex map entry implementation",
+      "relatedNodes": ["Bridge_A1_Campfire", "World_3D_Blockout"],
+      "safetyTags": ["human_remains_pilot", "map_entry"],
+      "residualTrace": "The first square is a welcoming campfire space, not a command throne."
+    },
+    {
+      "id": "mem-grid-a1-visual-stage",
+      "hall": "pattern_discoveries",
+      "subject": "Grid_A1_Campfire",
+      "predicate": "visual_stage",
+      "object": "lantern_waterfall_floor_detail_pass",
+      "validFrom": "2026-05-25T00:00:00Z",
+      "validTo": null,
+      "confidence": 0.9,
+      "source": "A1 visual upgrade pass",
+      "relatedNodes": ["Rune_Floor", "Lantern_Micro_Light", "Waterfall_Glow"],
+      "safetyTags": ["section_scoped", "mobile_friendly"],
+      "residualTrace": "Cute, warm, alive, and still lightweight enough for phones."
+    },
+    {
+      "id": "mem-ne-000",
+      "hall": "safety_laws",
+      "subject": "State_Mutation",
+      "predicate": "requires",
+      "object": "Surfaced_Confirmation",
+      "validFrom": "2026-05-07T00:00:00Z",
+      "validTo": null,
+      "confidence": 1.0,
+      "source": "NE-000 authority check API",
+      "relatedNodes": ["AuthorityService", "HALT_AND_SURFACE"],
+      "safetyTags": ["authority_integrity", "human_remains_pilot"],
+      "residualTrace": "Consent must be visible before meaningful change commits."
+    }
+  ],
+  "temporalFacts": [
+    {
+      "subject": "Lumaria_Base_Camp",
+      "predicate": "entered_through",
+      "object": "Grid_A1_Lumarian_Bridge",
+      "validFrom": "2026-05-24T00:00:00Z",
+      "validTo": null,
+      "sourceLane": "localized_recall",
+      "safetyTags": ["human_remains_pilot", "map_entry"]
+    },
+    {
+      "subject": "Grid_A1_Campfire",
+      "predicate": "visual_stage",
+      "object": "lantern_waterfall_floor_detail_pass",
+      "validFrom": "2026-05-25T00:00:00Z",
+      "validTo": null,
+      "sourceLane": "essential_story",
+      "safetyTags": ["section_scoped", "mobile_friendly"]
+    }
+  ],
+  "retrievalRules": [
+    "load identity_root before any other layer",
+    "load essential_story before localized_recall",
+    "use hall filters before drawer filters",
+    "use drawer filters before archive search",
+    "retrieve temporal facts by subject + predicate + valid time range",
+    "never let one drawer, hall, or mirror claim whole-system authority"
+  ]
+}
