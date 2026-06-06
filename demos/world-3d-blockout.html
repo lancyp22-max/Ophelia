@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lumaria World v0 · Campfire Night</title>
   <style>
-    html, body { margin:0; height:100%; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
+    html, body { margin:0; height:100%; overflow:hidden; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
     #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
     header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
     canvas { display:block; width:100%; height:100%; }
@@ -56,7 +56,35 @@ camera.position.set(0, 2.8, cameraDistance);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(host.clientWidth, host.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
 host.appendChild(renderer.domElement);
+
+function markShadows(object, cast = true, receive = true) {
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = cast;
+      child.receiveShadow = receive;
+    }
+  });
+  return object;
+}
+
+function softShadow(name, x, z, sx, sz, opacity = 0.28) {
+  const mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 40),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity, depthWrite: false })
+  );
+  mesh.name = name;
+  mesh.position.set(x, 0.045, z);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.scale.set(sx, sz, 1);
+  scene.add(mesh);
+  return mesh;
+}
+
 
 const TIME_MODES = ["morning", "day", "sunset", "night", "rain"];
 let timeMode = "night";
@@ -115,6 +143,14 @@ const ambient = new THREE.AmbientLight(0x5870a8, 0.26);
 scene.add(ambient);
 const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
 moon.position.set(14, 20, -6);
+moon.castShadow = true;
+moon.shadow.mapSize.set(1024, 1024);
+moon.shadow.camera.near = 1;
+moon.shadow.camera.far = 60;
+moon.shadow.camera.left = -22;
+moon.shadow.camera.right = 22;
+moon.shadow.camera.top = 22;
+moon.shadow.camera.bottom = -22;
 scene.add(moon);
 
 const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x0c1b30, roughness: 1, metalness: 0 });
@@ -123,6 +159,7 @@ const ground = new THREE.Mesh(
   groundMaterial
 );
 ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
 scene.add(ground);
 
 const pathMaterial = new THREE.MeshStandardMaterial({ color: 0x2f2540, roughness: 1 });
@@ -132,6 +169,7 @@ const path = new THREE.Mesh(
 );
 path.rotation.x = -Math.PI / 2;
 path.position.y = 0.03;
+path.receiveShadow = true;
 scene.add(path);
 
 const runeRing = new THREE.Mesh(
@@ -152,8 +190,25 @@ for (let i = 0; i < 64; i++) {
   );
   tile.position.set(Math.cos(a) * r, 0.035, Math.sin(a) * r);
   tile.rotation.y = -a + Math.PI / 2;
+  tile.castShadow = true;
+  tile.receiveShadow = true;
   floorTiles.push(tile);
   scene.add(tile);
+}
+
+const tileInlays = [];
+for (let i = 0; i < 24; i++) {
+  const a = (i / 24) * Math.PI * 2;
+  const r = 5.85 + (i % 2) * 0.55;
+  const inlay = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08, 0.012, 0.48),
+    new THREE.MeshStandardMaterial({ color: 0x1f1a24, roughness: 0.98, metalness: 0.02 })
+  );
+  inlay.position.set(Math.cos(a) * r, 0.105, Math.sin(a) * r);
+  inlay.rotation.y = -a + Math.PI / 2 + (i % 3 - 1) * 0.25;
+  inlay.receiveShadow = true;
+  tileInlays.push(inlay);
+  scene.add(inlay);
 }
 
 const runeStones = [];
@@ -167,6 +222,8 @@ for (let i = 0; i < 28; i++) {
   stone.position.set(Math.cos(a) * r, 0.05, Math.sin(a) * r);
   stone.rotation.y = -a + Math.PI / 2;
   stone.userData.phase = i * 0.35;
+  stone.castShadow = true;
+  stone.receiveShadow = true;
   runeStones.push(stone);
   scene.add(stone);
 }
@@ -211,11 +268,14 @@ function hut(x, z, c=0x5a4a3a) {
   roof.rotation.y = Math.PI / 4;
   g.add(base, roof);
   g.position.set(x, 0, z);
-  return g;
+  return markShadows(g);
 }
 scene.add(hut(-8, -5));
 scene.add(hut(8, -4, 0x4a5a4a));
 scene.add(hut(-6, 7, 0x4a4a62));
+softShadow("hut_shadow_archive", -8, -5, 2.2, 1.5, 0.28);
+softShadow("hut_shadow_forge", 8, -4, 2.5, 1.6, 0.3);
+softShadow("hut_shadow_rear", -6, 7, 2.1, 1.4, 0.22);
 
 function makeBench(id, x, z, rot = 0) {
   const g = new THREE.Group();
@@ -235,6 +295,7 @@ function makeBench(id, x, z, rot = 0) {
   g.position.set(x, 0.55, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
+  markShadows(g);
   scene.add(g);
   return g;
 }
@@ -253,6 +314,7 @@ function makeMushroomCluster(id, x, z, color = 0xff4f68) {
   }
   g.position.set(x, 0.02, z);
   g.userData.visualId = id;
+  markShadows(g);
   scene.add(g);
   return g;
 }
@@ -272,6 +334,7 @@ function makeGardenBed(id, x, z) {
   g.position.set(x, 0.11, z);
   g.rotation.y = -0.35;
   g.userData.visualId = id;
+  markShadows(g);
   scene.add(g);
   return g;
 }
@@ -290,7 +353,9 @@ function makeAvatarYou() {
   g.add(body, halo, label);
   g.position.set(2.7, 0, 1.1);
   g.userData.visualId = "avatar_halo_you";
+  markShadows(g);
   scene.add(g);
+  softShadow("avatar_shadow_you", 2.7, 1.1, 0.95, 0.6, 0.34);
   return { group: g, halo, body };
 }
 
@@ -307,7 +372,9 @@ function makeMemoryGate() {
   g.position.set(-4.6, 0, 4.7);
   g.rotation.y = -0.55;
   g.userData.visualId = "memory_gate_01";
+  markShadows(g);
   scene.add(g);
+  softShadow("memory_gate_shadow", -4.6, 4.7, 1.2, 0.7, 0.24);
   return { group: g, ring };
 }
 
@@ -324,9 +391,37 @@ const gardenBed = makeGardenBed("garden_bed_01", 5.4, 5.2);
 const avatarYou = makeAvatarYou();
 const memoryGate = makeMemoryGate();
 
-const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d }));
+const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), new THREE.MeshStandardMaterial({ color:0x33261d, roughness:0.95 }));
 campfireStone.position.set(0, 0.2, 0);
+campfireStone.castShadow = true;
+campfireStone.receiveShadow = true;
 scene.add(campfireStone);
+softShadow("campfire_shadow", 0, 0, 2.2, 1.35, 0.42);
+
+const fireGlowDisc = new THREE.Mesh(
+  new THREE.CircleGeometry(2.3, 64),
+  new THREE.MeshBasicMaterial({ color:0xff8a36, transparent:true, opacity:0.16, depthWrite:false })
+);
+fireGlowDisc.rotation.x = -Math.PI / 2;
+fireGlowDisc.position.y = 0.06;
+scene.add(fireGlowDisc);
+
+const flameMeshes = [];
+[
+  { color:0xffd08a, scale:[0.32,0.78,0.32], y:0.72 },
+  { color:0xff7a2d, scale:[0.46,0.58,0.46], y:0.62 },
+  { color:0x8a3ffc, scale:[0.18,0.38,0.18], y:0.78 }
+].forEach((f) => {
+  const flameMesh = new THREE.Mesh(
+    new THREE.ConeGeometry(0.5, 1, 18),
+    new THREE.MeshBasicMaterial({ color:f.color, transparent:true, opacity:0.72 })
+  );
+  flameMesh.scale.set(...f.scale);
+  flameMesh.userData.baseY = f.scale[1];
+  flameMesh.position.set(0, f.y, 0);
+  flameMeshes.push(flameMesh);
+  scene.add(flameMesh);
+});
 
 const logs = [];
 for (let i = 0; i < 4; i++) {
@@ -337,6 +432,8 @@ for (let i = 0; i < 4; i++) {
   log.position.set(Math.cos(i * Math.PI / 2) * 0.4, 0.45, Math.sin(i * Math.PI / 2) * 0.4);
   log.rotation.z = Math.PI / 2.6;
   log.rotation.y = i * Math.PI / 2;
+  log.castShadow = true;
+  log.receiveShadow = true;
   logs.push(log);
   scene.add(log);
 }
@@ -348,9 +445,12 @@ const ember = new THREE.PointLight(0xff6a00, 1.4, 10, 2);
 ember.position.set(0, 0.7, 0);
 scene.add(ember);
 
-const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.95, 5.5, 6), new THREE.MeshStandardMaterial({ color:0x1f3654, emissive:0x1d3f6f, emissiveIntensity:0.5 }));
+const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.95, 5.5, 6), new THREE.MeshStandardMaterial({ color:0x1f3654, emissive:0x1d3f6f, emissiveIntensity:0.5, roughness:0.82 }));
 obelisk.position.set(11, 2.75, 2);
+obelisk.castShadow = true;
+obelisk.receiveShadow = true;
 scene.add(obelisk);
+softShadow("obelisk_shadow", 11, 2, 1.3, 0.8, 0.28);
 
 const lanterns = [];
 [
@@ -364,6 +464,7 @@ const lanterns = [];
   g.add(body, core);
   g.position.set(pos.x, pos.y, pos.z);
   g.userData.core = core;
+  markShadows(g);
   lanterns.push(g);
   scene.add(g);
 });
@@ -521,6 +622,14 @@ function animate(t = 0) {
     f.position.set(Math.cos(tt) * f.userData.radius, f.userData.height + Math.sin(tt * 2) * 0.3, Math.sin(tt) * f.userData.radius);
     f.material.opacity = 0.5 + Math.sin(tt * 5) * 0.5;
   });
+
+  flameMeshes.forEach((mesh, i) => {
+    const flamePulse = 0.92 + Math.sin(t * 0.009 + i) * 0.14;
+    mesh.scale.y = mesh.userData.baseY ? mesh.userData.baseY * flamePulse : mesh.scale.y;
+    mesh.rotation.y += 0.018 + i * 0.004;
+    mesh.material.opacity = 0.58 + Math.sin(t * 0.011 + i) * 0.16;
+  });
+  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.08 : 0.16) + Math.sin(t * 0.006) * 0.035;
 
   avatarYou.halo.rotation.z += 0.008;
   avatarYou.body.position.y = 0.7 + Math.sin(t * 0.002) * 0.035;
