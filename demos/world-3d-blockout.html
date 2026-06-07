@@ -36,7 +36,7 @@
       <span class="pill">Sky pass: moon + clouds</span>
       <span class="pill">Biome pass: luminous grass</span>
       <span class="pill">Map pass: expanded camp districts</span>
-      <span class="pill">Market pass: exchange + transition</span>
+      <span class="pill">Market pass: full-size district</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
@@ -1044,34 +1044,96 @@ function makeTeaTable(id, x, z, rot = 0) {
   return g;
 }
 
-function makeMarketStall(id, x, z, rot = 0) {
+
+function makeMarketPlaza(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const plazaMat = surfaceMaterial({ color: 0x4b4140, map: textureSet.stone, roughness: 0.96, metalness: 0.02, bumpScale: 0.038 });
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.36, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.08, 4.25), plazaMat);
+  base.position.y = 0.04;
+  base.receiveShadow = true;
+  g.add(base);
+
+  const edgeStones = [];
+  for (let i = 0; i < 18; i++) {
+    const t = i / 17;
+    const sx = -2.72 + t * 5.44;
+    [-2.05, 2.05].forEach((sz, row) => {
+      const stone = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.065, 0.18), plazaMat);
+      stone.position.set(sx, 0.105, sz);
+      stone.rotation.y = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
+      stone.castShadow = true;
+      stone.receiveShadow = true;
+      edgeStones.push(stone);
+      g.add(stone);
+    });
+  }
+  for (let i = 0; i < 12; i++) {
+    const t = i / 11;
+    const sz = -1.78 + t * 3.56;
+    [-2.9, 2.9].forEach((sx, col) => {
+      const stone = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.065, 0.26), plazaMat);
+      stone.position.set(sx, 0.105, sz);
+      stone.rotation.y = (col ? 0.08 : -0.08) + Math.cos(i) * 0.04;
+      stone.castShadow = true;
+      stone.receiveShadow = true;
+      edgeStones.push(stone);
+      g.add(stone);
+    });
+  }
+
+  const runes = [];
+  [[-1.9, -1.15], [1.9, -1.15], [-1.9, 1.15], [1.9, 1.15], [0, 0]].forEach(([rx, rz], idx) => {
+    const rune = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.26, 6), trimMat.clone());
+    rune.position.set(rx, 0.122, rz);
+    rune.rotation.x = -Math.PI / 2;
+    rune.rotation.z = idx * 0.42;
+    rune.userData.phase = idx * 0.62;
+    runes.push(rune);
+    g.add(rune);
+  });
+
+  const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 2.95, 2.0, 0xffb35f, 0.1);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.runes = runes;
+  g.userData.edgeStones = edgeStones;
+  g.userData.aisle = aisle;
+  markShadows(g, true, true);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 3.25, 2.35, 0.18);
+  return g;
+}
+
+function makeMarketStall(id, x, z, rot = 0, showLabel = false) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
   const cloth = surfaceMaterial({ color: 0x6f3f8f, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 });
-  const counter = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.28, 0.82), wood);
-  counter.position.y = 0.48;
-  const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.18, 0.55, 4), cloth);
-  canopy.position.y = 1.34;
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.34, 1.05), wood);
+  counter.position.y = 0.5;
+  const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.72, 0.74, 4), cloth);
+  canopy.position.y = 1.52;
   canopy.rotation.y = Math.PI / 4;
   const lanterns = [];
   const crates = [];
-  [-0.62, 0.62].forEach((lx) => {
+  [-0.92, 0, 0.92].forEach((lx) => {
     const crate = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.24, 0.32), wood);
-    crate.position.set(lx, 0.23, -0.48);
+    crate.position.set(lx, 0.23, -0.64);
     crates.push(crate);
     g.add(crate);
   });
-  [-0.58, 0.58].forEach((lx) => {
+  [-0.86, 0.86].forEach((lx) => {
     const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.88 }));
-    lantern.position.set(lx, 0.82, 0.34);
+    lantern.position.set(lx, 0.9, 0.48);
     lanterns.push(lantern);
     g.add(lantern);
   });
-  const banner = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 0.36), surfaceMaterial({ color: 0x4c1d95, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
-  banner.position.set(0, 1.18, 0.58);
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.46), surfaceMaterial({ color: 0x4c1d95, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
+  banner.position.set(0, 1.28, 0.72);
   banner.rotation.y = Math.PI;
-  const glow = warmGlowBillboard(`${id}_glow`, x, 1.18, z, 1.35, 0xffc879, 0.2);
-  const exchangeGlow = warmLightPool(`${id}_exchange_pool`, x, z, 1.25, 0.92, 0xffb35f, 0.14);
+  const glow = warmGlowBillboard(`${id}_glow`, x, 1.32, z, 1.95, 0xffc879, 0.24);
+  const exchangeGlow = warmLightPool(`${id}_exchange_pool`, x, z, 2.05, 1.35, 0xffb35f, 0.16);
   g.add(counter, canopy, banner);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
@@ -1083,8 +1145,8 @@ function makeMarketStall(id, x, z, rot = 0) {
   g.userData.banner = banner;
   markShadows(g);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 1.2, 0.72, 0.24);
-  makeZoneLabel("MARKET", "Exchange + Resources", x, 2.05, z, "#ffd58a");
+  softShadow(`${id}_shadow`, x, z, 1.75, 1.0, 0.26);
+  if (showLabel) makeZoneLabel("MARKET", "Exchange Plaza", x, 2.45, z, "#ffd58a");
   return g;
 }
 
@@ -1167,6 +1229,36 @@ function makeMarketDisplayStand(id, x, z, rot = 0, color = 0xc084fc) {
   markShadows(g);
   scene.add(g);
   softShadow(`${id}_shadow`, x, z, 0.55, 0.36, 0.18);
+  return g;
+}
+
+
+function makeMarketHangingLights(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const postMat = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0xd6b77a, transparent: true, opacity: 0.7 });
+  [-2.45, 2.45].forEach((lx) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.075, 1.55, 8), postMat);
+    post.position.set(lx, 0.78, 0);
+    g.add(post);
+  });
+  const line = new THREE.Mesh(new THREE.BoxGeometry(5.15, 0.025, 0.025), lineMat);
+  line.position.y = 1.48;
+  g.add(line);
+  const lanterns = [];
+  [-1.7, -0.55, 0.55, 1.7].forEach((lx, idx) => {
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.86 }));
+    core.position.set(lx, 1.27, 0);
+    const glow = warmGlowBillboard(`${id}_string_glow_${idx}`, x + lx, 1.27, z, 0.62, 0xffc879, 0.16);
+    lanterns.push({ core, glow });
+    g.add(core);
+  });
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.lanterns = lanterns;
+  markShadows(g);
+  scene.add(g);
   return g;
 }
 
@@ -1333,21 +1425,28 @@ const floorCushions = [
   makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
   makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
 ];
+const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 0.25, 7.85, 0.03);
 const campDistricts = [
-  makeMarketStall("market_stall_01", 0.2, 7.6, 0.04),
+  makeMarketStall("market_stall_center", 0.2, 7.95, 0.04, true),
+  makeMarketStall("market_stall_west", -2.05, 7.45, 0.34),
+  makeMarketStall("market_stall_east", 2.35, 7.5, -0.34),
   makeStable("stables_companion_support", 4.4, 6.2, -0.38),
   makeWelcomeGrove("welcome_grove_arrival", -0.6, 10.2, 0.02),
   makeSouthGate("south_gate_waypoint", 0.4, -7.9, 0.08)
 ];
 const marketTransition = makeMarketTransitionPath("market_transition_campfire_to_exchange", 4.68, 7.45);
+const marketStringLights = makeMarketHangingLights("market_string_lights_full_plaza", 0.2, 7.08, 0.02);
 const marketStands = [
-  makeMarketDisplayStand("market_display_crystals", -1.05, 7.05, 0.28, 0xc084fc),
-  makeMarketDisplayStand("market_display_fruit", 1.25, 7.2, -0.3, 0xffd58a),
-  makeMarketDisplayStand("market_display_scrolls", 0.95, 8.28, -0.55, 0x7dd3fc)
+  makeMarketDisplayStand("market_display_crystals", -1.45, 7.2, 0.28, 0xc084fc),
+  makeMarketDisplayStand("market_display_fruit", 1.55, 7.18, -0.3, 0xffd58a),
+  makeMarketDisplayStand("market_display_scrolls", 0.95, 8.72, -0.55, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_potions", -0.85, 8.82, 0.5, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_seed_bowls", 2.55, 8.25, -0.68, 0xa7f3d0)
 ];
 const marketCompanions = [
-  makeMarketCompanion("market_companion_vendor", -0.72, 7.85, 0xe9d5ff),
-  makeMarketCompanion("market_companion_traveler", 1.38, 7.82, 0xbde9ff)
+  makeMarketCompanion("market_companion_vendor", -0.92, 7.92, 0xe9d5ff),
+  makeMarketCompanion("market_companion_traveler", 1.5, 7.88, 0xbde9ff),
+  makeMarketCompanion("market_companion_keeper", 0.35, 8.92, 0xfde68a)
 ];
 
 const closeGrasses = [
@@ -1564,11 +1663,11 @@ let yaw = Math.PI;
 let pitch = -0.22;
 
 function focusMarketTransition() {
-  camera.position.set(-0.85, 3.15, 11.8);
-  cameraDistance = 10.9;
-  yaw = Math.PI * 0.96;
-  pitch = -0.28;
-  if (hudCause) hudCause.textContent = "market path open: exchange + resources";
+  camera.position.set(-0.25, 4.2, 13.8);
+  cameraDistance = 12.8;
+  yaw = Math.PI * 0.99;
+  pitch = -0.36;
+  if (hudCause) hudCause.textContent = "market plaza open: full-size exchange district";
 }
 
 if (marketFocusButton) {
@@ -1717,6 +1816,16 @@ function animate(t = 0) {
     lantern.glow.material.opacity = (timeMode === "day" ? 0.12 : 0.28) * pulse;
   });
   marketTransition.userData.banner.rotation.z = Math.sin(t * 0.0018) * 0.035;
+  marketPlaza.userData.runes.forEach((rune) => {
+    rune.rotation.z += 0.004;
+    rune.material.opacity = (timeMode === "day" ? 0.18 : 0.42) + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
+  });
+  marketPlaza.userData.aisle.material.opacity = (timeMode === "day" ? 0.06 : 0.14) + Math.sin(t * 0.003) * 0.035;
+  marketStringLights.userData.lanterns.forEach((lantern, idx) => {
+    const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
+    lantern.core.scale.setScalar(pulse);
+    lantern.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) * pulse;
+  });
   marketStands.forEach((stand, standIdx) => {
     stand.userData.wares.forEach((ware, wareIdx) => {
       ware.position.y = 0.69 + Math.sin(t * 0.004 + ware.userData.phase + standIdx) * 0.035;

@@ -160,7 +160,8 @@ Scope (intentionally small):
 - walkable pathing with huts and obelisk anchors kept lightweight,
 - built-in day/night toggle for quick lighting iteration before full time system,
 - touch drag camera look support for mobile,
-- lantern micro-light + waterfall glow pass for richer A1 depth cues.
+- lantern micro-light + waterfall glow pass for richer A1 depth cues,
+- expanded Market focus with a full-size exchange plaza, three stalls, string lights, display stands, and vendor/traveler presences.
 
 Run locally:
 
