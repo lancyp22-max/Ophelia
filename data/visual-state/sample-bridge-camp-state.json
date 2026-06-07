@@ -155,18 +155,21 @@
       "type": "map_expansion_landmarks",
       "location": "Lumaria Base Camp / Outer Ring",
       "visible_state": {
-        "market": "Exchange + Resources stall north of the campfire circle",
+        "market": "Exchange + Resources stall north of the campfire circle with a deeper vendor canopy, crates, banner, lanterns, and glow pool",
+        "market_transition": "stepping-stone path, guide lanterns, banner, and soft rune inlays from campfire to exchange area",
+        "market_wares": "small display stands for crystals, fruit, scrolls, potions, and barter resources",
+        "market_companions": "two small vendor/traveler presences bob gently near the trade path",
         "stables": "Companions + Support lodge near the garden path",
         "welcome_grove": "Arrival + Care arch on the north path",
         "south_gate": "Journey Beyond waypoint gate on the south path",
         "labels": "soft sprite nameplates keep the districts readable from the world camera"
       },
-      "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview"],
+      "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview", "market_exchange_preview"],
       "mood_tags": ["storybook_map", "cozy_town", "readable_landmarks", "expanded_but_safe"],
-      "causal_links": ["bridge_overview", "world_flow", "time_of_day", "memory_weave"],
-      "allowed_transitions": ["preview", "district_focus", "linked", "future_route_unlock"],
+      "causal_links": ["bridge_overview", "world_flow", "time_of_day", "memory_weave", "resource_exchange_state"],
+      "allowed_transitions": ["preview", "market_focus", "district_focus", "linked", "future_route_unlock"],
       "safety_notes": ["landmarks_are_read_only", "do_not_imply_external_travel_without_confirm", "keep_labels_small_and_non_intrusive"],
-      "residual_trace": "the camp begins to feel like a small town without losing the fire circle"
+      "residual_trace": "the market becomes a visible next step from the campfire: warm, readable, and non-demanding"
     },
     {
       "id": "memory_gate_01",

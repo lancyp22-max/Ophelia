@@ -17,7 +17,11 @@
     "stables_companion_support",
     "welcome_grove",
     "south_gate_waypoint",
-    "expanded_camp_districts"
+    "expanded_camp_districts",
+    "market_transition_path",
+    "market_display_stands",
+    "market_companion_vendors",
+    "market_lantern_pools"
   ],
   "mood": "warm_night_presence",
   "functional_tags": [
@@ -27,7 +31,9 @@
     "visual_orientation",
     "sky_light_state",
     "district_map_expansion",
-    "camp_navigation_preview"
+    "camp_navigation_preview",
+    "market_exchange_preview",
+    "campfire_to_market_transition"
   ],
   "active_agent": "you",
   "avatar_state": {
@@ -44,7 +50,9 @@
     "Base_Camp_Market",
     "Base_Camp_Stables",
     "Welcome_Grove",
-    "South_Gate_Waypoint"
+    "South_Gate_Waypoint",
+    "Market_Exchange_Path",
+    "Market_Wanderer_Stalls"
   ],
   "safety_state": {
     "risk": "low",
@@ -55,5 +63,5 @@
       "external_publish"
     ]
   },
-  "residual_trace": "Cute warm base camp; the first square now hints at a larger town map while keeping the campfire as the anchor."
+  "residual_trace": "Cute warm base camp; the first square now hints at a larger town map, with a lantern-lit market transition while keeping the campfire as the anchor."
 }
