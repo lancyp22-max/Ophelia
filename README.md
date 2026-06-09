@@ -161,7 +161,8 @@ Scope (intentionally small):
 - built-in day/night toggle for quick lighting iteration before full time system,
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
-- expanded Market focus with a full-size exchange plaza, three stalls, string lights, display stands, and vendor/traveler presences.
+- expanded Market focus with a walk-under exchange hall, high canopy, three stalls, string lights, display stands, and vendor/traveler presences,
+- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, and happier living-moss accents.
 
 Run locally:
 
@@ -294,3 +295,27 @@ Audit checks include:
 - Verify naming alone does not reveal sealed architecture.
 - Confirm no inward references to `backups/`, `library/`, or private runtime paths.
 - Ensure first public narrative remains singular: **world-shaped interface experiment**.
+
+### Token context workflow
+
+To stop future coding sessions from replaying the entire conversation, use the compact context capsule instead of pasting old chat history.
+
+Files:
+- `data/context/ophelia-context-capsule.v0.1.json`
+- `docs/token-context-workflow.md`
+- `scripts/context_brief.py`
+
+Generate the paste-ready brief:
+
+```bash
+make context-brief
+# output: artifacts/context-brief.md
+```
+
+Default next prompt shape:
+
+```text
+Use the Ophelia context capsule. Do not replay old chat.
+Task: improve only <one small area>.
+Constraints: no new dependencies, no binary assets, public-shell safe.
+```

@@ -36,7 +36,8 @@
       <span class="pill">Sky pass: moon + clouds</span>
       <span class="pill">Biome pass: luminous grass</span>
       <span class="pill">Map pass: expanded camp districts</span>
-      <span class="pill">Market pass: full-size district</span>
+      <span class="pill">Market pass: walk-under canopy</span>
+      <span class="pill">Glow pass: bright meadow warmth</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
@@ -71,7 +72,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
 
 function markShadows(object, cast = true, receive = true) {
@@ -348,15 +349,16 @@ function applyTimeMode(mode) {
   const isSunset = mode === "sunset";
   const isRain = mode === "rain";
   const label = mode.charAt(0).toUpperCase() + mode.slice(1);
-  scene.background.set(isRain ? 0x3e5770 : isSunset ? 0xff9466 : isDay ? 0x87c6ff : 0x050913);
-  scene.fog.color.set(isRain ? 0x58728f : isSunset ? 0xd18a73 : isDay ? 0x9fd0ff : 0x050913);
-  scene.fog.near = isDay || isSunset ? 30 : 15;
-  scene.fog.far = isRain ? 70 : isDay || isSunset ? 130 : 80;
-  moon.color.set(isSunset ? 0xffb26d : isDay ? 0xfff5d6 : 0x7ca8ff);
-  moon.intensity = isRain ? 0.45 : isSunset ? 0.95 : isDay ? 1.2 : 0.65;
-  ambient.intensity = isRain ? 0.34 : isSunset ? 0.48 : isDay ? 0.55 : 0.26;
-  hemi.intensity = isRain ? 0.26 : isSunset ? 0.38 : isDay ? 0.42 : 0.24;
-  renderer.toneMappingExposure = isRain ? 0.95 : isSunset ? 1.03 : isDay ? 1.12 : 1.08;
+  scene.background.set(isRain ? 0x4f6f8b : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
+  scene.fog.color.set(isRain ? 0x6d89a5 : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
+  scene.fog.near = isDay || isSunset ? 34 : 18;
+  scene.fog.far = isRain ? 82 : isDay || isSunset ? 145 : 92;
+  moon.color.set(isSunset ? 0xffbf7d : isDay ? 0xfff8df : 0xaecbff);
+  moon.intensity = isRain ? 0.58 : isSunset ? 1.1 : isDay ? 1.35 : 0.82;
+  ambient.intensity = isRain ? 0.44 : isSunset ? 0.58 : isDay ? 0.66 : 0.36;
+  hemi.intensity = isRain ? 0.34 : isSunset ? 0.48 : isDay ? 0.52 : 0.32;
+  naturalFill.intensity = isRain ? 0.28 : isSunset ? 0.42 : isDay ? 0.36 : 0.18;
+  renderer.toneMappingExposure = isRain ? 1.02 : isSunset ? 1.14 : isDay ? 1.22 : 1.18;
   flame.color.set(isRain ? 0xff8f42 : isDay ? 0xff9a4a : 0xffa85c);
   runeRing.material.color.set(isRain ? 0x9bdcff : isDay ? 0xffcf7a : 0xffb366);
   const moonVisible = mode === "night";
@@ -368,20 +370,20 @@ function applyTimeMode(mode) {
   starField.material.opacity = mode === "night" ? 0.92 : 0.42;
   cloudBanks.forEach((cloud, idx) => {
     cloud.visible = isDay || isSunset || isRain || idx < 2;
-    cloud.userData.mat.color.set(isRain ? 0x9fb4c7 : isSunset ? 0xffc1a3 : isDay ? 0xf4fbff : 0x617291);
-    cloud.userData.mat.opacity = isRain ? 0.42 : isSunset ? 0.34 : isDay ? 0.32 : 0.18;
+    cloud.userData.mat.color.set(isRain ? 0xb8cad9 : isSunset ? 0xffd0b2 : isDay ? 0xffffff : 0x7e90b0);
+    cloud.userData.mat.opacity = isRain ? 0.46 : isSunset ? 0.38 : isDay ? 0.36 : 0.22;
   });
   skyRays.forEach((ray, idx) => {
     ray.visible = isDay || isSunset || mode === "morning";
-    ray.material.color.set(isSunset ? 0xff9a6d : 0xffe7a6);
-    ray.userData.baseOpacity = (isSunset ? 0.18 : 0.11) - idx * 0.025;
+    ray.material.color.set(isSunset ? 0xffb17d : 0xfff1b8);
+    ray.userData.baseOpacity = (isSunset ? 0.24 : 0.16) - idx * 0.026;
     ray.material.opacity = ray.userData.baseOpacity;
   });
   rainVeil.visible = isRain;
   fireflies.forEach((f) => { f.visible = !isDay; });
   lanterns.forEach((l) => { l.userData.core.material.color.set(isDay ? 0xffe2a8 : 0xffc979); });
-  waterfallGlow.material.opacity = isRain ? 0.32 : isDay ? 0.24 : 0.16;
-  brook.material.opacity = isRain ? 0.34 : isDay ? 0.22 : 0.16;
+  waterfallGlow.material.opacity = isRain ? 0.38 : isDay ? 0.3 : 0.21;
+  brook.material.opacity = isRain ? 0.4 : isDay ? 0.28 : 0.2;
   canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
   campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
   moonVine.userData.orb.visible = !isDay;
@@ -405,8 +407,8 @@ function applyTimeMode(mode) {
     avatarYou.robeMat.emissiveIntensity = isDay ? 0.08 : 0.22;
     avatarYou.hairMat.emissiveIntensity = isDay ? 0.06 : 0.14;
   }
-  pathMaterial.color.set(isRain ? 0x35415a : isDay ? 0x6f5a3b : 0x2f2540);
-  groundMaterial.color.set(isRain ? 0x17283a : isDay ? 0x27452f : 0x0c1b30);
+  pathMaterial.color.set(isRain ? 0x41516d : isDay ? 0x806a4a : isSunset ? 0x5c4150 : 0x3c314f);
+  groundMaterial.color.set(isRain ? 0x203852 : isDay ? 0x335d3c : isSunset ? 0x2c4938 : 0x122844);
   mushrooms.forEach((cluster) => {
     cluster.children.forEach((part) => {
       if (part.material && "emissiveIntensity" in part.material) {
@@ -421,14 +423,17 @@ function applyTimeMode(mode) {
     hudMode.textContent = label;
   }
   if (hudCause) {
-    hudCause.textContent = isRain ? "rain softens fire + boosts mushrooms" : isSunset ? "sunset warms archive edges" : isDay ? "day opens pathfinding clarity" : "memory weave linked";
+    hudCause.textContent = isRain ? "rain brightens the living moss" : isSunset ? "sunset warms the whole camp" : isDay ? "day opens a bright meadow path" : "moonlit glow keeps camp gentle";
   }
 }
 
-const ambient = new THREE.AmbientLight(0x5870a8, 0.26);
+const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
 scene.add(ambient);
-const hemi = new THREE.HemisphereLight(0x9fd5ff, 0x1c1026, 0.34);
+const hemi = new THREE.HemisphereLight(0xbbe7ff, 0x2b1f30, 0.42);
 scene.add(hemi);
+const naturalFill = new THREE.PointLight(0xb8ffd9, 0.2, 28, 2.2);
+naturalFill.position.set(0, 6.5, 2.5);
+scene.add(naturalFill);
 const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
 moon.position.set(14, 20, -6);
 moon.castShadow = true;
@@ -712,6 +717,36 @@ function makePetalScatter(id, x, z, rot = 0, color = 0xd9a7ff) {
   petal.userData.visualId = id;
   scene.add(petal);
   return petal;
+}
+
+
+function makeHappyFlowerCluster(id, x, z, scale = 1, palette = [0xffd58a, 0xf0abfc, 0x7dd3fc]) {
+  const g = new THREE.Group();
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0x3da36b, emissive: 0x123d27, emissiveIntensity: 0.06, roughness: 0.82 });
+  const glow = warmLightPool(`${id}_soft_glow`, x, z, 0.62 * scale, 0.42 * scale, 0xb8ffd9, 0.1);
+  const flowers = [];
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    const radius = (0.09 + (i % 3) * 0.055) * scale;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012 * scale, 0.018 * scale, 0.18 * scale, 6), stemMat);
+    stem.position.set(Math.cos(angle) * radius, 0.16 * scale, Math.sin(angle) * radius);
+    const bloom = new THREE.Mesh(
+      new THREE.SphereGeometry(0.04 * scale, 10, 8),
+      new THREE.MeshBasicMaterial({ color: palette[i % palette.length], transparent: true, opacity: 0.86 })
+    );
+    bloom.position.set(stem.position.x, 0.27 * scale + (i % 2) * 0.035 * scale, stem.position.z);
+    bloom.userData.baseY = bloom.position.y;
+    bloom.userData.phase = i * 0.53 + x * 0.17;
+    flowers.push(bloom);
+    g.add(stem, bloom);
+  }
+  g.position.set(x, 0.09, z);
+  g.userData.visualId = id;
+  g.userData.flowers = flowers;
+  g.userData.glow = glow;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
 }
 
 function makeCloudBank(id, x, y, z, scale = 1, color = 0xd9ecff, opacity = 0.28) {
@@ -1049,16 +1084,16 @@ function makeMarketPlaza(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const plazaMat = surfaceMaterial({ color: 0x4b4140, map: textureSet.stone, roughness: 0.96, metalness: 0.02, bumpScale: 0.038 });
   const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.36, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
-  const base = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.08, 4.25), plazaMat);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, 6.25), plazaMat);
   base.position.y = 0.04;
   base.receiveShadow = true;
   g.add(base);
 
   const edgeStones = [];
-  for (let i = 0; i < 18; i++) {
-    const t = i / 17;
-    const sx = -2.72 + t * 5.44;
-    [-2.05, 2.05].forEach((sz, row) => {
+  for (let i = 0; i < 24; i++) {
+    const t = i / 23;
+    const sx = -4.08 + t * 8.16;
+    [-3.05, 3.05].forEach((sz, row) => {
       const stone = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.065, 0.18), plazaMat);
       stone.position.set(sx, 0.105, sz);
       stone.rotation.y = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
@@ -1068,10 +1103,10 @@ function makeMarketPlaza(id, x, z, rot = 0) {
       g.add(stone);
     });
   }
-  for (let i = 0; i < 12; i++) {
-    const t = i / 11;
-    const sz = -1.78 + t * 3.56;
-    [-2.9, 2.9].forEach((sx, col) => {
+  for (let i = 0; i < 18; i++) {
+    const t = i / 17;
+    const sz = -2.78 + t * 5.56;
+    [-4.3, 4.3].forEach((sx, col) => {
       const stone = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.065, 0.26), plazaMat);
       stone.position.set(sx, 0.105, sz);
       stone.rotation.y = (col ? 0.08 : -0.08) + Math.cos(i) * 0.04;
@@ -1083,7 +1118,7 @@ function makeMarketPlaza(id, x, z, rot = 0) {
   }
 
   const runes = [];
-  [[-1.9, -1.15], [1.9, -1.15], [-1.9, 1.15], [1.9, 1.15], [0, 0]].forEach(([rx, rz], idx) => {
+  [[-3.1, -2.0], [0, -2.1], [3.1, -2.0], [-3.1, 2.0], [0, 0], [3.1, 2.0], [-1.55, 1.45], [1.55, 1.45]].forEach(([rx, rz], idx) => {
     const rune = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.26, 6), trimMat.clone());
     rune.position.set(rx, 0.122, rz);
     rune.rotation.x = -Math.PI / 2;
@@ -1093,7 +1128,7 @@ function makeMarketPlaza(id, x, z, rot = 0) {
     g.add(rune);
   });
 
-  const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 2.95, 2.0, 0xffb35f, 0.1);
+  const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 4.35, 3.1, 0xffb35f, 0.12);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -1102,7 +1137,7 @@ function makeMarketPlaza(id, x, z, rot = 0) {
   g.userData.aisle = aisle;
   markShadows(g, true, true);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 3.25, 2.35, 0.18);
+  softShadow(`${id}_shadow`, x, z, 4.7, 3.35, 0.18);
   return g;
 }
 
@@ -1232,6 +1267,74 @@ function makeMarketDisplayStand(id, x, z, rot = 0, color = 0xc084fc) {
   return g;
 }
 
+
+
+function makeMarketOverhang(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const postMat = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.88, bumpScale: 0.055 });
+  const roofMat = surfaceMaterial({ color: 0x7a4aa4, map: textureSet.cloth, roughness: 0.9, bumpScale: 0.026 });
+  roofMat.transparent = true;
+  roofMat.opacity = 0.9;
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62 });
+  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.88 });
+
+  const postPositions = [
+    [-3.95, -2.85], [3.95, -2.85], [-3.95, 2.85], [3.95, 2.85],
+    [-1.45, -2.95], [1.45, -2.95]
+  ];
+  postPositions.forEach(([px, pz]) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.11, 2.25, 8), postMat);
+    post.position.set(px, 1.13, pz);
+    g.add(post);
+  });
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(8.9, 0.12, 6.15), roofMat);
+  roof.position.y = 2.42;
+  roof.rotation.z = 0.025;
+  const roofPeak = new THREE.Mesh(new THREE.ConeGeometry(4.75, 0.78, 4), roofMat.clone());
+  roofPeak.position.y = 2.86;
+  roofPeak.scale.z = 0.72;
+  roofPeak.rotation.y = Math.PI / 4;
+  g.add(roof, roofPeak);
+
+  const beams = [];
+  [[0, -3.03, 8.55, 0.08], [0, 3.03, 8.55, 0.08], [-4.18, 0, 0.08, 5.8], [4.18, 0, 0.08, 5.8]].forEach(([bx, bz, sx, sz]) => {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.09, sz), postMat);
+    beam.position.set(bx, 2.14, bz);
+    beams.push(beam);
+    g.add(beam);
+  });
+
+  const ribbons = [];
+  [-2.8, 0, 2.8].forEach((rx, idx) => {
+    const ribbon = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 5.35), trimMat.clone());
+    ribbon.position.set(rx, 2.51, 0);
+    ribbon.rotation.x = -Math.PI / 2;
+    ribbon.userData.phase = idx * 0.7;
+    ribbons.push(ribbon);
+    g.add(ribbon);
+  });
+
+  const lanterns = [];
+  [[-2.85, -1.85], [0, -1.95], [2.85, -1.85], [-2.85, 1.85], [0, 1.95], [2.85, 1.85]].forEach(([lx, lz], idx) => {
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 10), lanternMat.clone());
+    core.position.set(lx, 2.03, lz);
+    const glow = warmGlowBillboard(`${id}_lantern_glow_${idx}`, x + lx, 2.03, z + lz, 0.82, 0xffc879, 0.18);
+    lanterns.push({ core, glow });
+    g.add(core);
+  });
+
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.roof = roof;
+  g.userData.roofPeak = roofPeak;
+  g.userData.ribbons = ribbons;
+  g.userData.lanterns = lanterns;
+  markShadows(g, true, true);
+  scene.add(g);
+  return g;
+}
 
 function makeMarketHangingLights(id, x, z, rot = 0) {
   const g = new THREE.Group();
@@ -1425,28 +1528,30 @@ const floorCushions = [
   makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
   makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
 ];
-const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 0.25, 7.85, 0.03);
+const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 0.25, 8.15, 0.03);
+const marketOverhang = makeMarketOverhang("market_walk_under_overhang", 0.25, 8.1, 0.03);
 const campDistricts = [
-  makeMarketStall("market_stall_center", 0.2, 7.95, 0.04, true),
-  makeMarketStall("market_stall_west", -2.05, 7.45, 0.34),
-  makeMarketStall("market_stall_east", 2.35, 7.5, -0.34),
+  makeMarketStall("market_stall_center", 0.2, 9.15, 0.04, true),
+  makeMarketStall("market_stall_west", -3.15, 8.0, 0.62),
+  makeMarketStall("market_stall_east", 3.45, 8.05, -0.62),
   makeStable("stables_companion_support", 4.4, 6.2, -0.38),
   makeWelcomeGrove("welcome_grove_arrival", -0.6, 10.2, 0.02),
   makeSouthGate("south_gate_waypoint", 0.4, -7.9, 0.08)
 ];
 const marketTransition = makeMarketTransitionPath("market_transition_campfire_to_exchange", 4.68, 7.45);
-const marketStringLights = makeMarketHangingLights("market_string_lights_full_plaza", 0.2, 7.08, 0.02);
+const marketStringLights = makeMarketHangingLights("market_string_lights_full_plaza", 0.2, 6.82, 0.02);
 const marketStands = [
-  makeMarketDisplayStand("market_display_crystals", -1.45, 7.2, 0.28, 0xc084fc),
-  makeMarketDisplayStand("market_display_fruit", 1.55, 7.18, -0.3, 0xffd58a),
-  makeMarketDisplayStand("market_display_scrolls", 0.95, 8.72, -0.55, 0x7dd3fc),
-  makeMarketDisplayStand("market_display_potions", -0.85, 8.82, 0.5, 0x7dd3fc),
-  makeMarketDisplayStand("market_display_seed_bowls", 2.55, 8.25, -0.68, 0xa7f3d0)
+  makeMarketDisplayStand("market_display_crystals", -2.25, 7.05, 0.28, 0xc084fc),
+  makeMarketDisplayStand("market_display_fruit", 2.25, 7.05, -0.3, 0xffd58a),
+  makeMarketDisplayStand("market_display_scrolls", 1.25, 9.7, -0.55, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_potions", -1.25, 9.72, 0.5, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_seed_bowls", 3.62, 8.78, -0.68, 0xa7f3d0),
+  makeMarketDisplayStand("market_display_textiles", -3.48, 8.68, 0.72, 0xf0abfc)
 ];
 const marketCompanions = [
-  makeMarketCompanion("market_companion_vendor", -0.92, 7.92, 0xe9d5ff),
-  makeMarketCompanion("market_companion_traveler", 1.5, 7.88, 0xbde9ff),
-  makeMarketCompanion("market_companion_keeper", 0.35, 8.92, 0xfde68a)
+  makeMarketCompanion("market_companion_vendor", -1.35, 8.25, 0xe9d5ff),
+  makeMarketCompanion("market_companion_traveler", 1.78, 8.15, 0xbde9ff),
+  makeMarketCompanion("market_companion_keeper", 0.35, 9.55, 0xfde68a)
 ];
 
 const closeGrasses = [
@@ -1465,6 +1570,13 @@ const luminousGrass = [
   makeLuminousGrassPatch("luminous_grass_bench", -2.34, 2.42, 0.84, 0xc4b5fd),
   makeLuminousGrassPatch("luminous_grass_table", 4.1, 2.28, 0.78, 0x9ef7d7),
   makeLuminousGrassPatch("luminous_grass_gate_path", 0.52, -4.3, 0.92, 0xa7f3ff)
+];
+const happyFlowers = [
+  makeHappyFlowerCluster("happy_flowers_market_path", -0.55, 5.92, 1.15, [0xffd58a, 0xf9a8d4, 0xa7f3ff]),
+  makeHappyFlowerCluster("happy_flowers_market_west", -2.85, 7.85, 1.0, [0xf0abfc, 0xc4b5fd, 0xffd58a]),
+  makeHappyFlowerCluster("happy_flowers_market_east", 3.0, 8.02, 1.05, [0x86efac, 0x7dd3fc, 0xffc4a3]),
+  makeHappyFlowerCluster("happy_flowers_campfire_south", 1.32, 3.28, 0.92, [0xffd58a, 0xa7f3ff, 0xf0abfc]),
+  makeHappyFlowerCluster("happy_flowers_welcome_edge", -1.82, 9.35, 1.25, [0xa7f3ff, 0xfde68a, 0x86efac])
 ];
 const tinyFauna = [
   makeTinyFauna("fauna_firefly_moth_auri", 2.25, 1.35, 0xc4b5fd),
@@ -1663,11 +1775,11 @@ let yaw = Math.PI;
 let pitch = -0.22;
 
 function focusMarketTransition() {
-  camera.position.set(-0.25, 4.2, 13.8);
-  cameraDistance = 12.8;
-  yaw = Math.PI * 0.99;
-  pitch = -0.36;
-  if (hudCause) hudCause.textContent = "market plaza open: full-size exchange district";
+  camera.position.set(-0.2, 4.85, 15.8);
+  cameraDistance = 14.8;
+  yaw = Math.PI * 0.995;
+  pitch = -0.4;
+  if (hudCause) hudCause.textContent = "market canopy open: walk-under exchange hall";
 }
 
 if (marketFocusButton) {
@@ -1821,6 +1933,16 @@ function animate(t = 0) {
     rune.material.opacity = (timeMode === "day" ? 0.18 : 0.42) + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
   });
   marketPlaza.userData.aisle.material.opacity = (timeMode === "day" ? 0.06 : 0.14) + Math.sin(t * 0.003) * 0.035;
+  marketOverhang.userData.roof.material.opacity = (timeMode === "day" ? 0.82 : 0.9) + Math.sin(t * 0.0015) * 0.025;
+  marketOverhang.userData.roofPeak.material.opacity = marketOverhang.userData.roof.material.opacity;
+  marketOverhang.userData.ribbons.forEach((ribbon) => {
+    ribbon.material.opacity = (timeMode === "day" ? 0.42 : 0.64) + Math.sin(t * 0.0028 + ribbon.userData.phase) * 0.08;
+  });
+  marketOverhang.userData.lanterns.forEach((lantern, idx) => {
+    const pulse = 0.88 + Math.sin(t * 0.0065 + idx * 0.7) * 0.12;
+    lantern.core.scale.setScalar(pulse);
+    lantern.glow.material.opacity = (timeMode === "day" ? 0.09 : 0.24) * pulse;
+  });
   marketStringLights.userData.lanterns.forEach((lantern, idx) => {
     const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
     lantern.core.scale.setScalar(pulse);
@@ -1860,6 +1982,14 @@ function animate(t = 0) {
     });
     patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.002;
     patch.userData.glow.material.opacity = Math.max(0.05, Math.min(0.38, patch.userData.glow.material.opacity + Math.sin(t * 0.003 + idx) * 0.002));
+  });
+
+  happyFlowers.forEach((cluster, idx) => {
+    cluster.userData.flowers.forEach((flower, flowerIdx) => {
+      flower.position.y = flower.userData.baseY + Math.sin(t * 0.003 + flower.userData.phase) * 0.018;
+      flower.material.opacity = 0.72 + Math.sin(t * 0.004 + flower.userData.phase) * 0.16;
+    });
+    cluster.userData.glow.material.opacity = (timeMode === "day" ? 0.08 : timeMode === "rain" ? 0.16 : 0.13) + Math.sin(t * 0.0025 + idx) * 0.035;
   });
 
   tinyFauna.forEach((bug, idx) => {

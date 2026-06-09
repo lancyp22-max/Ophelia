@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/artifacts/public-shell"
 
 rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state"
+mkdir -p "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state" "$OUT_DIR/data/context"
 
 copy_if_exists() {
   local src="$1"
@@ -29,12 +29,14 @@ copy_if_exists "$ROOT_DIR/data/visual-state/sample-avatar-state.json" "$OUT_DIR/
 copy_if_exists "$ROOT_DIR/data/visual-state/visual-elements.schema.json" "$OUT_DIR/data/visual-state/"
 copy_if_exists "$ROOT_DIR/data/visual-state/sample-bridge-camp-state.json" "$OUT_DIR/data/visual-state/"
 copy_if_exists "$ROOT_DIR/data/visual-state/a1-visual-reward-model.json" "$OUT_DIR/data/visual-state/"
+copy_if_exists "$ROOT_DIR/data/context/ophelia-context-capsule.v0.1.json" "$OUT_DIR/data/context/"
 copy_if_exists "$ROOT_DIR/docs/split-architecture.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/docs/lumaria-qc-memory-v0.1.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/docs/reasoning-loop-controller.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/docs/visual-semantic-state.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/docs/visual-intelligence-roadmap.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/docs/visual-rl-harness.md" "$OUT_DIR/docs/"
+copy_if_exists "$ROOT_DIR/docs/token-context-workflow.md" "$OUT_DIR/docs/"
 copy_if_exists "$ROOT_DIR/policies/public-exposure-guardrails.v0.1.yaml" "$OUT_DIR/policies/"
 copy_if_exists "$ROOT_DIR/policies/public-publish-allowlist.v0.1.yaml" "$OUT_DIR/policies/"
 copy_if_exists "$ROOT_DIR/scripts/public_leak_guard.sh" "$OUT_DIR/scripts/"
