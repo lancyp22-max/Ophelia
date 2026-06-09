@@ -25,6 +25,7 @@
     <div style="margin-top:4px">
       <span class="pill">WASD / Arrow keys: move</span>
       <span class="pill">Mouse drag / touch drag: look</span>
+      <span class="pill">Ground cam: closer texture view</span>
       <span class="pill">Pinch: zoom</span>
       <span class="pill">Wave 10: depth + texture pass</span>
       <span class="pill">Reference 4: cozy detail pass</span>
@@ -38,6 +39,7 @@
       <span class="pill">Map pass: expanded camp districts</span>
       <span class="pill">Market pass: walk-under canopy</span>
       <span class="pill">Glow pass: bright meadow warmth</span>
+      <span class="pill">Camera pass: ground-level texture view</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
@@ -63,8 +65,8 @@ scene.background = new THREE.Color(0x050913);
 scene.fog = new THREE.Fog(0x050913, 15, 80);
 
 const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
-let cameraDistance = 10.8;
-camera.position.set(0, 3.25, cameraDistance);
+let cameraDistance = 9.2;
+camera.position.set(0, 2.05, cameraDistance);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(host.clientWidth, host.clientHeight);
@@ -189,6 +191,56 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.moveTo(0, p);
       ctx.lineTo(size, p + Math.cos(i) * 9);
       ctx.stroke();
+    }
+    for (let i = 0; i < 10; i++) {
+      const p = (i / 10) * size;
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = i % 2 ? "#2a1642" : "#8a63b8";
+      ctx.fillRect(p, 0, 3 + (i % 3), size);
+    }
+  } else if (style === "marketCanopy") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 18; i++) {
+      const p = (i / 18) * size;
+      ctx.globalAlpha = i % 2 ? 0.12 : 0.2;
+      ctx.fillStyle = i % 2 ? "#4d2d75" : "#8c5fb4";
+      ctx.fillRect(p, 0, size / 36, size);
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#ffd58a";
+      ctx.beginPath();
+      ctx.moveTo(0, p);
+      ctx.bezierCurveTo(size * 0.25, p + 12, size * 0.7, p - 8, size, p + Math.sin(i) * 14);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 22; i++) {
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = i % 2 ? "#f0abfc" : "#1d1230";
+      ctx.fillRect((i * 89) % size, (i * 43) % size, 34 + (i % 4) * 12, 10 + (i % 3) * 7);
+    }
+  } else if (style === "marketStone") {
+    ctx.lineWidth = 2;
+    for (let y = 0; y < size; y += 64) {
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = "#211915";
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(y) * 2);
+      ctx.lineTo(size, y + Math.cos(y) * 3);
+      ctx.stroke();
+    }
+    for (let x = 0; x < size; x += 86) {
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#d6c3a1";
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + Math.sin(x) * 4, size);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 28; i++) {
+      ctx.globalAlpha = 0.11;
+      ctx.fillStyle = i % 2 ? "#201916" : "#b58d5b";
+      ctx.beginPath();
+      ctx.arc((i * 73) % size, (i * 119) % size, 2 + (i % 5), 0, Math.PI * 2);
+      ctx.fill();
     }
   } else if (style === "moss" || style === "soil") {
     for (let i = 0; i < 95; i++) {
@@ -322,8 +374,10 @@ const textureSet = {
   ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
+  marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
   wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 4, repeatY: 1, count: 150, style: "wood" }),
   cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 3, repeatY: 3, count: 120, style: "cloth" }),
+  canopyCloth: makeProceduralTexture("market_canopy_cloth", 0x6f3f8f, [0x9d6bc5, 0x3a2258, 0xffd58a], { repeatX: 5, repeatY: 3, count: 150, style: "marketCanopy" }),
   soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 4, repeatY: 3, count: 150, style: "soil" }),
   sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
   auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
@@ -1082,7 +1136,7 @@ function makeTeaTable(id, x, z, rot = 0) {
 
 function makeMarketPlaza(id, x, z, rot = 0) {
   const g = new THREE.Group();
-  const plazaMat = surfaceMaterial({ color: 0x4b4140, map: textureSet.stone, roughness: 0.96, metalness: 0.02, bumpScale: 0.038 });
+  const plazaMat = surfaceMaterial({ color: 0x4f4842, map: textureSet.marketStone, roughness: 0.97, metalness: 0.02, bumpScale: 0.07 });
   const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.36, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
   const base = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, 6.25), plazaMat);
   base.position.y = 0.04;
@@ -1144,7 +1198,7 @@ function makeMarketPlaza(id, x, z, rot = 0) {
 function makeMarketStall(id, x, z, rot = 0, showLabel = false) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
-  const cloth = surfaceMaterial({ color: 0x6f3f8f, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 });
+  const cloth = surfaceMaterial({ color: 0x7f52a6, map: textureSet.canopyCloth, roughness: 0.94, bumpScale: 0.048 });
   const counter = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.34, 1.05), wood);
   counter.position.y = 0.5;
   const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.72, 0.74, 4), cloth);
@@ -1272,7 +1326,7 @@ function makeMarketDisplayStand(id, x, z, rot = 0, color = 0xc084fc) {
 function makeMarketOverhang(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const postMat = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.88, bumpScale: 0.055 });
-  const roofMat = surfaceMaterial({ color: 0x7a4aa4, map: textureSet.cloth, roughness: 0.9, bumpScale: 0.026 });
+  const roofMat = surfaceMaterial({ color: 0x8755ad, map: textureSet.canopyCloth, roughness: 0.92, bumpScale: 0.055 });
   roofMat.transparent = true;
   roofMat.opacity = 0.9;
   const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62 });
@@ -1334,6 +1388,21 @@ function makeMarketOverhang(id, x, z, rot = 0) {
   markShadows(g, true, true);
   scene.add(g);
   return g;
+}
+
+
+function makeMarketTextureRunner(id, x, z, rot = 0) {
+  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.04, emissive: 0x24103a, emissiveIntensity: 0.06 });
+  runnerMat.transparent = true;
+  runnerMat.opacity = 0.74;
+  const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 5.35), runnerMat);
+  runner.position.set(x, 0.128, z);
+  runner.rotation.x = -Math.PI / 2;
+  runner.rotation.z = rot;
+  runner.userData.visualId = id;
+  runner.receiveShadow = true;
+  scene.add(runner);
+  return runner;
 }
 
 function makeMarketHangingLights(id, x, z, rot = 0) {
@@ -1530,6 +1599,7 @@ const floorCushions = [
 ];
 const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 0.25, 8.15, 0.03);
 const marketOverhang = makeMarketOverhang("market_walk_under_overhang", 0.25, 8.1, 0.03);
+const marketTextureRunner = makeMarketTextureRunner("market_walk_under_texture_runner", 0.22, 8.1, 0.03);
 const campDistricts = [
   makeMarketStall("market_stall_center", 0.2, 9.15, 0.04, true),
   makeMarketStall("market_stall_west", -3.15, 8.0, 0.62),
@@ -1772,14 +1842,14 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 let yaw = Math.PI;
-let pitch = -0.22;
+let pitch = -0.12;
 
 function focusMarketTransition() {
-  camera.position.set(-0.2, 4.85, 15.8);
-  cameraDistance = 14.8;
+  camera.position.set(-0.15, 2.05, 12.9);
+  cameraDistance = 11.6;
   yaw = Math.PI * 0.995;
-  pitch = -0.4;
-  if (hudCause) hudCause.textContent = "market canopy open: walk-under exchange hall";
+  pitch = -0.12;
+  if (hudCause) hudCause.textContent = "ground camera: walk under canopy + inspect textures";
 }
 
 if (marketFocusButton) {
@@ -1813,8 +1883,8 @@ renderer.domElement.addEventListener('touchmove', (e) => {
   if (e.touches.length === 2) {
     const nextDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     if (pinchDistance) {
-      cameraDistance = Math.max(5.8, Math.min(15, cameraDistance - (nextDistance - pinchDistance) * 0.02));
-      camera.position.y = Math.max(1.8, Math.min(5.2, 1.1 + cameraDistance * 0.25));
+      cameraDistance = Math.max(4.8, Math.min(14, cameraDistance - (nextDistance - pinchDistance) * 0.02));
+      camera.position.y = Math.max(1.35, Math.min(3.6, 0.75 + cameraDistance * 0.16));
     }
     pinchDistance = nextDistance;
     return;
@@ -1943,6 +2013,7 @@ function animate(t = 0) {
     lantern.core.scale.setScalar(pulse);
     lantern.glow.material.opacity = (timeMode === "day" ? 0.09 : 0.24) * pulse;
   });
+  marketTextureRunner.material.opacity = (timeMode === "day" ? 0.62 : 0.78) + Math.sin(t * 0.002) * 0.035;
   marketStringLights.userData.lanterns.forEach((lantern, idx) => {
     const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
     lantern.core.scale.setScalar(pulse);

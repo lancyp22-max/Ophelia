@@ -161,8 +161,8 @@ Scope (intentionally small):
 - built-in day/night toggle for quick lighting iteration before full time system,
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
-- expanded Market focus with a walk-under exchange hall, high canopy, three stalls, string lights, display stands, and vendor/traveler presences,
-- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, and happier living-moss accents.
+- expanded Market focus with a walk-under exchange hall, high canopy, lower ground-level camera, three stalls, string lights, display stands, and vendor/traveler presences,
+- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures.
 
 Run locally:
 
