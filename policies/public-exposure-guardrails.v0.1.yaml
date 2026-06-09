@@ -1,0 +1,68 @@
+version: "0.1"
+name: "Public Exposure Guardrails"
+intent: "Prevent accidental publication of sensitive operating context, credentials, and exploitable internals."
+
+threat_map:
+  public_incident_patterns:
+    - prompt_injection_for_secret_exfiltration
+    - accidental_secret_commit_to_public_repo
+    - debug_artifact_leak_via_source_maps
+    - over-sharing_internal_system_prompts_or_control_text
+  posture: "Assume public artifacts are adversarially inspected."
+
+do_not_publish:
+  credentials:
+    - private_keys
+    - provider_tokens
+    - cloud_api_keys
+  sensitive_internal_logic:
+    - raw_system_prompts
+    - hidden_control_instructions
+    - confidential_reviewer_keys
+  debug_exposure:
+    - source_maps
+    - internal_debug_payloads
+
+required_controls:
+  preflight_checks:
+    - scripts/public_leak_guard.sh
+    - scripts/verify_repo_links.sh
+    - scripts/install_git_hooks.sh
+  ci_enforcement:
+    - ".github/workflows/ci-build-push.yml"
+    - "ci-build-push.yml"
+  policy_gate:
+    - "policies/protected-change-protocol.v0.1.yaml"
+    - "policies/public-publish-allowlist.v0.1.yaml"
+    - "policies/sealed-content-manifest.v0.1.yaml"
+  consent_first:
+    - relational_guard_enabled
+    - change_requires_approved_gate_path
+
+severity_classes:
+  critical:
+    action: fail_always
+    examples:
+      - leaked_credentials
+      - source_map_exposure
+      - tracked_private_material_files
+  protected:
+    action: fail_unless_steward_override
+    examples:
+      - sensitive_internal_markers_in_docs
+  warning:
+    action: log_only
+    examples:
+      - risky_but_non_secret_language_patterns
+
+tiering:
+  public_layer:
+    allowed:
+      - high_level_docs
+      - non-sensitive_ui_text
+      - non-secret_operational_metadata
+  protected_layer:
+    requires:
+      - stewardship_gate
+      - approved_audit_source
+      - provisional_reversion_window
