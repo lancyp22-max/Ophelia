@@ -203,6 +203,25 @@ make mirror10-demo
 
 
 
+
+### Mirror-18 Continuity Capsule
+
+Mirror-18 now includes a local-only **Continuity Capsule** control for tab-freeze recovery and handoff work. Use it when a browser session stalls or when a new collaborator needs the current operating posture without copying the full chat history.
+
+The capsule exports:
+
+- current screen, mirror phase, resonance state, vessel mode, ghost mode, world time mode, and active lobby channel,
+- latest Mirror-16 bridge checkpoint and vessel snapshot,
+- the sanitized Mirror Therapy Probe packet,
+- a short tail of recent audit and lobby events.
+
+Run locally:
+
+```bash
+make mirror10-demo
+# open http://localhost:8010/index.html, enter Mirror-18, then use Export Capsule or Restore Pasted Capsule
+```
+
 ### Visual Semantic State v0.1
 
 Visual state schema notes live in:
