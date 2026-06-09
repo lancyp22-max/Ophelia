@@ -1,0 +1,61 @@
+{
+  "id": "ophelia-context-capsule-v0.1",
+  "purpose": "Compact handoff state so future prompts do not need to replay the whole conversation.",
+  "paste_rule": "Paste this capsule plus the new task only; do not paste the whole historical chat unless debugging a specific regression.",
+  "project": {
+    "name": "Ophelia / Lumaria",
+    "current_frontend_focus": "A1 Bridge Camp 3D world demo",
+    "entry_flow": "Enter Lumaria opens the embedded 3D A1 Bridge Camp while preserving chat access.",
+    "current_visual_wave": "Base Camp market is now a walk-under exchange hall with a huge textured canopy and lower ground-level market camera; latest pass brightened the world with natural meadow glow."
+  },
+  "active_surfaces": [
+    {
+      "path": "demos/world-3d-blockout.html",
+      "role": "Primary playable 3D A1 Bridge Camp prototype",
+      "safe_next_work": [
+        "small scoped visual passes",
+        "one district or object group per prompt",
+        "lighting/material tuning",
+        "mobile camera refinements"
+      ]
+    },
+    {
+      "path": "index.html",
+      "role": "Flight Deck shell and Enter Lumaria routing surface"
+    },
+    {
+      "path": "script.js",
+      "role": "Flight Deck runtime, chat/lobby state, routing, visual controls"
+    },
+    {
+      "path": "data/visual-state/sample-bridge-camp-state.json",
+      "role": "Semantic state for A1 visual elements"
+    },
+    {
+      "path": "data/visual-state/sample-scene.json",
+      "role": "Compact scene-level visual-state packet"
+    }
+  ],
+  "architecture_rules": [
+    "Compress scaffolding, not the soul.",
+    "Public shell, sealed core.",
+    "Human remains pilot for state mutation and publishing.",
+    "Visuals carry state, memory, and cause/effect; they are not just decoration.",
+    "For token control: one small section per prompt, update state files only when useful."
+  ],
+  "do_not_do": [
+    "Do not paste the full conversation into routine coding prompts.",
+    "Do not add cloud dependencies, image generation dependencies, RL dependencies, or binary assets for small visual passes.",
+    "Do not make autonomous state mutations without surfaced confirmation.",
+    "Do not expose sealed/private material in public shell artifacts."
+  ],
+  "standard_checks": [
+    "node --check /tmp/world-3d-check.js",
+    "python3 -m json.tool data/visual-state/sample-scene.json >/tmp/scene.json",
+    "python3 -m json.tool data/visual-state/sample-bridge-camp-state.json >/tmp/bridge.json",
+    "git diff --check",
+    "make ci-check",
+    "make public-shell-audit"
+  ],
+  "next_prompt_template": "Context: use data/context/ophelia-context-capsule.v0.1.json and do not replay old chat. Task: <one small scoped change>. Constraints: keep public-shell safe, no new external dependencies, commit changes and make PR."
+}
