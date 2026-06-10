@@ -41,6 +41,7 @@
       <span class="pill">Glow pass: bright meadow warmth</span>
       <span class="pill">Camera pass: ground-level texture view</span>
       <span class="pill">Detail pass: etched stones + woven market textures</span>
+      <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
@@ -225,7 +226,7 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.strokeStyle = y % 84 ? "#ffd58a" : "#2d173f";
       ctx.beginPath();
       ctx.moveTo(0, y + Math.sin(y) * 3);
-      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y + 11, size, y + Math.cos(y) * 5);
+      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y - 11, size, y + Math.cos(y) * 5);
       ctx.stroke();
     }
     for (let x = 0; x < size; x += 52) {
@@ -894,6 +895,154 @@ function makeHangingVineCluster(id, x, y, z, rot = 0, width = 3.2) {
   g.rotation.y = rot;
   g.userData.visualId = id;
   g.userData.strands = strands;
+  scene.add(g);
+  return g;
+}
+
+function makeFireCrystalCluster(id, x, z, scale = 1, color = 0x7dd3fc) {
+  const g = new THREE.Group();
+  const crystalMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.82 });
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.48 });
+  const crystals = [];
+  for (let i = 0; i < 5; i++) {
+    const angle = i * 1.11;
+    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry((0.11 + (i % 2) * 0.035) * scale), crystalMat.clone());
+    crystal.position.set(Math.cos(angle) * 0.18 * scale, (0.18 + i * 0.018) * scale, Math.sin(angle) * 0.13 * scale);
+    crystal.scale.y = 1.35 + (i % 3) * 0.22;
+    crystal.userData.phase = i * 0.52 + x;
+    crystals.push(crystal);
+    g.add(crystal);
+  }
+  const baseRing = new THREE.Mesh(new THREE.TorusGeometry(0.28 * scale, 0.01 * scale, 6, 30), trimMat);
+  baseRing.rotation.x = Math.PI / 2;
+  baseRing.position.y = 0.08 * scale;
+  g.add(baseRing);
+  const glow = warmGlowBillboard(`${id}_glow`, x, 0.35 * scale, z, 0.72 * scale, color, 0.22);
+  g.position.set(x, 0.08, z);
+  g.userData.visualId = id;
+  g.userData.crystals = crystals;
+  g.userData.glow = glow;
+  scene.add(g);
+  return g;
+}
+
+function makeSpottedMushroomCluster(id, x, z, scale = 1) {
+  const g = new THREE.Group();
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0xffe1c2, roughness: 0.86 });
+  const capMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x7f1d1d, emissiveIntensity: 0.18, roughness: 0.72 });
+  const spotMat = new THREE.MeshBasicMaterial({ color: 0xfff7ed, transparent: true, opacity: 0.78 });
+  const caps = [];
+  for (let i = 0; i < 4; i++) {
+    const lx = (i - 1.5) * 0.18 * scale;
+    const lz = Math.sin(i * 1.4) * 0.12 * scale;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.025 * scale, 0.045 * scale, 0.28 * scale, 8), stemMat);
+    stem.position.set(lx, 0.17 * scale, lz);
+    const cap = new THREE.Mesh(new THREE.SphereGeometry((0.12 + (i % 2) * 0.035) * scale, 12, 8), capMat.clone());
+    cap.position.set(lx, 0.34 * scale, lz);
+    cap.scale.y = 0.5;
+    cap.userData.phase = i * 0.61 + z;
+    caps.push(cap);
+    g.add(stem, cap);
+    [-0.04, 0.035].forEach((sx, spotIdx) => {
+      const spot = new THREE.Mesh(new THREE.SphereGeometry(0.018 * scale, 6, 4), spotMat);
+      spot.position.set(lx + sx * scale, 0.41 * scale + spotIdx * 0.012 * scale, lz + 0.045 * scale);
+      spot.scale.y = 0.5;
+      g.add(spot);
+    });
+  }
+  const glow = warmLightPool(`${id}_soft_red_glow`, x, z, 0.42 * scale, 0.32 * scale, 0xff5f6d, 0.08);
+  g.position.set(x, 0.02, z);
+  g.userData.visualId = id;
+  g.userData.caps = caps;
+  g.userData.glow = glow;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
+}
+
+function makeGroundLantern(id, x, z, rot = 0, color = 0xffc879) {
+  const g = new THREE.Group();
+  const frameMat = surfaceMaterial({ color: 0x4a2f1e, map: textureSet.wood, roughness: 0.82, metalness: 0.1, bumpScale: 0.035 });
+  const glowMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.86 });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.22), frameMat);
+  base.position.y = 0.08;
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.095, 12, 10), glowMat);
+  core.position.y = 0.26;
+  const top = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.16, 4), frameMat);
+  top.position.y = 0.44;
+  top.rotation.y = Math.PI / 4;
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.008, 6, 24, Math.PI), new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.6 }));
+  handle.position.y = 0.55;
+  handle.rotation.z = Math.PI;
+  const glow = warmGlowBillboard(`${id}_glow`, x, 0.28, z, 0.76, color, 0.28);
+  const pool = warmLightPool(`${id}_pool`, x, z, 0.72, 0.44, color, 0.16);
+  g.add(base, core, top, handle);
+  g.position.set(x, 0.04, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.core = core;
+  g.userData.glow = glow;
+  g.userData.pool = pool;
+  markShadows(g);
+  scene.add(g);
+  return g;
+}
+
+function makeOpenGrimoire(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const coverMat = surfaceMaterial({ color: 0x24143d, map: textureSet.cloth, roughness: 0.88, bumpScale: 0.03, emissive: 0x180a2d, emissiveIntensity: 0.04 });
+  const pageMat = new THREE.MeshStandardMaterial({ color: 0xf8e7c6, roughness: 0.78, metalness: 0.02 });
+  const inkMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const cover = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.045, 0.5), coverMat);
+  cover.position.y = 0.07;
+  const leftPage = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.018, 0.42), pageMat);
+  const rightPage = leftPage.clone();
+  leftPage.position.set(-0.17, 0.105, 0);
+  rightPage.position.set(0.17, 0.105, 0);
+  leftPage.rotation.z = 0.04;
+  rightPage.rotation.z = -0.04;
+  const sigils = [];
+  [-0.2, 0, 0.2].forEach((sx, idx) => {
+    const sigil = new THREE.Mesh(new THREE.RingGeometry(0.035 + idx * 0.008, 0.045 + idx * 0.008, 5), inkMat.clone());
+    sigil.position.set(sx, 0.119, idx % 2 ? -0.09 : 0.08);
+    sigil.rotation.x = -Math.PI / 2;
+    sigil.rotation.z = idx * 0.4;
+    sigil.userData.phase = idx * 0.7;
+    sigils.push(sigil);
+    g.add(sigil);
+  });
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.11, 12), new THREE.MeshStandardMaterial({ color: 0xc7a67a, roughness: 0.72 }));
+  cup.position.set(0.5, 0.13, -0.08);
+  const steam = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.24), new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.24, depthWrite: false, side: THREE.DoubleSide }));
+  steam.position.set(0.5, 0.3, -0.08);
+  steam.userData.phase = 0.4;
+  g.add(cover, leftPage, rightPage, cup, steam);
+  g.position.set(x, 0.08, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.sigils = sigils;
+  g.userData.steam = steam;
+  markShadows(g);
+  scene.add(g);
+  return g;
+}
+
+function makeRuneFireSpokes(id, radius = 3.85, count = 18) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.52, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const spokes = [];
+  for (let i = 0; i < count; i++) {
+    const a = (i / count) * Math.PI * 2;
+    const spoke = new THREE.Mesh(new THREE.PlaneGeometry(0.065, 0.46 + (i % 3) * 0.08), mat.clone());
+    spoke.position.set(Math.cos(a) * radius, 0.122, Math.sin(a) * radius);
+    spoke.rotation.x = -Math.PI / 2;
+    spoke.rotation.z = -a + (i % 2 ? 0.16 : -0.16);
+    spoke.userData.phase = i * 0.31;
+    spokes.push(spoke);
+    g.add(spoke);
+  }
+  g.userData.visualId = id;
+  g.userData.spokes = spokes;
   scene.add(g);
   return g;
 }
@@ -1859,6 +2008,25 @@ const fallenPetals = [
   makePetalScatter("petal_fire_02", 0.72, 2.78, -0.92, 0xc4b5fd),
   makePetalScatter("petal_bench_01", -2.1, 2.12, 0.18, 0xd9a7ff)
 ];
+const fireRuneSpokes = makeRuneFireSpokes("firepit_inner_reference_runes", 3.72, 22);
+const fireCrystals = [
+  makeFireCrystalCluster("fire_crystal_blue_west", -1.18, -0.46, 0.94, 0x7dd3fc),
+  makeFireCrystalCluster("fire_crystal_violet_east", 1.08, 0.42, 0.88, 0xc084fc),
+  makeFireCrystalCluster("fire_crystal_mint_south", 0.16, 1.42, 0.76, 0x86efac)
+];
+const fireMushroomDetails = [
+  makeSpottedMushroomCluster("fire_mushroom_cluster_left", -2.34, 1.18, 0.9),
+  makeSpottedMushroomCluster("fire_mushroom_cluster_right", 2.35, 1.02, 0.82),
+  makeSpottedMushroomCluster("fire_mushroom_cluster_front", -0.72, 3.18, 0.76)
+];
+const fireGroundLanterns = [
+  makeGroundLantern("firepit_lantern_bookside", 3.48, 2.56, -0.42, 0xffc879),
+  makeGroundLantern("firepit_lantern_left_bench", -2.82, 2.62, 0.34, 0xffd58a)
+];
+const fireGrimoires = [
+  makeOpenGrimoire("firepit_open_grimoire_table_side", 3.88, 2.95, -0.48),
+  makeOpenGrimoire("firepit_open_grimoire_left_rune", -2.28, 3.22, 0.18)
+];
 
 const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95, bumpScale: 0.055 }));
 campfireStone.position.set(0, 0.2, 0);
@@ -2305,6 +2473,37 @@ function animate(t = 0) {
 
   fallenPetals.forEach((petal, idx) => {
     petal.material.opacity = 0.42 + Math.sin(t * 0.0015 + idx) * 0.08;
+  });
+
+  fireRuneSpokes.userData.spokes.forEach((spoke) => {
+    spoke.material.opacity = (timeMode === "day" ? 0.36 : 0.56) + Math.sin(t * 0.004 + spoke.userData.phase) * 0.12;
+  });
+  fireCrystals.forEach((cluster, clusterIdx) => {
+    cluster.userData.crystals.forEach((crystal, crystalIdx) => {
+      crystal.rotation.y += 0.01 + crystalIdx * 0.002;
+      crystal.material.opacity = (timeMode === "day" ? 0.58 : 0.84) + Math.sin(t * 0.004 + crystal.userData.phase) * 0.08;
+    });
+    cluster.userData.glow.material.opacity = (timeMode === "day" ? 0.1 : 0.23) + Math.sin(t * 0.004 + clusterIdx) * 0.05;
+  });
+  fireMushroomDetails.forEach((cluster, idx) => {
+    cluster.userData.caps.forEach((cap) => {
+      cap.material.emissiveIntensity = (timeMode === "day" ? 0.07 : 0.18) + Math.sin(t * 0.005 + cap.userData.phase) * 0.04;
+    });
+    cluster.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.02;
+  });
+  fireGroundLanterns.forEach((lantern, idx) => {
+    const pulse = 0.9 + Math.sin(t * 0.006 + idx) * 0.1;
+    lantern.userData.core.scale.setScalar(pulse);
+    lantern.userData.glow.material.opacity = (timeMode === "day" ? 0.12 : 0.3) * pulse;
+    lantern.userData.pool.material.opacity = (timeMode === "day" ? 0.05 : 0.16) * pulse;
+  });
+  fireGrimoires.forEach((book, idx) => {
+    book.userData.sigils.forEach((sigil) => {
+      sigil.rotation.z += 0.006;
+      sigil.material.opacity = (timeMode === "day" ? 0.3 : 0.62) + Math.sin(t * 0.004 + sigil.userData.phase) * 0.1;
+    });
+    book.userData.steam.position.y = 0.3 + Math.sin(t * 0.002 + idx) * 0.035;
+    book.userData.steam.material.opacity = (timeMode === "day" ? 0.12 : 0.24) + Math.sin(t * 0.003 + idx) * 0.06;
   });
 
   runeStones.forEach((stone) => {
