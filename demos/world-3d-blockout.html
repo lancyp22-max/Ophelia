@@ -1,1 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumaria World v0 · Campfire Night</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
+    #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
+    header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
+    canvas { display:block; width:100%; height:100%; }
+    .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
+    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(8,18,42,.72),rgba(16,36,70,.68)); }
+    .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
+    .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
+    .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
+    .state-dot { display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#fbbf24; box-shadow:0 0 12px #fbbf24; }
+    @media (max-width: 720px) { header { font-size:12px; } .pill { margin-top:4px; } .hud { bottom:10px; font-size:10px; } }
+  </style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <strong>Lumaria World v0 · Campfire Night Focus</strong>
+    <div style="margin-top:4px">
+      <span class="pill">WASD / Arrow keys: move</span>
+      <span class="pill">Mouse drag / touch drag: look</span>
+      <span class="pill">Ground cam: closer texture view</span>
+      <span class="pill">Pinch: zoom</span>
+      <span class="pill">Wave 10: depth + texture pass</span>
+      <span class="pill">Reference 4: cozy detail pass</span>
+      <span class="pill">Lighting pass: fire + lanterns</span>
+      <span class="pill">Campfire agent: Auri detail pass</span>
+      <span class="pill">Auri pass: staff + nameplate</span>
+      <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
+      <span class="pill">Material pass: visible model textures</span>
+      <span class="pill">Sky pass: moon + clouds</span>
+      <span class="pill">Biome pass: luminous grass</span>
+      <span class="pill">Map pass: expanded camp districts</span>
+      <span class="pill">Market pass: walk-under canopy</span>
+      <span class="pill">Glow pass: bright meadow warmth</span>
+      <span class="pill">Camera pass: ground-level texture view</span>
+      <span class="pill">Detail pass: etched stones + woven market textures</span>
+      <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
+      <span class="pill">Market 1/10: entry identity + offerings</span>
+      <span class="pill">Market 2/10: vendor booth silhouettes</span>
+      <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
+      <span class="pill">Focus section: B2 Market</span>
+      <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
+    </div>
+  </header>
+  <div id="scene"></div>
+  <aside class="hud" aria-label="Lumaria visual state packet">
+    <div class="hud-title"><span class="state-dot"></span>A1 Visual State</div>
+    <div class="hud-grid">
+      <span>Mode</span><strong id="hud-mode">Night</strong>
+      <span>Focus</span><strong>Campfire / sanctuary ring</strong>
+      <span>Cause</span><strong id="hud-cause">memory weave linked</strong>
+      <span>Safety</span><strong>read-only visual state</strong>
+    </div>
+  </aside>
+</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 
+const host = document.getElementById('scene');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050913);
+scene.fog = new THREE.Fog(0x050913, 15, 80);
+
+const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
+let cameraDistance = 9.2;
+camera.position.set(0, 2.05, cameraDistance);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(host.clientWidth, host.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.16;
+host.appendChild(renderer.domElement);
+
+function markShadows(object, cast = true, receive = true) {
+  object.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = cast;
+      child.receiveShadow = receive;
+    }
+  });
+  return object;
+}
+
+function softShadow(name, x, z, sx, sz, opacity = 0.28) {
+  const mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 40),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity, depthWrite: false })
+  );
+  mesh.name = name;
+  mesh.position.set(x, 0.045, z);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.scale.set(sx, sz, 1);
+  scene.add(mesh);
+  return mesh;
+}
+
+
+function warmLightPool(name, x, z, sx, sz, color = 0xff9d4d, opacity = 0.22) {
+  const mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 64),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  mesh.name = name;
+  mesh.position.set(x, 0.058, z);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.scale.set(sx, sz, 1);
+  scene.add(mesh);
+  return mesh;
+}
+
+function warmGlowBillboard(name, x, y, z, size, color = 0xffc879, opacity = 0.32) {
+  const sprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  sprite.name = name;
+  sprite.position.set(x, y, z);
+  sprite.scale.set(size, size, 1);
+  scene.add(sprite);
+  return sprite;
+}
+
+function colorToHex(color) {
+  return `#${color.toString(16).padStart(6, "0")}`;
+}
+
+function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
+  const size = options.size ?? 512;
+  const style = options.style ?? "surface";
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = colorToHex(baseColor);
+  ctx.fillRect(0, 0, size, size);
+  const count = options.count ?? 120;
+  for (let i = 0; i < count; i++) {
+    const color = accentColors[i % accentColors.length];
+    const alpha = 0.08 + ((i * 17) % 31) / 150;
+    const x = (i * 53) % size;
+    const y = (i * 97) % size;
+    const w = 8 + ((i * 19) % (style === "wood" ? 96 : 56));
+    const h = 2 + ((i * 11) % (style === "moss" ? 26 : 18));
+    ctx.fillStyle = colorToHex(color);
+    ctx.globalAlpha = alpha;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(((i * 23) % 360) * Math.PI / 180);
+    ctx.fillRect(-w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+
+  if (style === "wood") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 28; i++) {
+      const y = (i / 28) * size + Math.sin(i) * 6;
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = colorToHex(accentColors[i % accentColors.length]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.bezierCurveTo(size * 0.22, y - 18, size * 0.55, y + 22, size, y + Math.sin(i * 1.7) * 18);
+      ctx.stroke();
+    }
+  } else if (style === "stone") {
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 18; i++) {
+      const x = (i * 79) % size;
+      const y = (i * 131) % size;
+      ctx.globalAlpha = 0.16;
+      ctx.strokeStyle = i % 2 ? "#211915" : "#d6c3a1";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo((x + 28 + i * 7) % size, (y + 38 + i * 11) % size);
+      ctx.lineTo((x + 78 + i * 13) % size, (y + 56 + i * 3) % size);
+      ctx.stroke();
+    }
+  } else if (style === "cloth") {
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 24; i++) {
+      const p = (i / 24) * size;
+      ctx.globalAlpha = 0.09;
+      ctx.strokeStyle = i % 2 ? "#f6d7ff" : "#150d24";
+      ctx.beginPath();
+      ctx.moveTo(p, 0);
+      ctx.lineTo(p + Math.sin(i) * 9, size);
+      ctx.moveTo(0, p);
+      ctx.lineTo(size, p + Math.cos(i) * 9);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 10; i++) {
+      const p = (i / 10) * size;
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = i % 2 ? "#2a1642" : "#8a63b8";
+      ctx.fillRect(p, 0, 3 + (i % 3), size);
+    }
+  } else if (style === "marketCanopy") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 18; i++) {
+      const p = (i / 18) * size;
+      ctx.globalAlpha = i % 2 ? 0.12 : 0.2;
+      ctx.fillStyle = i % 2 ? "#4d2d75" : "#8c5fb4";
+      ctx.fillRect(p, 0, size / 36, size);
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#ffd58a";
+      ctx.beginPath();
+      ctx.moveTo(0, p);
+      ctx.bezierCurveTo(size * 0.25, p + 12, size * 0.7, p - 8, size, p + Math.sin(i) * 14);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 22; i++) {
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = i % 2 ? "#f0abfc" : "#1d1230";
+      ctx.fillRect((i * 89) % size, (i * 43) % size, 34 + (i % 4) * 12, 10 + (i % 3) * 7);
+    }
+  } else if (style === "wovenTile") {
+    ctx.lineWidth = 2;
+    for (let y = 0; y < size; y += 42) {
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = y % 84 ? "#ffd58a" : "#2d173f";
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(y) * 3);
+      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y - 11, size, y + Math.cos(y) * 5);
+      ctx.stroke();
+    }
+    for (let x = 0; x < size; x += 52) {
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = x % 104 ? "#c084fc" : "#7dd3fc";
+      ctx.fillRect(x, 0, 5, size);
+    }
+    for (let i = 0; i < 48; i++) {
+      ctx.globalAlpha = 0.1;
+      ctx.fillStyle = i % 3 ? "#fef3c7" : "#0f766e";
+      ctx.beginPath();
+      ctx.arc((i * 67) % size, (i * 113) % size, 3 + (i % 4), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (style === "leafVein") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 36; i++) {
+      const x = (i * 71) % size;
+      const y = (i * 43) % size;
+      ctx.globalAlpha = 0.12;
+      ctx.strokeStyle = i % 2 ? "#a7f3d0" : "#14532d";
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + 24, y - 18, x + 46, y + 10);
+      ctx.moveTo(x + 16, y - 2);
+      ctx.lineTo(x + 28, y - 18);
+      ctx.moveTo(x + 22, y + 2);
+      ctx.lineTo(x + 39, y + 18);
+      ctx.stroke();
+    }
+  } else if (style === "marketStone") {
+    ctx.lineWidth = 2;
+    for (let y = 0; y < size; y += 64) {
+      ctx.globalAlpha = 0.2;
+      ctx.strokeStyle = "#211915";
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(y) * 2);
+      ctx.lineTo(size, y + Math.cos(y) * 3);
+      ctx.stroke();
+    }
+    for (let x = 0; x < size; x += 86) {
+      ctx.globalAlpha = 0.18;
+      ctx.strokeStyle = "#d6c3a1";
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x + Math.sin(x) * 4, size);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 28; i++) {
+      ctx.globalAlpha = 0.11;
+      ctx.fillStyle = i % 2 ? "#201916" : "#b58d5b";
+      ctx.beginPath();
+      ctx.arc((i * 73) % size, (i * 119) % size, 2 + (i % 5), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (style === "moss" || style === "soil") {
+    for (let i = 0; i < 95; i++) {
+      ctx.globalAlpha = style === "moss" ? 0.16 : 0.12;
+      ctx.fillStyle = colorToHex(accentColors[(i + 1) % accentColors.length]);
+      ctx.beginPath();
+      ctx.arc((i * 47) % size, (i * 83) % size, 1.5 + (i % 5), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.globalAlpha = 0.1;
+  ctx.strokeStyle = "#ffffff";
+  for (let i = 0; i < 10; i++) {
+    const p = (i / 10) * size;
+    ctx.beginPath();
+    ctx.moveTo(0, p);
+    ctx.lineTo(size, p + ((i % 2) * 12 - 6));
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = name;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(options.repeatX ?? 1, options.repeatY ?? 1);
+  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function surfaceMaterial({ color, map, roughness = 0.9, metalness = 0, bumpScale = 0.035, emissive = 0x000000, emissiveIntensity = 0 }) {
+  return new THREE.MeshStandardMaterial({ color, map, bumpMap: map, bumpScale, roughness, metalness, emissive, emissiveIntensity });
+}
+
+function makeSignTexture(title, subtitle) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createLinearGradient(0, 0, 512, 256);
+  gradient.addColorStop(0, "#10243d");
+  gradient.addColorStop(1, "#1b1230");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 512, 256);
+  ctx.strokeStyle = "#d6a45d";
+  ctx.lineWidth = 12;
+  ctx.strokeRect(18, 18, 476, 220);
+  ctx.strokeStyle = "#6de7ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(256, 74, 38, 0, Math.PI * 2);
+  ctx.moveTo(256, 32);
+  ctx.lineTo(256, 116);
+  ctx.moveTo(214, 74);
+  ctx.lineTo(298, 74);
+  ctx.stroke();
+  ctx.fillStyle = "#ffe38a";
+  ctx.font = "bold 44px Georgia, serif";
+  ctx.textAlign = "center";
+  ctx.fillText(title, 256, 157);
+  ctx.fillStyle = "#f8d9a0";
+  ctx.font = "bold 22px Georgia, serif";
+  ctx.fillText(subtitle, 256, 193);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = "lumaria_bridge_sign";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+
+function makeAgentNameTexture(name, role) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 160;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgba(12, 10, 28, 0.72)";
+  ctx.fillRect(0, 0, 512, 160);
+  ctx.strokeStyle = "rgba(196, 181, 253, 0.9)";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(14, 14, 484, 132);
+  ctx.fillStyle = "#f7e5ff";
+  ctx.font = "bold 42px Inter, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(name, 256, 70);
+  ctx.fillStyle = "#ffd58a";
+  ctx.font = "bold 22px Inter, sans-serif";
+  ctx.fillText(role, 256, 108);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = "campfire_agent_nameplate";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+const textureSet = {
+  ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
+  path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
+  stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
+  marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
+  wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 4, repeatY: 1, count: 150, style: "wood" }),
+  cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 3, repeatY: 3, count: 120, style: "cloth" }),
+  canopyCloth: makeProceduralTexture("market_canopy_cloth", 0x6f3f8f, [0x9d6bc5, 0x3a2258, 0xffd58a], { repeatX: 5, repeatY: 3, count: 150, style: "marketCanopy" }),
+  soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 4, repeatY: 3, count: 150, style: "soil" }),
+  sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
+  auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
+};
+
+
+const TIME_MODES = ["morning", "day", "sunset", "night", "rain"];
+let timeMode = "night";
+const timeToggleButton = document.getElementById("time-toggle");
+const hudMode = document.getElementById("hud-mode");
+const hudCause = document.getElementById("hud-cause");
+
+function nextTimeMode(mode) {
+  const index = TIME_MODES.indexOf(mode);
+  return TIME_MODES[(index + 1) % TIME_MODES.length] ?? "night";
+}
+
+function applyTimeMode(mode) {
+  timeMode = TIME_MODES.includes(mode) ? mode : "night";
+  mode = timeMode;
+  const isDay = mode === "day" || mode === "morning";
+  const isSunset = mode === "sunset";
+  const isRain = mode === "rain";
+  const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+  scene.background.set(isRain ? 0x4f6f8b : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
+  scene.fog.color.set(isRain ? 0x6d89a5 : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
+  if (timeToggleButton) {
+    timeToggleButton.textContent = `Mode: ${label}`;
+  }
+  if (hudMode) {
+    hudMode.textContent = label;
+  }
+  if (hudCause) {
+    hudCause.textContent = isRain ? "rain settles the world" : isSunset ? "sunset warms the camp" : isDay ? "day opens the path" : "moonlit glow keeps camp gentle";
+  }
+}
+
+const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
+scene.add(ambient);
+const hemi = new THREE.HemisphereLight(0xbbe7ff, 0x2b1f30, 0.42);
+scene.add(hemi);
+
+const groundMaterial = surfaceMaterial({ color: 0x0c1b30, map: textureSet.ground, roughness: 1, bumpScale: 0.022 });
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(140, 140),
+  groundMaterial
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const pathMaterial = surfaceMaterial({ color: 0x2f2540, map: textureSet.path, roughness: 1, metalness: 0.02, bumpScale: 0.035 });
+const path = new THREE.Mesh(
+  new THREE.RingGeometry(2.8, 4.6, 72),
+  pathMaterial
+);
+path.rotation.x = -Math.PI / 2;
+path.position.y = 0.03;
+path.receiveShadow = true;
+scene.add(path);
+
+const runeRing = new THREE.Mesh(
+  new THREE.RingGeometry(4.75, 5.2, 80),
+  new THREE.MeshBasicMaterial({ color: 0xffb366, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+);
+runeRing.rotation.x = -Math.PI / 2;
+runeRing.position.y = 0.035;
+scene.add(runeRing);
+
+const floorTiles = [];
+for (let i = 0; i < 64; i++) {
+  const a = (i / 64) * Math.PI * 2;
+  const r = 6.1 + (i % 2) * 0.22;
+  const tile = new THREE.Mesh(
+    new THREE.BoxGeometry(0.45, 0.06, 0.68),
+    surfaceMaterial({ color: (i % 3 === 0) ? 0x5e534b : 0x6b5e54, map: textureSet.stone, roughness: 0.93, metalness: 0.04, bumpScale: 0.045 })
+  );
+  tile.position.set(Math.cos(a) * r, 0.035, Math.sin(a) * r);
+  tile.rotation.y = -a + Math.PI / 2;
+  tile.castShadow = true;
+  tile.receiveShadow = true;
+  floorTiles.push(tile);
+  scene.add(tile);
+}
+
+const runeStones = [];
+for (let i = 0; i < 28; i++) {
+  const a = (i / 28) * Math.PI * 2;
+  const r = 4.95;
+  const stone = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 0.08, 0.65),
+    surfaceMaterial({ color: 0x74685f, map: textureSet.stone, roughness: 0.92, metalness: 0.05, bumpScale: 0.05 })
+  );
+  stone.position.set(Math.cos(a) * r, 0.05, Math.sin(a) * r);
+  stone.rotation.y = -a + Math.PI / 2;
+  stone.userData.phase = i * 0.35;
+  stone.castShadow = true;
+  stone.receiveShadow = true;
+  runeStones.push(stone);
+  scene.add(stone);
+}
+
+applyTimeMode("night");
+
+function animate(t) {
+  requestAnimationFrame(animate);
+  
+  runeStones.forEach((rune) => {
+    rune.rotation.y += 0.0008;
+    rune.material.opacity = 0.18 + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
+  });
+
+  renderer.render(scene, camera);
+}
+
+animate(0);
+</script>
+</body>
+</html>
