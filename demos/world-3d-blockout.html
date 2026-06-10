@@ -225,7 +225,7 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.strokeStyle = y % 84 ? "#ffd58a" : "#2d173f";
       ctx.beginPath();
       ctx.moveTo(0, y + Math.sin(y) * 3);
-      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y - 11, size, y + Math.cos(y) * 5);
+      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y + 11, size, y + Math.cos(y) * 5);
       ctx.stroke();
     }
     for (let x = 0; x < size; x += 52) {
