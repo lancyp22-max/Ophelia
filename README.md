@@ -162,7 +162,8 @@ Scope (intentionally small):
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
 - expanded Market focus with a walk-under exchange hall, high canopy, lower ground-level camera, three stalls, string lights, display stands, and vendor/traveler presences,
-- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures.
+- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures,
+- detail pass with etched threshold stones, pebble scatter, leaf-vein canopy material, woven market runners, tassels, hanging vines, and animated plaza mosaic tiles.
 
 Run locally:
 
