@@ -10,7 +10,7 @@
     header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
     canvas { display:block; width:100%; height:100%; }
     .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
-    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
+    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:lin[...]
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
     .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
@@ -167,7 +167,7 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.strokeStyle = colorToHex(accentColors[i % accentColors.length]);
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.bezierCurveTo(size * 0.22, y - 18, size * 0.55, y + 22, size, y + Math.sin(i * 1.7) * 18);
+      ctx.bezierCurveTo(size * 0.22, y + 4, size * 0.55, y + 22, size, y + Math.sin(i * 1.7) * 18);
       ctx.stroke();
     }
   } else if (style === "stone") {
@@ -228,7 +228,7 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.strokeStyle = y % 84 ? "#ffd58a" : "#2d173f";
       ctx.beginPath();
       ctx.moveTo(0, y + Math.sin(y) * 3);
-      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y - 11, size, y + Math.cos(y) * 5);
+      ctx.bezierCurveTo(size * 0.24, y + 9, size * 0.72, y + 1, size, y + Math.cos(y) * 5);
       ctx.stroke();
     }
     for (let x = 0; x < size; x += 52) {
@@ -765,7 +765,7 @@ function makeGardenBed(id, x, z) {
   soil.position.y = 0.05;
   g.add(trim, soil);
   for (let i = 0; i < 10; i++) {
-    const sprout = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x73d8b4 : 0x8fb7ff, emissive: i % 2 ? 0x0b4d3d : 0x172a66, emissiveIntensity: 0.16 }));
+    const sprout = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x73d8b4 : 0x8fb7ff, emissive: i % 2 ? 0x0b4d3d : 0x172a66, emissiveIntensity: 0.06, roughness: 0.84 }));
     sprout.position.set(-1.05 + i * 0.23, 0.28, (i % 3 - 1) * 0.24);
     g.add(sprout);
   }
