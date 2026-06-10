@@ -165,6 +165,10 @@ Scope (intentionally small):
 - brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures,
 - detail pass with etched threshold stones, pebble scatter, leaf-vein canopy material, woven market runners, tassels, hanging vines, animated plaza mosaic tiles, and firepit reference details: crystal clusters, spotted mushrooms, ground lanterns, open grimoires, cups, and inner rune spokes.
 
+Expansion planning:
+- `docs/base-camp-town-expansion-plan.md` maps the remaining town districts from the latest concepts into phased, lightweight 3D implementation steps.
+- The market reference is split into 10 reviewable parts; parts 1-2 now add entry identity signage, offering icons, and distinct vendor booth silhouettes.
+
 Run locally:
 
 ```bash
