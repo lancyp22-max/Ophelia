@@ -1,0 +1,13 @@
+name: Semantic Canvas Linter
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for negative Y bounds
+        run: |
+          if grep -rnE 'bezierCurveTo.*\by\s*-\s*[0-9]+' demos/; then exit 1; else exit 0; fi
