@@ -167,7 +167,7 @@ Scope (intentionally small):
 
 Expansion planning:
 - `docs/base-camp-town-expansion-plan.md` maps the remaining town districts from the latest concepts into phased, lightweight 3D implementation steps.
-- The market reference is split into 10 reviewable parts; part 1 adds entry identity signage and offering icons.
+- The market reference is split into 10 reviewable parts; parts 1-2 now add entry identity signage, offering icons, and distinct vendor booth silhouettes.
 
 Run locally:
 

@@ -43,6 +43,7 @@
       <span class="pill">Detail pass: etched stones + woven market textures</span>
       <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
       <span class="pill">Market 1/10: entry identity + offerings</span>
+      <span class="pill">Market 2/10: vendor booth silhouettes</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
@@ -1618,6 +1619,78 @@ function makeMarketOfferingIcon(id, x, z, type = "herbs", color = 0x86efac) {
   return g;
 }
 
+function makeMarketVendorBooth(id, x, z, rot = 0, variant = "wide", color = 0x7f52a6) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x56351f, map: textureSet.wood, roughness: 0.91, bumpScale: 0.05 });
+  const cloth = surfaceMaterial({ color, map: textureSet.canopyCloth, roughness: 0.93, bumpScale: 0.05, emissive: 0x1e1230, emissiveIntensity: 0.035 });
+  const trim = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62, side: THREE.DoubleSide });
+  const isTall = variant === "tall";
+  const isRound = variant === "round";
+  const width = isTall ? 1.45 : isRound ? 1.78 : 2.45;
+  const depth = isTall ? 1.18 : isRound ? 1.55 : 1.28;
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(width, 0.24, depth * 0.46), wood);
+  counter.position.set(0, 0.46, depth * 0.12);
+  const backShelf = new THREE.Mesh(new THREE.BoxGeometry(width * 0.82, 0.1, 0.12), wood);
+  backShelf.position.set(0, 0.92, -depth * 0.35);
+  const baseCrate = new THREE.Mesh(new THREE.BoxGeometry(width * 0.38, 0.32, 0.32), wood);
+  baseCrate.position.set(-width * 0.32, 0.22, depth * 0.44);
+  const canopy = isRound
+    ? new THREE.Mesh(new THREE.ConeGeometry(width * 0.58, 0.52, 6), cloth)
+    : new THREE.Mesh(new THREE.ConeGeometry(width * 0.66, isTall ? 0.82 : 0.56, 4), cloth);
+  canopy.position.y = isTall ? 1.76 : 1.48;
+  canopy.rotation.y = isRound ? Math.PI / 6 : Math.PI / 4;
+  canopy.scale.z = isTall ? 0.9 : 0.62;
+  const drapes = [];
+  [-0.42, 0, 0.42].forEach((dx, idx) => {
+    const drape = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.18, isTall ? 0.72 : 0.55), cloth.clone());
+    drape.position.set(dx * width, isTall ? 1.23 : 1.08, depth * 0.54);
+    drape.rotation.y = Math.PI;
+    drape.rotation.z = (idx - 1) * 0.07;
+    drape.userData.phase = idx * 0.55 + x;
+    drapes.push(drape);
+    g.add(drape);
+  });
+  const trimBars = [];
+  [-width * 0.38, 0, width * 0.38].forEach((tx, idx) => {
+    const bar = new THREE.Mesh(new THREE.PlaneGeometry(0.045, isTall ? 0.78 : 0.58), trim.clone());
+    bar.position.set(tx, isTall ? 1.27 : 1.11, depth * 0.555);
+    bar.rotation.y = Math.PI;
+    bar.userData.phase = idx * 0.4;
+    trimBars.push(bar);
+    g.add(bar);
+  });
+  const wares = [];
+  [-0.36, -0.12, 0.12, 0.36].forEach((wx, idx) => {
+    const ware = new THREE.Mesh(
+      idx % 2 ? new THREE.BoxGeometry(0.12, 0.12, 0.12) : new THREE.OctahedronGeometry(0.085),
+      new THREE.MeshBasicMaterial({ color: idx === 0 ? 0x86efac : idx === 1 ? 0xffd58a : idx === 2 ? 0x7dd3fc : 0xc084fc, transparent: true, opacity: 0.86 })
+    );
+    ware.position.set(wx * width, 0.68, depth * 0.18 + (idx % 2) * 0.12);
+    ware.userData.phase = idx * 0.6;
+    wares.push(ware);
+    g.add(ware);
+  });
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(width * 0.48, 0.22), trim.clone());
+  sign.position.set(0, 1.18, depth * 0.58);
+  sign.rotation.y = Math.PI;
+  const glow = warmGlowBillboard(`${id}_booth_glow`, x, 1.1, z, isTall ? 1.35 : 1.6, 0xffc879, 0.18);
+  const pool = warmLightPool(`${id}_booth_pool`, x, z, width * 0.62, depth * 0.6, 0xffb35f, 0.1);
+  g.add(counter, backShelf, baseCrate, canopy, sign);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.canopy = canopy;
+  g.userData.drapes = drapes;
+  g.userData.trimBars = trimBars;
+  g.userData.wares = wares;
+  g.userData.glow = glow;
+  g.userData.pool = pool;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, width * 0.58, depth * 0.44, 0.24);
+  return g;
+}
+
 function makeMarketStall(id, x, z, rot = 0, showLabel = false) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
@@ -2087,6 +2160,11 @@ const marketOfferingIcons = [
   makeMarketOfferingIcon("market_part_01_crystals", -1.3, 6.35, "crystals", 0xc084fc),
   makeMarketOfferingIcon("market_part_01_tools", -0.86, 6.72, "tools", 0xf59e0b)
 ];
+const marketVendorBooths = [
+  makeMarketVendorBooth("market_part_02_wide_vendor_booth", -4.1, 8.95, 0.5, "wide", 0x6d3f91),
+  makeMarketVendorBooth("market_part_02_tall_scroll_booth", -1.95, 10.12, 0.06, "tall", 0x3b5a82),
+  makeMarketVendorBooth("market_part_02_round_corner_booth", 4.15, 7.55, -0.72, "round", 0x7b4f88)
+];
 const etchedMarkers = [
   makeEtchedStoneMarker("etched_marker_camp_entry", -1.42, 4.82, -0.18, 0xa7f3ff),
   makeEtchedStoneMarker("etched_marker_market_threshold", 1.18, 5.7, 0.24, 0xffd58a),
@@ -2555,6 +2633,22 @@ function animate(t = 0) {
     });
     icon.userData.ring.rotation.z += 0.006;
     icon.userData.glow.material.opacity = (timeMode === "day" ? 0.06 : 0.15) + Math.sin(t * 0.003 + idx) * 0.035;
+  });
+  marketVendorBooths.forEach((booth, boothIdx) => {
+    booth.userData.canopy.rotation.z = Math.sin(t * 0.0018 + boothIdx) * 0.025;
+    booth.userData.drapes.forEach((drape) => {
+      drape.rotation.z = Math.sin(t * 0.0025 + drape.userData.phase) * 0.09;
+      drape.material.opacity = 0.74 + Math.sin(t * 0.002 + drape.userData.phase) * 0.08;
+    });
+    booth.userData.trimBars.forEach((bar) => {
+      bar.material.opacity = 0.52 + Math.sin(t * 0.003 + bar.userData.phase) * 0.12;
+    });
+    booth.userData.wares.forEach((ware, wareIdx) => {
+      ware.position.y = 0.68 + Math.sin(t * 0.004 + ware.userData.phase + boothIdx) * 0.03;
+      ware.rotation.y += 0.008 + wareIdx * 0.002;
+    });
+    booth.userData.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) + Math.sin(t * 0.003 + boothIdx) * 0.04;
+    booth.userData.pool.material.opacity = (timeMode === "day" ? 0.04 : 0.1) + Math.sin(t * 0.002 + boothIdx) * 0.025;
   });
   etchedMarkers.forEach((marker) => {
     marker.userData.glyphs.forEach((glyph) => {

@@ -201,7 +201,7 @@ The market concept should be implemented in ten small passes so each commit stay
 | Part | Focus | 3D translation | Status |
 | --- | --- | --- | --- |
 | 1 | Entry identity + offerings | Market title sign, exchange subtitle, goods/offering icons for herbs, fruit, scrolls, potions, crystals, tools | implemented in `demos/world-3d-blockout.html` |
-| 2 | Vendor booth silhouettes | Add 2-3 distinct tent/booth roof shapes, side drapes, booth counters | planned |
+| 2 | Vendor booth silhouettes | Add 2-3 distinct tent/booth roof shapes, side drapes, booth counters | implemented in `demos/world-3d-blockout.html` |
 | 3 | Lantern safety/warmth | Add lantern rows, hanging lamp variants, glow pools, path reassurance cues | planned |
 | 4 | Central resource exchange | Add central trade dais, crystal marker, barter trays, rotating exchange glyph | planned |
 | 5 | Open walkway flow | Clarify main path lanes, connector stones, blue flow traces between stalls | planned |
