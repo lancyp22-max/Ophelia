@@ -162,7 +162,6 @@ Scope (intentionally small):
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
 - expanded Market focus with a walk-under exchange hall, high canopy, lower ground-level camera, three stalls, string lights, display stands, and vendor/traveler presences,
-- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, richer close-up market textures, corrected A/D strafing, and cozy under-canopy market home details.
 - brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures,
 - detail pass with etched threshold stones, pebble scatter, leaf-vein canopy material, woven market runners, tassels, hanging vines, animated plaza mosaic tiles, and firepit reference details: crystal clusters, spotted mushrooms, ground lanterns, open grimoires, cups, and inner rune spokes.
 
@@ -320,6 +319,22 @@ Audit checks include:
 - Verify naming alone does not reveal sealed architecture.
 - Confirm no inward references to `backups/`, `library/`, or private runtime paths.
 - Ensure first public narrative remains singular: **world-shaped interface experiment**.
+
+### OpLite Eyes inner-world vision
+
+OpLite Eyes is a schema-first local vision packet for agents: it summarizes what an agent can see, who is nearby, what safe interactions are available, and which memory node ids matter without replaying screenshots or long chat history.
+
+Files:
+- `docs/oplite-eyes.md`
+- `data/context/oplite-eyes-capsule.v0.1.json`
+- `scripts/oplite_eyes_brief.py`
+
+Generate the paste-ready inner-world vision brief:
+
+```bash
+make oplite-eyes
+# output: artifacts/oplite-eyes-brief.md
+```
 
 ### Token context workflow
 
