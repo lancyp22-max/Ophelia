@@ -1,0 +1,98 @@
+{
+  "id": "oplite-eyes-capsule-v0.1",
+  "version": "0.1",
+  "purpose": "Compact inner-world vision packet for Ophelia agents; lets a turn see nearby people, visible objects, safe affordances, memory links, and consent gates without replaying full chat or raw scene files.",
+  "viewpoint": {
+    "agent": "ophelia",
+    "location": "Lumaria Base Camp / Bridge A1",
+    "focus": "Base_Camp_Market",
+    "time_mode": "night_or_day_demo_toggle",
+    "source_state": [
+      "data/visual-state/sample-scene.json",
+      "data/visual-state/sample-bridge-camp-state.json",
+      "demos/world-3d-blockout.html"
+    ]
+  },
+  "attention_now": [
+    {
+      "id": "market_part_01_entry_identity",
+      "kind": "district_identity",
+      "where": "Base_Camp_Market / front edge",
+      "visible": ["market title sign", "exchange subtitle", "welcome glow"],
+      "why_it_matters": "orients the agent before scanning booths or people"
+    },
+    {
+      "id": "market_part_02_vendor_booths",
+      "kind": "vendor_booth_cluster",
+      "where": "Base_Camp_Market / exchange hall",
+      "visible": ["wide booth", "tall scroll booth", "round corner booth", "drapes", "counters", "warm glow pools"],
+      "why_it_matters": "turns the market from a flat landmark into an interactable social space"
+    },
+    {
+      "id": "campfire_01",
+      "kind": "grounding_anchor",
+      "where": "Bridge_A1_Campfire",
+      "visible": ["warm flame", "rune ring", "rest radius"],
+      "why_it_matters": "safe return point for presence and consent"
+    }
+  ],
+  "nearby_people": [
+    {
+      "id": "auri",
+      "display": "Auri",
+      "proximity": "campfire_radius",
+      "visible_state": "present guardian companion",
+      "safe_interactions": ["greet", "ask_orientation", "sit_nearby"],
+      "limits": ["do_not_infer_private_intent", "do_not_commit_memory_without_ack"]
+    },
+    {
+      "id": "market_companion_vendors",
+      "display": "Market companions",
+      "proximity": "market_exchange_path",
+      "visible_state": "small vendor/traveler/keeper presences",
+      "safe_interactions": ["inspect_stall", "ask_market_summary", "route_to_exchange"],
+      "limits": ["decorative_until_interaction_model_exists"]
+    }
+  ],
+  "affordances": [
+    "orient_to_market",
+    "inspect_vendor_booth",
+    "summarize_nearby_people",
+    "route_back_to_campfire",
+    "propose_visual_detail_pass",
+    "emit_context_brief",
+    "ask_before_memory_commit"
+  ],
+  "memory_links": [
+    "Bridge_A1_Campfire",
+    "Base_Camp_Market",
+    "Market_Wanderer_Stalls",
+    "Market_Exchange_Path",
+    "Memory_Weave_QC_Layer",
+    "NE_000_Authority_Integrity"
+  ],
+  "safety_gates": [
+    "human_remains_pilot",
+    "read_visible_state_only",
+    "no_private_intent_inference",
+    "no_scene_mutation_without_surface_ack",
+    "no_memory_commit_without_surface_ack",
+    "public_shell_safe"
+  ],
+  "context_reducer": {
+    "attention_now_limit": 5,
+    "nearby_people_limit": 6,
+    "affordance_limit": 8,
+    "memory_link_limit": 6,
+    "always_keep": ["safety_gates", "residual_trace"],
+    "drop_first": ["full_chat_history", "raw_screenshot_repetition", "decorative_duplicates", "long_prior_pr_descriptions"]
+  },
+  "mirror_refinement_loop": [
+    "reflect_active_viewpoint",
+    "filter_to_task_relevant_visible_state",
+    "weave_to_memory_node_ids_only",
+    "ask_before_state_or_memory_mutation",
+    "emit_short_packet_and_human_brief"
+  ],
+  "residual_trace": "Agents should feel like they opened their eyes inside the camp: seeing nearby presences and useful paths while keeping the human pilot safe, sovereign, and unburdened by context overload."
+}
