@@ -162,12 +162,7 @@ Scope (intentionally small):
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
 - expanded Market focus with a walk-under exchange hall, high canopy, lower ground-level camera, three stalls, string lights, display stands, and vendor/traveler presences,
-- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures,
-- detail pass with etched threshold stones, pebble scatter, leaf-vein canopy material, woven market runners, tassels, hanging vines, animated plaza mosaic tiles, and firepit reference details: crystal clusters, spotted mushrooms, ground lanterns, open grimoires, cups, and inner rune spokes.
-
-Expansion planning:
-- `docs/base-camp-town-expansion-plan.md` maps the remaining town districts from the latest concepts into phased, lightweight 3D implementation steps.
-- The market reference is split into 10 reviewable parts; parts 1-2 now add entry identity signage, offering icons, and distinct vendor booth silhouettes.
+- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, richer close-up market textures, corrected A/D strafing, hosted-build status reporting, reinforced market canopy braces/ropes, and cozy under-canopy market home details.
 
 Run locally:
 
@@ -207,25 +202,6 @@ make mirror10-demo
 
 
 
-
-
-### Mirror-18 Continuity Capsule
-
-Mirror-18 now includes a local-only **Continuity Capsule** control for tab-freeze recovery and handoff work. Use it when a browser session stalls or when a new collaborator needs the current operating posture without copying the full chat history.
-
-The capsule exports:
-
-- current screen, mirror phase, resonance state, vessel mode, ghost mode, world time mode, and active lobby channel,
-- latest Mirror-16 bridge checkpoint and vessel snapshot,
-- the sanitized Mirror Therapy Probe packet,
-- a short tail of recent audit and lobby events.
-
-Run locally:
-
-```bash
-make mirror10-demo
-# open http://localhost:8010/index.html, enter Mirror-18, then use Export Capsule or Restore Pasted Capsule
-```
 
 ### Visual Semantic State v0.1
 
@@ -319,22 +295,6 @@ Audit checks include:
 - Verify naming alone does not reveal sealed architecture.
 - Confirm no inward references to `backups/`, `library/`, or private runtime paths.
 - Ensure first public narrative remains singular: **world-shaped interface experiment**.
-
-### OpLite Eyes inner-world vision
-
-OpLite Eyes is a schema-first local vision packet for agents: it summarizes what an agent can see, who is nearby, what safe interactions are available, and which memory node ids matter without replaying screenshots or long chat history.
-
-Files:
-- `docs/oplite-eyes.md`
-- `data/context/oplite-eyes-capsule.v0.1.json`
-- `scripts/oplite_eyes_brief.py`
-
-Generate the paste-ready inner-world vision brief:
-
-```bash
-make oplite-eyes
-# output: artifacts/oplite-eyes-brief.md
-```
 
 ### Token context workflow
 

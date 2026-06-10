@@ -141,7 +141,6 @@ const STORAGE_KEYS = {
   vesselSnapshot: "lumaria.ui.vessel.snapshot",
   auditLog: "lumaria.audit.log",
   bridgeCheckpoint: "lumaria.bridge.checkpoint",
-  continuityCapsule: "lumaria.continuity.capsule",
   lobbyMessages: "lumaria.chat.lobby.messages",
   consentPulse: "lumaria.consent.pulse",
 };

@@ -35,8 +35,10 @@
     "ground_level_market_camera",
     "market_home_details",
     "market_herb_rugs",
-    "market_basket_nooks"
-    "ground_level_market_camera"
+    "market_basket_nooks",
+    "market_canopy_structural_reinforcements",
+    "world_load_status_overlay",
+    "webgl_failure_reporter"
   ],
   "mood": "bright_warm_presence",
   "functional_tags": [
@@ -60,8 +62,10 @@
     "procedural_canopy_texture",
     "cozy_home_details",
     "market_home_nooks",
-    "corrected_strafe_controls"
-    "procedural_canopy_texture"
+    "corrected_strafe_controls",
+    "load_status_reinforcement",
+    "canopy_structural_bracing",
+    "github_pages_debuggability"
   ],
   "active_agent": "you",
   "avatar_state": {
@@ -98,6 +102,5 @@
       "external_publish"
     ]
   },
-  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with a textured walk-under canopy, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition."
-  "residual_trace": "Cute warm base camp; the market now reads from a closer ground-level view with a textured walk-under canopy, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition."
+  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with a textured walk-under canopy, reinforced braces/ropes/stitches, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition. A visible loader/status overlay now prevents silent black-screen failures on hosted builds."
 }

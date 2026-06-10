@@ -9,7 +9,6 @@
     "night",
     "rain"
   ],
-  "arrival_states": ["morning", "day", "sunset", "night", "rain"],
   "camp_status": {
     "active_location": "A1 Bridge Camp",
     "braid_status": "quiet",
@@ -42,11 +41,6 @@
       "display_name": "Qwen",
       "state": "available"
     }
-    { "id": "auri", "display_name": "Auri", "state": "present" },
-    { "id": "ophelia", "display_name": "Ophelia", "state": "quiet" },
-    { "id": "gemma", "display_name": "Gemma", "state": "reviewing" },
-    { "id": "glass_warden", "display_name": "Glass Warden", "state": "watching" },
-    { "id": "qwen", "display_name": "Qwen", "state": "available" }
   ],
   "visual_elements": [
     {
@@ -84,11 +78,6 @@
         "no_visual_alarm_without_clear_reason",
         "no_memory_commit_without_surface_ack"
       ],
-      "functional_role": ["connection", "presence", "rest"],
-      "mood_tags": ["cozy", "safe", "alive"],
-      "causal_links": ["time_of_day", "active_agent", "user_state", "memory_node"],
-      "allowed_transitions": ["calm", "active_conversation", "rain_softened", "night_focus"],
-      "safety_notes": ["no_visual_alarm_without_clear_reason", "no_memory_commit_without_surface_ack"],
       "residual_trace": "first sanctuary light; arrival should feel warm before it becomes useful"
     },
     {
@@ -121,11 +110,6 @@
       "safety_notes": [
         "never imply user must stay seated"
       ],
-      "functional_role": ["pause", "conversation", "observation"],
-      "mood_tags": ["welcoming", "grounded"],
-      "causal_links": ["arrival_state", "chat_state"],
-      "allowed_transitions": ["empty", "reserved", "conversation_ready"],
-      "safety_notes": ["never imply user must stay seated"],
       "residual_trace": "a place to sit without being captured"
     },
     {
@@ -159,11 +143,6 @@
       "safety_notes": [
         "keep glow gentle on mobile screens"
       ],
-      "functional_role": ["night_orientation", "restorative_signal"],
-      "mood_tags": ["soft", "alive", "magical_but_grounded"],
-      "causal_links": ["time_of_day", "rain", "garden_state"],
-      "allowed_transitions": ["dim_day", "glow_night", "bright_after_rain"],
-      "safety_notes": ["keep glow gentle on mobile screens"],
       "residual_trace": "tiny proof the world responds quietly"
     },
     {
@@ -172,7 +151,6 @@
       "location": "Bridge_A1_Campfire",
       "visible_state": {
         "label": "Auri \u00b7 Campfire Agent",
-        "label": "Auri · Campfire Agent",
         "glow": "violet eyes, held orb, crown gem, staff gem",
         "posture": "seated_guardian_near_fire",
         "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate",
@@ -207,11 +185,6 @@
         "presence_over_account_identity",
         "human_remains_pilot"
       ],
-      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship", "texture_scale_anchor"],
-      "mood_tags": ["gentle", "unforced", "cozy_guardian", "storybook_texture", "gentle_micro_life"],
-      "causal_links": ["user_presence", "chat_channel", "safety_state", "local_biome_texture"],
-      "allowed_transitions": ["present", "listening", "speaking", "resting"],
-      "safety_notes": ["presence_over_account_identity", "human_remains_pilot"],
       "residual_trace": "resident, not prompt source"
     },
     {
@@ -250,11 +223,6 @@
         "avoid_strobe",
         "keep_sky_light_readable_on_mobile"
       ],
-      "functional_role": ["atmosphere", "time_orientation", "scene_depth"],
-      "mood_tags": ["soft", "storybook_sky", "cozy_not_harsh"],
-      "causal_links": ["time_of_day", "rain_state", "campfire_contrast"],
-      "allowed_transitions": ["morning", "day", "sunset", "night", "rain"],
-      "safety_notes": ["avoid_strobe", "keep_sky_light_readable_on_mobile"],
       "residual_trace": "the sky changes the camp mood before asking the pilot to do anything"
     },
     {
@@ -293,11 +261,6 @@
         "keep_low_frequency_pulse",
         "decorative_only"
       ],
-      "functional_role": ["night_orientation", "cozy_biome_detail", "camp_depth"],
-      "mood_tags": ["luminous", "gentle", "alive", "not_cluttered"],
-      "causal_links": ["time_of_day", "rain_state", "auri_presence", "campfire_light"],
-      "allowed_transitions": ["day_dim", "night_glow", "rain_brightened", "resting"],
-      "safety_notes": ["keep_low_frequency_pulse", "decorative_only"],
       "residual_trace": "tiny glowing grass makes the ground feel kind without pulling focus"
     },
     {
@@ -338,11 +301,6 @@
         "decorative_only",
         "do_not_obscure_navigation_or_text"
       ],
-      "functional_role": ["scale", "warmth", "arrival_detail", "central_user_orientation"],
-      "mood_tags": ["cozy", "mid_2000s_storybook", "alive_but_uncluttered"],
-      "causal_links": ["campfire_light", "auri_presence", "time_of_day", "rain_state"],
-      "allowed_transitions": ["day_dew", "night_glow", "rain_freshened", "resting"],
-      "safety_notes": ["decorative_only", "do_not_obscure_navigation_or_text"],
       "residual_trace": "the world feels alive at the pilot's feet without demanding attention"
     },
     {
@@ -376,11 +334,6 @@
       "safety_notes": [
         "do_not_overanimate_rest_states"
       ],
-      "functional_role": ["growth", "pattern_visibility"],
-      "mood_tags": ["restorative", "patient"],
-      "causal_links": ["rain", "memory_weave", "active_seed"],
-      "allowed_transitions": ["resting", "sprouting", "blooming", "rain_fed"],
-      "safety_notes": ["do_not_overanimate_rest_states"],
       "residual_trace": "growth without pressure"
     },
     {
@@ -403,7 +356,9 @@
         "south_gate": "Journey Beyond waypoint gate on the south path",
         "labels": "soft sprite nameplates keep the districts readable from the world camera",
         "market_home_details": "three cozy under-canopy nooks with rugs, baskets, shelf posts, hanging herbs, soft ground glow, and floating golden motes so the market feels like a lived-in home space rather than only a trade marker",
-        "movement_controls": "A and D strafe directions corrected for ground-level walk-under navigation"
+        "movement_controls": "A and D strafe directions corrected for ground-level walk-under navigation",
+        "market_reinforcements": "structural braces, rope lines, and stitch strips on the walk-under market canopy so the exchange hall reads sturdier and less flat",
+        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black"
       },
       "functional_role": [
         "camp_orientation",
@@ -417,7 +372,9 @@
         "ground_level_texture_view",
         "cozy_home_base",
         "market_detail_readability",
-        "corrected_walk_controls"
+        "corrected_walk_controls",
+        "hosted_build_debuggability",
+        "canopy_structural_reinforcement"
       ],
       "mood_tags": [
         "storybook_map",
@@ -447,22 +404,15 @@
         "district_focus",
         "linked",
         "future_route_unlock",
-        "home_detail_focus"
+        "home_detail_focus",
+        "reinforced_hosted_render"
       ],
       "safety_notes": [
         "landmarks_are_read_only",
         "do_not_imply_external_travel_without_confirm",
         "keep_labels_small_and_non_intrusive"
       ],
-      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with corrected A/D movement, lower camera, richer canopy/plaza textures, a walkable textile runner, cozy herb-and-basket nooks, and enough ground detail to inspect while moving"
-        "labels": "soft sprite nameplates keep the districts readable from the world camera"
-      },
-      "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview", "market_exchange_preview", "full_size_market_plaza", "market_district_focus", "walk_under_market_canopy", "ground_level_texture_view"],
-      "mood_tags": ["storybook_map", "cozy_town", "readable_landmarks", "expanded_but_safe", "bright_happy", "natural_glow"],
-      "causal_links": ["bridge_overview", "world_flow", "time_of_day", "memory_weave", "resource_exchange_state", "natural_light_state"],
-      "allowed_transitions": ["preview", "market_focus", "full_plaza_focus", "walk_under_canopy", "ground_texture_focus", "district_focus", "linked", "future_route_unlock"],
-      "safety_notes": ["landmarks_are_read_only", "do_not_imply_external_travel_without_confirm", "keep_labels_small_and_non_intrusive"],
-      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with a lower camera, richer canopy/plaza textures, and enough ground detail to inspect while moving"
+      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with corrected A/D movement, hosted-build status reporting, reinforced canopy braces/ropes, lower camera, richer canopy/plaza textures, a walkable textile runner, cozy herb-and-basket nooks, and enough ground detail to inspect while moving"
     },
     {
       "id": "memory_gate_01",
@@ -496,11 +446,6 @@
         "no_deep_archive_load_without_need",
         "no_private_seed_exposure"
       ],
-      "functional_role": ["memory_boundary", "archive_orientation"],
-      "mood_tags": ["reverent", "safe"],
-      "causal_links": ["memory_weave", "warden_gate", "surface_ack"],
-      "allowed_transitions": ["idle", "preview", "linked", "sealed"],
-      "safety_notes": ["no_deep_archive_load_without_need", "no_private_seed_exposure"],
       "residual_trace": "the archive is near, but not hungry"
     }
   ]
