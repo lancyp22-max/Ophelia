@@ -11,6 +11,7 @@
     canvas { display:block; width:100%; height:100%; }
     .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
     .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
+    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:lin[...]
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
     .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
@@ -168,6 +169,7 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.bezierCurveTo(size * 0.22, y - 18, size * 0.55, y + 22, size, y + Math.sin(i * 1.7) * 18);
+      ctx.bezierCurveTo(size * 0.22, y + 4, size * 0.55, y + 22, size, y + Math.sin(i * 1.7) * 18);
       ctx.stroke();
     }
   } else if (style === "stone") {
@@ -546,6 +548,12 @@ function applyTimeMode(mode) {
   });
   campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
   campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  if (typeof marketHomeDetails !== "undefined") {
+    marketHomeDetails.forEach((detail) => {
+      detail.userData.glow.material.opacity = isDay ? 0.045 : isRain ? 0.12 : 0.09;
+      detail.userData.rug.material.emissiveIntensity = isDay ? 0.015 : 0.055;
+    });
+  }
   if (avatarYou) {
     avatarYou.agentLight.intensity = isDay ? 0.22 : isRain ? 0.58 : 0.72;
     avatarYou.nameplate.material.opacity = isDay ? 0.58 : 0.78;
@@ -766,6 +774,7 @@ function makeGardenBed(id, x, z) {
   g.add(trim, soil);
   for (let i = 0; i < 10; i++) {
     const sprout = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x73d8b4 : 0x8fb7ff, emissive: i % 2 ? 0x0b4d3d : 0x172a66, emissiveIntensity: 0.16 }));
+    const sprout = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.34, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x73d8b4 : 0x8fb7ff, emissive: i % 2 ? 0x0b4d3d : 0x172a66, emissiveIntensity: 0.06, roughness: 0.84 }));
     sprout.position.set(-1.05 + i * 0.23, 0.28, (i % 3 - 1) * 0.24);
     g.add(sprout);
   }
@@ -1982,6 +1991,73 @@ function makeMarketCompanion(id, x, z, color = 0xe9d5ff) {
   return g;
 }
 
+function makeMarketHomeDetail(id, x, z, rot = 0, accent = 0xf0abfc) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.92, bumpScale: 0.055 });
+  const cloth = surfaceMaterial({ color: accent, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.038, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  cloth.transparent = true;
+  cloth.opacity = 0.84;
+  const basketMat = surfaceMaterial({ color: 0x9b6b3d, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
+  const herbMat = new THREE.MeshStandardMaterial({ color: 0x82d08a, emissive: 0x143b22, emissiveIntensity: 0.12, roughness: 0.82 });
+  const moteMat = new THREE.MeshBasicMaterial({ color: 0xffe2a8, transparent: true, opacity: 0.76 });
+
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.74), cloth);
+  rug.position.set(0, 0.145, 0.04);
+  rug.rotation.x = -Math.PI / 2;
+  rug.receiveShadow = true;
+
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.12, 0.18), wood);
+  shelf.position.set(0, 0.62, -0.26);
+  const shelfPostL = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.88, 8), wood);
+  shelfPostL.position.set(-0.42, 0.44, -0.28);
+  const shelfPostR = shelfPostL.clone();
+  shelfPostR.position.x = 0.42;
+
+  const baskets = [];
+  [-0.32, 0.02, 0.35].forEach((bx, idx) => {
+    const basket = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.18, 10), basketMat);
+    basket.position.set(bx, 0.28, 0.16 + (idx % 2) * 0.08);
+    basket.userData.phase = idx * 0.8;
+    baskets.push(basket);
+    g.add(basket);
+  });
+
+  const herbs = [];
+  [-0.28, -0.08, 0.14, 0.33].forEach((hx, idx) => {
+    const herb = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.38, 7), herbMat.clone());
+    herb.position.set(hx, 0.82, -0.24);
+    herb.rotation.z = (idx - 1.5) * 0.11;
+    herb.userData.phase = idx * 0.65;
+    herbs.push(herb);
+    g.add(herb);
+  });
+
+  const motes = [];
+  for (let i = 0; i < 5; i++) {
+    const mote = new THREE.Mesh(new THREE.SphereGeometry(0.026, 7, 7), moteMat.clone());
+    mote.position.set(-0.42 + i * 0.21, 0.34 + (i % 2) * 0.12, 0.34);
+    mote.userData.base = mote.position.clone();
+    mote.userData.phase = i * 0.74;
+    motes.push(mote);
+    g.add(mote);
+  }
+
+  const glow = warmLightPool(`${id}_home_glow`, x, z + 0.08, 1.08, 0.72, 0xffd58a, 0.08);
+  g.add(rug, shelf, shelfPostL, shelfPostR);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.rug = rug;
+  g.userData.baskets = baskets;
+  g.userData.herbs = herbs;
+  g.userData.motes = motes;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 0.8, 0.48, 0.16);
+  return g;
+}
+
 function makeStable(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5b3b24, map: textureSet.wood, roughness: 0.92, bumpScale: 0.05 });
@@ -2479,6 +2555,9 @@ function animate(t = 0) {
   const speed = 0.09;
   if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
   if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
+  // Strafe controls use the player's view direction: A = left, D = right.
+  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
+  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
   if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, -speed);
   if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, speed);
 
@@ -2623,6 +2702,56 @@ function animate(t = 0) {
     companion.userData.cap.rotation.y += 0.008;
     companion.userData.glow.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.06;
   });
+  marketPartOneIdentity.userData.rune.rotation.y += 0.012;
+  marketPartOneIdentity.userData.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.18) + Math.sin(t * 0.003) * 0.04;
+  marketPartOneIdentity.userData.pool.material.opacity = (timeMode === "day" ? 0.05 : 0.13) + Math.sin(t * 0.0025) * 0.025;
+  marketOfferingIcons.forEach((icon, idx) => {
+    icon.userData.items.forEach((item, itemIdx) => {
+      item.position.y = 0.19 + (itemIdx % 2) * 0.025 + Math.sin(t * 0.004 + item.userData.phase) * 0.018;
+      item.rotation.y += 0.006 + idx * 0.0007;
+    });
+    icon.userData.ring.rotation.z += 0.006;
+    icon.userData.glow.material.opacity = (timeMode === "day" ? 0.06 : 0.15) + Math.sin(t * 0.003 + idx) * 0.035;
+  });
+  marketVendorBooths.forEach((booth, boothIdx) => {
+    booth.userData.canopy.rotation.z = Math.sin(t * 0.0018 + boothIdx) * 0.025;
+    booth.userData.drapes.forEach((drape) => {
+      drape.rotation.z = Math.sin(t * 0.0025 + drape.userData.phase) * 0.09;
+      drape.material.opacity = 0.74 + Math.sin(t * 0.002 + drape.userData.phase) * 0.08;
+    });
+    booth.userData.trimBars.forEach((bar) => {
+      bar.material.opacity = 0.52 + Math.sin(t * 0.003 + bar.userData.phase) * 0.12;
+    });
+    booth.userData.wares.forEach((ware, wareIdx) => {
+      ware.position.y = 0.68 + Math.sin(t * 0.004 + ware.userData.phase + boothIdx) * 0.03;
+      ware.rotation.y += 0.008 + wareIdx * 0.002;
+    });
+    booth.userData.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) + Math.sin(t * 0.003 + boothIdx) * 0.04;
+    booth.userData.pool.material.opacity = (timeMode === "day" ? 0.04 : 0.1) + Math.sin(t * 0.002 + boothIdx) * 0.025;
+  });
+  etchedMarkers.forEach((marker) => {
+    marker.userData.glyphs.forEach((glyph) => {
+      glyph.material.opacity = (timeMode === "day" ? 0.28 : 0.58) + Math.sin(t * 0.004 + glyph.userData.phase) * 0.1;
+    });
+  });
+  pebbleDetails.forEach((scatter, scatterIdx) => {
+    scatter.children.forEach((pebble) => {
+      pebble.position.y = 0.08 + Math.sin(t * 0.0018 + pebble.userData.phase + scatterIdx) * 0.002;
+    });
+  });
+
+  marketHomeDetails.forEach((detail, idx) => {
+    detail.userData.rug.material.opacity = (timeMode === "day" ? 0.76 : 0.86) + Math.sin(t * 0.0018 + idx) * 0.025;
+    detail.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.025;
+    detail.userData.herbs.forEach((herb, herbIdx) => {
+      herb.rotation.z += Math.sin(t * 0.0024 + herb.userData.phase + idx) * 0.0009;
+      herb.material.emissiveIntensity = (timeMode === "day" ? 0.06 : 0.16) + Math.sin(t * 0.004 + herbIdx) * 0.035;
+    });
+    detail.userData.motes.forEach((mote) => {
+      mote.position.y = mote.userData.base.y + Math.sin(t * 0.003 + mote.userData.phase) * 0.045;
+      mote.material.opacity = (timeMode === "day" ? 0.32 : 0.72) + Math.sin(t * 0.005 + mote.userData.phase) * 0.14;
+    });
+    detail.userData.baskets.forEach((basket) => { basket.rotation.y += 0.0025; });
   marketPartOneIdentity.userData.rune.rotation.y += 0.012;
   marketPartOneIdentity.userData.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.18) + Math.sin(t * 0.003) * 0.04;
   marketPartOneIdentity.userData.pool.material.opacity = (timeMode === "day" ? 0.05 : 0.13) + Math.sin(t * 0.0025) * 0.025;

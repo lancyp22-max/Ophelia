@@ -32,6 +32,10 @@
     "market_canopy_lanterns",
     "market_textile_display",
     "market_walk_under_texture_runner",
+    "ground_level_market_camera",
+    "market_home_details",
+    "market_herb_rugs",
+    "market_basket_nooks"
     "ground_level_market_camera"
   ],
   "mood": "bright_warm_presence",
@@ -53,6 +57,10 @@
     "walk_under_market_canopy",
     "expanded_exchange_hall",
     "ground_level_texture_view",
+    "procedural_canopy_texture",
+    "cozy_home_details",
+    "market_home_nooks",
+    "corrected_strafe_controls"
     "procedural_canopy_texture"
   ],
   "active_agent": "you",
@@ -90,5 +98,6 @@
       "external_publish"
     ]
   },
+  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with a textured walk-under canopy, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition."
   "residual_trace": "Cute warm base camp; the market now reads from a closer ground-level view with a textured walk-under canopy, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition."
 }
