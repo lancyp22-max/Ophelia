@@ -6,13 +6,16 @@
     "name": "Ophelia / Lumaria",
     "current_frontend_focus": "A1 Bridge Camp 3D world demo",
     "entry_flow": "Enter Lumaria opens the embedded 3D A1 Bridge Camp while preserving chat access.",
-    "current_visual_wave": "Base Camp market is now a walk-under exchange hall with a huge textured canopy and lower ground-level market camera; latest pass brightened the world with natural meadow glow."
+    "current_visual_wave": "Base Camp market is now a bright reinforced walk-under exchange hall with corrected A/D strafing, hosted-build status overlay, lower ground-level camera, huge textured canopy, cozy herb/basket home nooks, and natural meadow glow."
   },
   "active_surfaces": [
     {
       "path": "demos/world-3d-blockout.html",
       "role": "Primary playable 3D A1 Bridge Camp prototype",
       "safe_next_work": [
+        "structural reinforcement details",
+        "hosted render smoke test",
+        "market home-detail refinement",
         "small scoped visual passes",
         "one district or object group per prompt",
         "lighting/material tuning",
