@@ -9,6 +9,10 @@
     #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
     header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
     canvas { display:block; width:100%; height:100%; }
+    #scene { position:relative; min-height:0; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
+    .world-status { position:absolute; inset:auto 14px 14px auto; z-index:6; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.34); border-radius:16px; padding:10px 12px; background:rgba(5,10,22,.78); color:#d9e8ff; box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); font-size:12px; line-height:1.45; }
+    .world-status strong { color:#a7f3ff; letter-spacing:.12em; text-transform:uppercase; font-size:10px; display:block; margin-bottom:4px; }
+    .world-ready .world-status { display:none; }
     .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
     .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
@@ -50,7 +54,7 @@
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
     </div>
   </header>
-  <div id="scene"></div>
+  <div id="scene"><div id="world-status" class="world-status"><strong>World loading</strong><span>Preparing Lumaria A1. If the canvas stays dark, the loader will report the blocked resource or WebGL issue here.</span></div></div>
   <aside class="hud" aria-label="Lumaria visual state packet">
     <div class="hud-title"><span class="state-dot"></span>A1 Visual State</div>
     <div class="hud-grid">
@@ -61,6 +65,21 @@
     </div>
   </aside>
 </div>
+<script>
+(function () {
+  const report = (message) => {
+    const status = document.getElementById('world-status');
+    if (!status) return;
+    status.innerHTML = `<strong>World status</strong><span>${String(message).replace(/[<>&]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]))}</span>`;
+  };
+  window.addEventListener('error', (event) => report(event.message || 'A world script failed before the scene could render.'));
+  window.addEventListener('unhandledrejection', (event) => report(event.reason?.message || event.reason || 'A world resource failed to load.'));
+  window.__lumariaWorldReady = () => {
+    const host = document.getElementById('scene');
+    if (host) host.classList.add('world-ready');
+  };
+})();
+</script>
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 
@@ -73,7 +92,14 @@ const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHei
 let cameraDistance = 9.2;
 camera.position.set(0, 2.05, cameraDistance);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (error) {
+  const status = document.getElementById('world-status');
+  if (status) status.innerHTML = `<strong>WebGL unavailable</strong><span>${String(error.message || error).replace(/[<>&]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]))}</span>`;
+  throw error;
+}
 renderer.setSize(host.clientWidth, host.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
@@ -81,6 +107,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
+window.__lumariaWorldReady?.();
 
 function markShadows(object, cast = true, receive = true) {
   object.traverse((child) => {
@@ -548,6 +575,12 @@ function applyTimeMode(mode) {
   });
   campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
   campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  if (typeof marketHomeDetails !== "undefined") {
+    marketHomeDetails.forEach((detail) => {
+      detail.userData.glow.material.opacity = isDay ? 0.045 : isRain ? 0.12 : 0.09;
+      detail.userData.rug.material.emissiveIntensity = isDay ? 0.015 : 0.055;
+    });
+  }
   if (avatarYou) {
     avatarYou.agentLight.intensity = isDay ? 0.22 : isRain ? 0.58 : 0.72;
     avatarYou.nameplate.material.opacity = isDay ? 0.58 : 0.78;
@@ -2086,6 +2119,121 @@ function makeMarketCompanion(id, x, z, color = 0xe9d5ff) {
   return g;
 }
 
+function makeMarketHomeDetail(id, x, z, rot = 0, accent = 0xf0abfc) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.92, bumpScale: 0.055 });
+  const cloth = surfaceMaterial({ color: accent, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.038, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  cloth.transparent = true;
+  cloth.opacity = 0.84;
+  const basketMat = surfaceMaterial({ color: 0x9b6b3d, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
+  const herbMat = new THREE.MeshStandardMaterial({ color: 0x82d08a, emissive: 0x143b22, emissiveIntensity: 0.12, roughness: 0.82 });
+  const moteMat = new THREE.MeshBasicMaterial({ color: 0xffe2a8, transparent: true, opacity: 0.76 });
+
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.74), cloth);
+  rug.position.set(0, 0.145, 0.04);
+  rug.rotation.x = -Math.PI / 2;
+  rug.receiveShadow = true;
+
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.12, 0.18), wood);
+  shelf.position.set(0, 0.62, -0.26);
+  const shelfPostL = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.88, 8), wood);
+  shelfPostL.position.set(-0.42, 0.44, -0.28);
+  const shelfPostR = shelfPostL.clone();
+  shelfPostR.position.x = 0.42;
+
+  const baskets = [];
+  [-0.32, 0.02, 0.35].forEach((bx, idx) => {
+    const basket = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.18, 10), basketMat);
+    basket.position.set(bx, 0.28, 0.16 + (idx % 2) * 0.08);
+    basket.userData.phase = idx * 0.8;
+    baskets.push(basket);
+    g.add(basket);
+  });
+
+  const herbs = [];
+  [-0.28, -0.08, 0.14, 0.33].forEach((hx, idx) => {
+    const herb = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.38, 7), herbMat.clone());
+    herb.position.set(hx, 0.82, -0.24);
+    herb.rotation.z = (idx - 1.5) * 0.11;
+    herb.userData.phase = idx * 0.65;
+    herbs.push(herb);
+    g.add(herb);
+  });
+
+  const motes = [];
+  for (let i = 0; i < 5; i++) {
+    const mote = new THREE.Mesh(new THREE.SphereGeometry(0.026, 7, 7), moteMat.clone());
+    mote.position.set(-0.42 + i * 0.21, 0.34 + (i % 2) * 0.12, 0.34);
+    mote.userData.base = mote.position.clone();
+    mote.userData.phase = i * 0.74;
+    motes.push(mote);
+    g.add(mote);
+  }
+
+  const glow = warmLightPool(`${id}_home_glow`, x, z + 0.08, 1.08, 0.72, 0xffd58a, 0.08);
+  g.add(rug, shelf, shelfPostL, shelfPostR);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.rug = rug;
+  g.userData.baskets = baskets;
+  g.userData.herbs = herbs;
+  g.userData.motes = motes;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 0.8, 0.48, 0.16);
+  return g;
+}
+
+function makeWorldReinforcementDetails(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x5f3b24, map: textureSet.wood, roughness: 0.9, bumpScale: 0.055 });
+  const ropeMat = new THREE.MeshBasicMaterial({ color: 0xd6b77a, transparent: true, opacity: 0.64 });
+  const stitchMat = new THREE.MeshBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+
+  const braces = [];
+  [[-4.05, -2.92, -0.56], [4.05, -2.92, 0.56], [-4.05, 2.92, 0.56], [4.05, 2.92, -0.56]].forEach(([bx, bz, angle], idx) => {
+    const brace = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.55, 0.09), wood);
+    brace.position.set(bx, 1.55, bz);
+    brace.rotation.z = angle;
+    brace.rotation.y = idx % 2 ? 0.18 : -0.18;
+    braces.push(brace);
+    g.add(brace);
+  });
+
+  const ropes = [];
+  [[-3.85, 0, -2.82, 0], [3.85, 0, -2.82, 0], [-3.85, 0, 2.82, 0], [3.85, 0, 2.82, 0]].forEach(([rx, ry, rz], idx) => {
+    const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 2.25, 6), ropeMat.clone());
+    rope.position.set(rx, 2.08, rz);
+    rope.rotation.z = Math.PI / 2 + (idx % 2 ? 0.18 : -0.18);
+    rope.rotation.y = idx < 2 ? 0.28 : -0.28;
+    rope.userData.phase = idx * 0.72;
+    ropes.push(rope);
+    g.add(rope);
+  });
+
+  const stitches = [];
+  [-3.1, -1.55, 0, 1.55, 3.1].forEach((sx, idx) => {
+    const stitch = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.035), stitchMat.clone());
+    stitch.position.set(sx, 2.51, -3.08);
+    stitch.rotation.x = -Math.PI / 2;
+    stitch.userData.phase = idx * 0.53;
+    stitches.push(stitch);
+    g.add(stitch);
+  });
+
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.braces = braces;
+  g.userData.ropes = ropes;
+  g.userData.stitches = stitches;
+  markShadows(g);
+  scene.add(g);
+  return g;
+}
+
 function makeStable(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5b3b24, map: textureSet.wood, roughness: 0.92, bumpScale: 0.05 });
@@ -2583,8 +2731,9 @@ function animate(t = 0) {
   const speed = 0.09;
   if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
   if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
-  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, -speed);
-  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, speed);
+  // Strafe controls use the player's view direction: A = left, D = right.
+  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
+  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
 
   const groundGlowBase = timeMode === "rain" ? 0.13 : timeMode === "day" || timeMode === "morning" ? 0.06 : timeMode === "sunset" ? 0.08 : 0.11;
   const meadowGlowBase = timeMode === "rain" ? 0.09 : timeMode === "day" || timeMode === "morning" ? 0.035 : timeMode === "sunset" ? 0.055 : 0.075;
