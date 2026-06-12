@@ -360,7 +360,10 @@
         "market_home_details": "three cozy under-canopy nooks with rugs, baskets, shelf posts, hanging herbs, soft ground glow, and floating golden motes so the market feels like a lived-in home space rather than only a trade marker",
         "movement_controls": "A and D strafe directions corrected for ground-level walk-under navigation",
         "market_reinforcements": "structural braces, rope lines, and stitch strips on the walk-under market canopy so the exchange hall reads sturdier and less flat",
-        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black"
+        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black",
+        "compact_controls": "demo header keeps only movement, reset camera, market focus, mode, and a collapsed visual pass log to recover vertical screen space",
+        "camera_safety": "reset camera button plus R hotkey restores a stable camp view; pitch clamps prevent looking too far down into the ground plane",
+        "rain_readability": "rain mode now uses brighter ambient light, mist, and splash rings so it reads as weather instead of muddy darkness"
       },
       "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview", "market_exchange_preview", "full_size_market_plaza", "market_district_focus", "walk_under_market_canopy", "ground_level_texture_view", "luminous_ground_plane", "mountain_backdrop_depth", "town_boundary_context"],
       "mood_tags": ["storybook_map", "cozy_town", "readable_landmarks", "expanded_but_safe", "bright_happy", "natural_glow", "held_by_landscape", "softly_luminous_ground"],
