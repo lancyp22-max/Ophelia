@@ -358,7 +358,10 @@
         "market_home_details": "three cozy under-canopy nooks with rugs, baskets, shelf posts, hanging herbs, soft ground glow, and floating golden motes so the market feels like a lived-in home space rather than only a trade marker",
         "movement_controls": "A and D strafe directions corrected for ground-level walk-under navigation",
         "market_reinforcements": "structural braces, rope lines, and stitch strips on the walk-under market canopy so the exchange hall reads sturdier and less flat",
-        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black"
+        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black",
+        "compact_controls": "demo header keeps only movement, reset camera, market focus, mode, and a collapsed visual pass log to recover vertical screen space",
+        "camera_safety": "reset camera button plus R hotkey restores a stable camp view; pitch clamps prevent looking too far down into the ground plane",
+        "rain_readability": "rain mode now uses brighter ambient light, mist, and splash rings so it reads as weather instead of muddy darkness"
       },
       "functional_role": [
         "camp_orientation",
@@ -374,7 +377,10 @@
         "market_detail_readability",
         "corrected_walk_controls",
         "hosted_build_debuggability",
-        "canopy_structural_reinforcement"
+        "canopy_structural_reinforcement",
+        "compact_demo_header",
+        "camera_safety_reset",
+        "rain_mode_readability"
       ],
       "mood_tags": [
         "storybook_map",
@@ -405,14 +411,16 @@
         "linked",
         "future_route_unlock",
         "home_detail_focus",
-        "reinforced_hosted_render"
+        "reinforced_hosted_render",
+        "reset_camera_view",
+        "rain_readability_view"
       ],
       "safety_notes": [
         "landmarks_are_read_only",
         "do_not_imply_external_travel_without_confirm",
         "keep_labels_small_and_non_intrusive"
       ],
-      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with corrected A/D movement, hosted-build status reporting, reinforced canopy braces/ropes, lower camera, richer canopy/plaza textures, a walkable textile runner, cozy herb-and-basket nooks, and enough ground detail to inspect while moving"
+      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with compact controls, corrected A/D movement, reset camera safety, rain particles/mist/splashes, hosted-build status reporting, reinforced canopy braces/ropes, lower camera, richer canopy/plaza textures, cozy herb-and-basket nooks, and enough ground detail to inspect while moving"
     },
     {
       "id": "memory_gate_01",
