@@ -32,10 +32,29 @@
 <div id="wrap">
   <header>
     <strong>Lumaria World v0 · Campfire Night Focus</strong>
-    <div class="controls-row">
-      <span class="pill">WASD / Arrows: move</span>
-      <span class="pill">Drag / touch: look · Pinch: zoom</span>
-      <button id="camera-reset" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Reset Camera (R)</button>
+    <div style="margin-top:4px">
+      <span class="pill">WASD / Arrow keys: move</span>
+      <span class="pill">Mouse drag / touch drag: look</span>
+      <span class="pill">Ground cam: closer texture view</span>
+      <span class="pill">Pinch: zoom</span>
+      <span class="pill">Wave 10: depth + texture pass</span>
+      <span class="pill">Reference 4: cozy detail pass</span>
+      <span class="pill">Lighting pass: fire + lanterns</span>
+      <span class="pill">Campfire agent: Auri detail pass</span>
+      <span class="pill">Auri pass: staff + nameplate</span>
+      <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
+      <span class="pill">Material pass: visible model textures</span>
+      <span class="pill">Sky pass: moon + clouds</span>
+      <span class="pill">Biome pass: luminous grass</span>
+      <span class="pill">Map pass: expanded camp districts</span>
+      <span class="pill">Market pass: walk-under canopy</span>
+      <span class="pill">Glow pass: bright meadow warmth</span>
+      <span class="pill">Camera pass: ground-level texture view</span>
+      <span class="pill">Detail pass: etched stones + woven market textures</span>
+      <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
+      <span class="pill">Market 1/10: entry identity + offerings</span>
+      <span class="pill">Market 2/10: vendor booth silhouettes</span>
+      <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
       <details class="pass-log">
@@ -407,13 +426,16 @@ function makeZoneLabel(name, role, x, y, z, color = "#ffd58a") {
 }
 
 const textureSet = {
-  ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
+  ground: makeProceduralTexture("luminous_mossy_ground", 0x143548, [0x225f55, 0x2d7654, 0x10243a, 0x7dd3fc], { repeatX: 24, repeatY: 24, count: 230, style: "moss" }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
   marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
   wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 4, repeatY: 1, count: 150, style: "wood" }),
   cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 3, repeatY: 3, count: 120, style: "cloth" }),
   canopyCloth: makeProceduralTexture("market_canopy_cloth", 0x6f3f8f, [0x9d6bc5, 0x3a2258, 0xffd58a], { repeatX: 5, repeatY: 3, count: 150, style: "marketCanopy" }),
+  wovenTile: makeProceduralTexture("woven_market_tile", 0x56307a, [0x8b5cf6, 0xffd58a, 0x7dd3fc], { repeatX: 4, repeatY: 5, count: 160, style: "wovenTile" }),
+  leafVein: makeProceduralTexture("leaf_vein_detail", 0x1f5a3f, [0x2f8f5d, 0x14532d, 0xa7f3d0], { repeatX: 3, repeatY: 3, count: 130, style: "leafVein" }),
+  mountainRock: makeProceduralTexture("distant_mountain_rock", 0x25334c, [0x415a77, 0x101827, 0x6d7f9d, 0x9bdcff], { repeatX: 3, repeatY: 2, count: 110, style: "stone" }),
   soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 4, repeatY: 3, count: 150, style: "soil" }),
   sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
   auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
@@ -507,7 +529,26 @@ function applyTimeMode(mode) {
     avatarYou.hairMat.emissiveIntensity = isDay ? 0.06 : 0.14;
   }
   pathMaterial.color.set(isRain ? 0x41516d : isDay ? 0x806a4a : isSunset ? 0x5c4150 : 0x3c314f);
-  groundMaterial.color.set(isRain ? 0x203852 : isDay ? 0x335d3c : isSunset ? 0x2c4938 : 0x122844);
+  groundMaterial.color.set(isRain ? 0x275b69 : isDay ? 0x3f7a51 : isSunset ? 0x355c48 : 0x16365a);
+  groundMaterial.emissive.set(isRain ? 0x0e3a35 : isDay ? 0x123a22 : isSunset ? 0x2a2434 : 0x0b2d4a);
+  groundMaterial.emissiveIntensity = isRain ? 0.18 : isDay ? 0.08 : isSunset ? 0.12 : 0.2;
+  groundLumenVeil.material.color.set(isRain ? 0x8fffe1 : isDay ? 0x90f7ad : isSunset ? 0xffc879 : 0x60e7ff);
+  groundLumenVeil.material.opacity = isRain ? 0.13 : isDay ? 0.06 : isSunset ? 0.08 : 0.11;
+  outerMeadowGlow.material.color.set(isRain ? 0xa7f3d0 : isDay ? 0xbbf7d0 : isSunset ? 0xfed7aa : 0x7dd3fc);
+  outerMeadowGlow.material.opacity = isRain ? 0.09 : isDay ? 0.035 : isSunset ? 0.055 : 0.075;
+  mountainBackdrop.userData.peakMats.forEach((mat) => {
+    mat.color.set(isRain ? 0x526f88 : isDay ? 0x6b8091 : isSunset ? 0x58495d : 0x243452);
+    mat.emissive.set(isRain ? 0x162f3b : isDay ? 0x172436 : isSunset ? 0x281832 : 0x081a33);
+    mat.emissiveIntensity = isRain ? 0.12 : isDay ? 0.035 : isSunset ? 0.08 : 0.13;
+  });
+  mountainBackdrop.userData.snowMats.forEach((mat) => {
+    mat.color.set(isRain ? 0xd9f7ff : isDay ? 0xf4fbff : isSunset ? 0xffd7c2 : 0xbddcff);
+    mat.opacity = isDay ? 0.72 : 0.6;
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.material.color.set(isRain ? 0xc5e5f4 : isDay ? 0xf2fbff : isSunset ? 0xffcfb5 : 0x8fb9ff);
+    mist.material.opacity = (isRain ? 0.18 : isDay ? 0.1 : isSunset ? 0.13 : 0.11) - idx * 0.012;
+  });
   mushrooms.forEach((cluster) => {
     cluster.children.forEach((part) => {
       if (part.material && "emissiveIntensity" in part.material) {
@@ -524,6 +565,69 @@ function applyTimeMode(mode) {
   if (hudCause) {
     hudCause.textContent = isRain ? "rain brightens the living moss" : isSunset ? "sunset warms the whole camp" : isDay ? "day opens a bright meadow path" : "moonlit glow keeps camp gentle";
   }
+}
+
+function makeMountainPeak(id, x, z, height, radius, rot = 0, color = 0x243452) {
+  const g = new THREE.Group();
+  const rockMat = surfaceMaterial({ color, map: textureSet.mountainRock, roughness: 0.96, metalness: 0.02, bumpScale: 0.06, emissive: 0x081a33, emissiveIntensity: 0.12 });
+  const snowMat = new THREE.MeshBasicMaterial({ color: 0xbddcff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+  const peak = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 5), rockMat);
+  peak.position.y = height * 0.5 - 0.3;
+  peak.rotation.y = rot;
+  peak.scale.z = 0.52 + (height % 3) * 0.08;
+  const snow = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.24, 5), snowMat);
+  snow.position.y = height * 0.88 - 0.3;
+  snow.rotation.y = rot + Math.PI / 5;
+  snow.scale.z = peak.scale.z;
+  const ridgeGlow = warmGlowBillboard(`${id}_ridge_glow`, x, height * 0.58, z, radius * 1.5, 0x7dd3fc, 0.055);
+  g.add(peak, snow);
+  g.position.set(x, 0, z);
+  g.userData.visualId = id;
+  g.userData.rockMat = rockMat;
+  g.userData.snowMat = snowMat;
+  g.userData.ridgeGlow = ridgeGlow;
+  markShadows(g, false, false);
+  scene.add(g);
+  return g;
+}
+
+function makeMountainMist(id, x, z, sx, sy, rot = 0) {
+  const mist = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x8fb9ff, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  mist.position.set(x, sy * 0.48, z);
+  mist.scale.set(sx, sy, 1);
+  mist.rotation.y = rot;
+  mist.userData.visualId = id;
+  scene.add(mist);
+  return mist;
+}
+
+function makeMountainBackdrop() {
+  const specs = [
+    [-38, -45, 10.8, 5.4, 0.2], [-24, -50, 13.5, 6.6, -0.35], [-9, -52, 9.6, 5.2, 0.42],
+    [9, -53, 12.8, 6.2, -0.12], [25, -48, 10.4, 5.6, 0.38], [39, -43, 12.1, 6.1, -0.28],
+    [-54, -13, 8.4, 4.4, 0.9], [-57, 8, 9.8, 4.8, 1.18], [54, -12, 8.8, 4.6, -1.0], [58, 12, 10.2, 5.0, -1.22],
+    [-35, 40, 8.9, 4.7, 2.8], [-15, 46, 10.6, 5.1, 3.05], [16, 45, 9.5, 4.9, -2.9], [36, 39, 8.6, 4.4, -2.65]
+  ];
+  const peaks = specs.map((spec, idx) => makeMountainPeak(`base_camp_mountain_backdrop_${idx + 1}`, ...spec));
+  const mists = [
+    makeMountainMist("base_camp_mountain_mist_north", 0, -41.5, 82, 5.2, 0),
+    makeMountainMist("base_camp_mountain_mist_west", -45, 0, 50, 4.4, Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_east", 45, 0, 50, 4.4, -Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_south", 0, 37.5, 62, 4.2, Math.PI)
+  ];
+  return {
+    peaks,
+    mists,
+    userData: {
+      peakMats: peaks.map((peak) => peak.userData.rockMat),
+      snowMats: peaks.map((peak) => peak.userData.snowMat),
+      ridgeGlows: peaks.map((peak) => peak.userData.ridgeGlow),
+      mists
+    }
+  };
 }
 
 const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
@@ -545,7 +649,7 @@ moon.shadow.camera.top = 22;
 moon.shadow.camera.bottom = -22;
 scene.add(moon);
 
-const groundMaterial = surfaceMaterial({ color: 0x0c1b30, map: textureSet.ground, roughness: 1, bumpScale: 0.022 });
+const groundMaterial = surfaceMaterial({ color: 0x143452, map: textureSet.ground, roughness: 1, bumpScale: 0.024, emissive: 0x0b2d4a, emissiveIntensity: 0.18 });
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(140, 140),
   groundMaterial
@@ -553,6 +657,26 @@ const ground = new THREE.Mesh(
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
+
+const groundLumenVeil = new THREE.Mesh(
+  new THREE.PlaneGeometry(126, 126),
+  new THREE.MeshBasicMaterial({ color: 0x60e7ff, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+groundLumenVeil.rotation.x = -Math.PI / 2;
+groundLumenVeil.position.y = 0.012;
+groundLumenVeil.userData.visualId = "base_camp_luminous_ground_veil";
+scene.add(groundLumenVeil);
+
+const outerMeadowGlow = new THREE.Mesh(
+  new THREE.RingGeometry(7.2, 58, 96),
+  new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.075, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+outerMeadowGlow.rotation.x = -Math.PI / 2;
+outerMeadowGlow.position.y = 0.018;
+outerMeadowGlow.userData.visualId = "base_camp_outer_meadow_glow";
+scene.add(outerMeadowGlow);
+
+const mountainBackdrop = makeMountainBackdrop();
 
 const pathMaterial = surfaceMaterial({ color: 0x2f2540, map: textureSet.path, roughness: 1, metalness: 0.02, bumpScale: 0.035 });
 const path = new THREE.Mesh(
@@ -2115,6 +2239,19 @@ function animate(t = 0) {
   if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
   if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
 
+  const groundGlowBase = timeMode === "rain" ? 0.13 : timeMode === "day" || timeMode === "morning" ? 0.06 : timeMode === "sunset" ? 0.08 : 0.11;
+  const meadowGlowBase = timeMode === "rain" ? 0.09 : timeMode === "day" || timeMode === "morning" ? 0.035 : timeMode === "sunset" ? 0.055 : 0.075;
+  groundLumenVeil.material.opacity = groundGlowBase + Math.sin(t * 0.0014) * 0.014;
+  outerMeadowGlow.rotation.z += 0.0005;
+  outerMeadowGlow.material.opacity = meadowGlowBase + Math.sin(t * 0.0011) * 0.006;
+  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
+    glow.material.opacity = (timeMode === "day" ? 0.028 : 0.06) + Math.sin(t * 0.0015 + idx * 0.6) * 0.018;
+    glow.scale.setScalar((idx % 3 === 0 ? 7.8 : 6.2) + Math.sin(t * 0.001 + idx) * 0.38);
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.16;
+  });
+
   const flicker = 1.9 + Math.sin(t * 0.012) * 0.45 + Math.sin(t * 0.039) * 0.25;
   if (timeMode === "night" || timeMode === "rain") {
     flame.intensity = flicker;
@@ -2235,27 +2372,6 @@ function animate(t = 0) {
     companion.userData.body.position.y = 0.56 + Math.sin(t * 0.003 + idx) * 0.045;
     companion.userData.cap.rotation.y += 0.008;
     companion.userData.glow.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.06;
-  });
-
-  marketHomeDetails.forEach((detail, idx) => {
-    detail.userData.rug.material.opacity = (timeMode === "day" ? 0.76 : 0.86) + Math.sin(t * 0.0018 + idx) * 0.025;
-    detail.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.025;
-    detail.userData.herbs.forEach((herb, herbIdx) => {
-      herb.rotation.z += Math.sin(t * 0.0024 + herb.userData.phase + idx) * 0.0009;
-      herb.material.emissiveIntensity = (timeMode === "day" ? 0.06 : 0.16) + Math.sin(t * 0.004 + herbIdx) * 0.035;
-    });
-    detail.userData.motes.forEach((mote) => {
-      mote.position.y = mote.userData.base.y + Math.sin(t * 0.003 + mote.userData.phase) * 0.045;
-      mote.material.opacity = (timeMode === "day" ? 0.32 : 0.72) + Math.sin(t * 0.005 + mote.userData.phase) * 0.14;
-    });
-    detail.userData.baskets.forEach((basket) => { basket.rotation.y += 0.0025; });
-  });
-
-  worldReinforcements.userData.ropes.forEach((rope) => {
-    rope.material.opacity = 0.52 + Math.sin(t * 0.002 + rope.userData.phase) * 0.08;
-  });
-  worldReinforcements.userData.stitches.forEach((stitch) => {
-    stitch.material.opacity = (timeMode === "day" ? 0.34 : 0.5) + Math.sin(t * 0.003 + stitch.userData.phase) * 0.06;
   });
 
   floorTiles.forEach((tile, idx) => {

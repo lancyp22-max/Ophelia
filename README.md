@@ -162,7 +162,12 @@ Scope (intentionally small):
 - touch drag camera look support for mobile,
 - lantern micro-light + waterfall glow pass for richer A1 depth cues,
 - expanded Market focus with a walk-under exchange hall, high canopy, lower ground-level camera, three stalls, string lights, display stands, and vendor/traveler presences,
-- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, richer close-up market textures, compact demo controls, reset camera/pitch safety, rain mist/splash readability, corrected A/D strafing, hosted-build status reporting, reinforced market canopy braces/ropes, and cozy under-canopy market home details.
+- brighter natural-glow pass with warmer sky exposure, softer fog, meadow flower clusters, happier living-moss accents, and richer close-up market textures,
+- detail pass with etched threshold stones, pebble scatter, leaf-vein canopy material, woven market runners, tassels, hanging vines, animated plaza mosaic tiles, firepit reference details, a slightly luminous moss ground, and a distant mountain backdrop wrapping the town.
+
+Expansion planning:
+- `docs/base-camp-town-expansion-plan.md` maps the remaining town districts from the latest concepts into phased, lightweight 3D implementation steps.
+- The market reference is split into 10 reviewable parts; parts 1-2 now add entry identity signage, offering icons, and distinct vendor booth silhouettes.
 
 Run locally:
 
