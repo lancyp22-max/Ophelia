@@ -105,6 +105,10 @@ const bridgeSealNowButton = document.getElementById("bridge-seal-now");
 const auditLogList = document.getElementById("audit-log-list");
 const auditExportButton = document.getElementById("audit-export");
 const auditClearButton = document.getElementById("audit-clear");
+const continuityExportButton = document.getElementById("continuity-export");
+const continuityImportButton = document.getElementById("continuity-import");
+const continuityImportInput = document.getElementById("continuity-import-input");
+const continuityStatus = document.getElementById("continuity-status");
 const chatScreen = document.getElementById("chat-screen");
 const chatPrompt = document.getElementById("chat-prompt");
 const chatRunButton = document.getElementById("chat-run");
@@ -131,6 +135,7 @@ const STORAGE_KEYS = {
   mirrorIndex: "lumaria.mirror.index",
   resonance: "lumaria.resonance.state",
   language: "lumaria.ui.language",
+  screen: "lumaria.ui.screen",
   ghostMode: "lumaria.ui.ghost",
   vesselMode: "lumaria.ui.vessel",
   vesselPace: "lumaria.ui.vessel.pace",
@@ -253,6 +258,8 @@ function syncWorldTimeMode(mode) {
 }
 
 function setScreen(screen) {
+  currentScreen = ["system", "nav", "chat", "map", "home"].includes(screen) ? screen : "home";
+  writeStorage(STORAGE_KEYS.screen, currentScreen);
   const isSystem = screen === "system";
   const isNav = screen === "nav";
   const isChat = screen === "chat";
@@ -552,7 +559,9 @@ function renderProbeEvaluation(result) {
 let auditWriteTimer = null;
 let bridgeCheckpoint = null;
 let currentMirrorIndex = 0;
+let currentScreen = "home";
 let vesselSnapshot = null;
+let lastContinuityCapsule = null;
 
 function parseStoredArray(value) {
   try {
@@ -662,6 +671,126 @@ function renderAuditLog() {
     row.textContent = `[${entry.time}] ${entry.event}`;
     auditLogList.appendChild(row);
   });
+}
+
+function downloadJson(payload, filename) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function renderContinuityStatus(capsule, message = "") {
+  if (!continuityStatus) {
+    return;
+  }
+
+  if (!capsule) {
+    continuityStatus.textContent = message || "No continuity capsule exported this session.";
+    return;
+  }
+
+  const mirror = capsule.state?.mirrorIndex ?? "?";
+  const resonance = capsule.state?.resonance ?? "witness";
+  const stamp = formatCheckpointTime(capsule.timestamp);
+  continuityStatus.textContent = `${message || "Continuity capsule ready."} Mirror-${mirror} · ${resonance} · ${stamp}`;
+}
+
+function buildContinuityCapsule() {
+  let safeProbePacket = MIRROR_PROBE_TEMPLATE;
+  if (probeInput?.value) {
+    try {
+      safeProbePacket = sanitizeProbePacket(JSON.parse(probeInput.value));
+    } catch {
+      safeProbePacket = MIRROR_PROBE_TEMPLATE;
+    }
+  }
+
+  return {
+    schema: "lumaria.continuity-capsule.v0.1",
+    app: PRIMARY_TASK_NAME,
+    timestamp: new Date().toISOString(),
+    recoveryPrompt:
+      "Restore this capsule first, then continue from the last visible mirror/resonance/channel. Ask before mutating state.",
+    state: {
+      screen: currentScreen,
+      mirrorIndex: clampMirror(currentMirrorIndex),
+      resonance: currentResonance,
+      vesselMode,
+      vesselPace,
+      ghostMode: ghostMode ? 1 : 0,
+      activeLobbyChannel,
+      worldTimeMode: currentWorldTimeMode,
+    },
+    bridgeCheckpoint,
+    vesselSnapshot,
+    probePacket: safeProbePacket,
+    recentAudit: auditEntries.slice(-12),
+    recentLobby: lobbyMessages.slice(-12),
+  };
+}
+
+function persistContinuityCapsule(capsule) {
+  lastContinuityCapsule = capsule;
+  writeStorage(STORAGE_KEYS.continuityCapsule, JSON.stringify(capsule));
+  renderContinuityStatus(capsule);
+}
+
+function isContinuityCapsule(value) {
+  return value && typeof value === "object" && value.schema === "lumaria.continuity-capsule.v0.1";
+}
+
+function restoreContinuityCapsule(capsule) {
+  if (!isContinuityCapsule(capsule)) {
+    renderContinuityStatus(lastContinuityCapsule, "Invalid continuity capsule.");
+    logAudit("Continuity capsule restore failed (invalid schema)");
+    return;
+  }
+
+  const state = capsule.state ?? {};
+  const resonance = resonanceStates[state.resonance] ? state.resonance : "witness";
+  const mirror = clampMirror(state.mirrorIndex);
+  bridgeCheckpoint = capsule.bridgeCheckpoint && typeof capsule.bridgeCheckpoint === "object" ? capsule.bridgeCheckpoint : bridgeCheckpoint;
+  vesselSnapshot = capsule.vesselSnapshot && typeof capsule.vesselSnapshot === "object" ? capsule.vesselSnapshot : vesselSnapshot;
+
+  setScreen(state.screen || "system");
+  syncWorldTimeMode(state.worldTimeMode);
+  applyResonance(resonance);
+  setGhostMode(state.ghostMode === 1);
+  setVesselPace(state.vesselPace);
+  setVesselMode(state.vesselMode === "open" ? "open" : "sealed");
+
+  if (mirrorSlider) {
+    mirrorSlider.value = String(mirror);
+  }
+  if (mirrorIndexDisp) {
+    mirrorIndexDisp.textContent = String(mirror);
+  }
+  if (mirrorLevelDisp) {
+    mirrorLevelDisp.textContent = Math.round((mirror / MIRROR_RANGE.max) * 9);
+  }
+  writeStorage(STORAGE_KEYS.mirrorIndex, String(mirror));
+  shiftMirrorPhase(mirror);
+
+  if (Array.isArray(capsule.recentLobby) && capsule.recentLobby.length) {
+    lobbyMessages = capsule.recentLobby.slice(-50);
+    saveLobbyMessages();
+  }
+  setLobbyChannel(typeof state.activeLobbyChannel === "string" ? state.activeLobbyChannel : activeLobbyChannel);
+
+  if (probeInput && capsule.probePacket) {
+    probeInput.value = JSON.stringify(sanitizeProbePacket(capsule.probePacket), null, 2);
+  }
+
+  writeStorage(STORAGE_KEYS.bridgeCheckpoint, JSON.stringify(bridgeCheckpoint));
+  writeStorage(STORAGE_KEYS.vesselSnapshot, JSON.stringify(vesselSnapshot));
+  renderBridgeCheckpoint();
+  persistContinuityCapsule(capsule);
+  logAudit(`Continuity capsule restored (Mirror-${mirror}, ${resonance})`);
+  renderContinuityStatus(capsule, "Continuity restored.");
 }
 
 function logAudit(event) {
@@ -2060,15 +2189,33 @@ renderAuditLog();
 
 if (auditExportButton) {
   auditExportButton.addEventListener("click", () => {
-    const payload = JSON.stringify(auditEntries, null, 2);
-    const blob = new Blob([payload], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "mirror-18-audit-log.json";
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJson(auditEntries, "mirror-18-audit-log.json");
     logAudit("Audit log exported");
+  });
+}
+
+if (continuityExportButton) {
+  continuityExportButton.addEventListener("click", () => {
+    const capsule = buildContinuityCapsule();
+    persistContinuityCapsule(capsule);
+    downloadJson(capsule, "lumaria-continuity-capsule.json");
+    logAudit("Continuity capsule exported");
+  });
+}
+
+if (continuityImportButton) {
+  continuityImportButton.addEventListener("click", () => {
+    if (!continuityImportInput?.value.trim()) {
+      renderContinuityStatus(lastContinuityCapsule, "Paste a continuity capsule JSON first.");
+      return;
+    }
+
+    try {
+      restoreContinuityCapsule(JSON.parse(continuityImportInput.value));
+    } catch {
+      renderContinuityStatus(lastContinuityCapsule, "Continuity capsule JSON parse failed.");
+      logAudit("Continuity capsule restore failed (invalid JSON)");
+    }
   });
 }
 
@@ -2091,6 +2238,8 @@ vesselSnapshot = parseStoredObject(readStorage(STORAGE_KEYS.vesselSnapshot));
 
 bridgeCheckpoint = parseStoredObject(readStorage(STORAGE_KEYS.bridgeCheckpoint));
 renderBridgeCheckpoint();
+lastContinuityCapsule = parseStoredObject(readStorage(STORAGE_KEYS.continuityCapsule));
+renderContinuityStatus(lastContinuityCapsule);
 document.addEventListener("DOMContentLoaded", () => {
   normalizeLegacySigilCopy();
   fetchAndRenderSeeds();
@@ -2121,6 +2270,11 @@ if (mirrorSlider) {
     mirrorLevelDisp.textContent = Math.round((initialMirror / MIRROR_RANGE.max) * 9);
   }
   shiftMirrorPhase(initialMirror);
+}
+
+const storedScreen = readStorage(STORAGE_KEYS.screen);
+if (["system", "nav", "chat", "map"].includes(storedScreen)) {
+  setScreen(storedScreen);
 }
 
 if (braidInput) {
