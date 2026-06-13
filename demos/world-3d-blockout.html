@@ -62,6 +62,7 @@
         <span class="pill">Market 2/10: vendor booth silhouettes</span>
         <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
         <span class="pill">Cinematic life pass: aurora, lens motes, mirror pools</span>
+        <span class="pill">Stone detail pass: cracks, pebbles, etched inlays</span>
       </details>
     </div>
   </header>
@@ -235,6 +236,41 @@ function makeMirrorPool(id, x, z, sx, sz, color = 0x8ddcff) {
   pool.userData.baseOpacity = 0.14;
   scene.add(pool);
   return pool;
+}
+
+function addStoneEtching(parent, id, width, depth, options = {}) {
+  const material = new THREE.MeshBasicMaterial({
+    color: options.color ?? 0xffd58a,
+    transparent: true,
+    opacity: options.opacity ?? 0.22,
+    depthWrite: false,
+    blending: options.blend ?? THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+  });
+  const etching = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), material);
+  etching.name = id;
+  etching.position.set(options.x ?? 0, options.y ?? 0.041, options.z ?? 0);
+  etching.rotation.x = -Math.PI / 2;
+  etching.rotation.z = options.rot ?? 0;
+  etching.userData.phase = options.phase ?? 0;
+  etching.userData.baseOpacity = material.opacity;
+  parent.add(etching);
+  if (typeof etchedStoneDetails !== "undefined") etchedStoneDetails.push(etching);
+  return etching;
+}
+
+function addStonePebble(parent, id, options = {}) {
+  const pebble = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(options.radius ?? 0.035, 0),
+    new THREE.MeshStandardMaterial({ color: options.color ?? 0x9c8b76, roughness: 0.96, metalness: 0.02 })
+  );
+  pebble.name = id;
+  pebble.position.set(options.x ?? 0, options.y ?? 0.05, options.z ?? 0);
+  pebble.scale.set(1, options.squash ?? 0.42, options.stretch ?? 0.8);
+  pebble.rotation.set(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0);
+  pebble.userData.phase = options.phase ?? 0;
+  parent.add(pebble);
+  return pebble;
 }
 
 function colorToHex(color) {
@@ -800,6 +836,9 @@ runeRing.rotation.x = -Math.PI / 2;
 runeRing.position.y = 0.035;
 scene.add(runeRing);
 
+const etchedStoneDetails = [];
+const stonePebbleDetails = [];
+
 const floorTiles = [];
 for (let i = 0; i < 64; i++) {
   const a = (i / 64) * Math.PI * 2;
@@ -812,6 +851,15 @@ for (let i = 0; i < 64; i++) {
   tile.rotation.y = -a + Math.PI / 2;
   tile.castShadow = true;
   tile.receiveShadow = true;
+  if (i % 3 === 0) {
+    addStoneEtching(tile, `floor_tile_crack_${i}`, 0.28, 0.018, { y: 0.033, z: -0.12, rot: (i % 5 - 2) * 0.32, opacity: 0.18, color: 0x211915, blend: THREE.NormalBlending, phase: i * 0.21 });
+  }
+  if (i % 4 === 1) {
+    addStoneEtching(tile, `floor_tile_gold_inlay_${i}`, 0.2, 0.012, { y: 0.034, x: 0.06, z: 0.11, rot: Math.PI / 2.8, opacity: 0.28, color: 0xffd58a, phase: i * 0.18 });
+  }
+  if (i % 7 === 2) {
+    stonePebbleDetails.push(addStonePebble(tile, `floor_tile_pebble_${i}`, { x: -0.12, y: 0.055, z: 0.19, radius: 0.026, color: 0x8d7b67, ry: i * 0.4, phase: i * 0.2 }));
+  }
   floorTiles.push(tile);
   scene.add(tile);
 }
@@ -844,6 +892,11 @@ for (let i = 0; i < 28; i++) {
   stone.userData.phase = i * 0.35;
   stone.castShadow = true;
   stone.receiveShadow = true;
+  addStoneEtching(stone, `rune_stone_spine_${i}`, 0.32, 0.018, { y: 0.045, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.35 });
+  addStoneEtching(stone, `rune_stone_hairline_${i}`, 0.22, 0.012, { y: 0.046, x: 0.06, z: -0.1, rot: -0.45, opacity: 0.2, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.27 });
+  if (i % 5 === 0) {
+    stonePebbleDetails.push(addStonePebble(stone, `rune_stone_pebble_${i}`, { x: -0.12, y: 0.062, z: 0.18, radius: 0.024, color: 0xb69a70, phase: i * 0.24 }));
+  }
   runeStones.push(stone);
   scene.add(stone);
 }
@@ -1510,6 +1563,8 @@ function makeMarketPlaza(id, x, z, rot = 0) {
       stone.rotation.y = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
       stone.castShadow = true;
       stone.receiveShadow = true;
+      if (i % 2 === 0) addStoneEtching(stone, `${id}_edge_topline_${i}_${row}`, 0.16, 0.012, { y: 0.035, rot: row ? -0.2 : 0.2, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.2 });
+      if (i % 5 === 0) addStoneEtching(stone, `${id}_edge_gold_inlay_${i}_${row}`, 0.11, 0.01, { y: 0.036, z: 0.04, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.26 });
       edgeStones.push(stone);
       g.add(stone);
     });
@@ -1523,6 +1578,8 @@ function makeMarketPlaza(id, x, z, rot = 0) {
       stone.rotation.y = (col ? 0.08 : -0.08) + Math.cos(i) * 0.04;
       stone.castShadow = true;
       stone.receiveShadow = true;
+      if (i % 2 === 1) addStoneEtching(stone, `${id}_side_crack_${i}_${col}`, 0.13, 0.012, { y: 0.035, rot: col ? 0.42 : -0.42, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.22 });
+      if (i % 6 === 2) addStoneEtching(stone, `${id}_side_rune_inlay_${i}_${col}`, 0.1, 0.01, { y: 0.036, x: 0.03, rot: Math.PI / 2, opacity: 0.22, color: 0x7dd3fc, phase: i * 0.31 });
       edgeStones.push(stone);
       g.add(stone);
     });
@@ -1618,6 +1675,8 @@ function makeMarketTransitionPath(id, startZ = 4.8, endZ = 7.45) {
     stone.userData.phase = i * 0.4;
     stone.castShadow = true;
     stone.receiveShadow = true;
+    addStoneEtching(stone, `${id}_step_crack_${i}`, 0.42, 0.014, { y: 0.031, z: -0.05, rot: Math.sin(i) * 0.65, opacity: 0.18, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.4 });
+    if (i % 3 === 0) addStoneEtching(stone, `${id}_step_gold_thread_${i}`, 0.28, 0.01, { y: 0.032, x: 0.08, rot: Math.PI / 2.2, opacity: 0.24, color: 0xffd58a, phase: i * 0.36 });
     stones.push(stone);
     g.add(stone);
     if (i % 2 === 1) {
@@ -2221,6 +2280,19 @@ const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35,
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
 campfireStone.receiveShadow = true;
+for (let i = 0; i < 10; i++) {
+  const a = (i / 10) * Math.PI * 2;
+  addStoneEtching(campfireStone, `campfire_ring_etched_spoke_${i}`, 0.46, 0.018, {
+    x: Math.cos(a) * 0.55,
+    y: 0.181,
+    z: Math.sin(a) * 0.55,
+    rot: -a,
+    opacity: i % 2 ? 0.18 : 0.28,
+    color: i % 2 ? 0x2b2119 : 0xffd58a,
+    blend: i % 2 ? THREE.NormalBlending : THREE.AdditiveBlending,
+    phase: i * 0.4
+  });
+}
 scene.add(campfireStone);
 softShadow("campfire_shadow", 0, 0, 2.2, 1.35, 0.42);
 
@@ -2794,6 +2866,12 @@ function animate(t = 0) {
   mirrorPools.forEach((pool, idx) => {
     pool.rotation.z += 0.0009 + idx * 0.00025;
     pool.material.opacity = Math.max(0.035, pool.userData.baseOpacity + Math.sin(t * 0.0022 + idx) * 0.035);
+  });
+  etchedStoneDetails.forEach((etch, idx) => {
+    etch.material.opacity = Math.max(0.04, etch.userData.baseOpacity + Math.sin(t * 0.0028 + etch.userData.phase + idx * 0.03) * 0.035);
+  });
+  stonePebbleDetails.forEach((pebble, idx) => {
+    pebble.rotation.y += 0.0008 + idx * 0.00002;
   });
 
   const target = new THREE.Vector3(camera.position.x + Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 7, camera.position.z + Math.cos(yaw) * 10);

@@ -343,3 +343,7 @@ The A1 world now includes procedural aurora curtains, floating lens motes, and m
 ### UE5 implementation playbook
 
 `docs/ue5-lumaria-implementation-playbook.md` translates the current web prototype into UE5.6 contracts for `ALumariaEnvManager`, campfire flicker, HISM market construction, Niagara rain/fauna/aurora systems, and material recipes for luminous ground, canopy cloth, and mirror-pool reflections.
+
+### Stone detail pass
+
+The A1 world now has close-range stone storytelling: individual floor tiles, rune stones, market edge blocks, campfire-ring stones, and transition-path stones carry procedural cracks, small pebble accents, and gold/cyan inlays that pulse subtly in the existing global animation loop.
