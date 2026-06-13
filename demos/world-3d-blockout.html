@@ -32,29 +32,10 @@
 <div id="wrap">
   <header>
     <strong>Lumaria World v0 · Campfire Night Focus</strong>
-    <div style="margin-top:4px">
-      <span class="pill">WASD / Arrow keys: move</span>
-      <span class="pill">Mouse drag / touch drag: look</span>
-      <span class="pill">Ground cam: closer texture view</span>
-      <span class="pill">Pinch: zoom</span>
-      <span class="pill">Wave 10: depth + texture pass</span>
-      <span class="pill">Reference 4: cozy detail pass</span>
-      <span class="pill">Lighting pass: fire + lanterns</span>
-      <span class="pill">Campfire agent: Auri detail pass</span>
-      <span class="pill">Auri pass: staff + nameplate</span>
-      <span class="pill">Texture pass: 6ft grass + tiny fauna</span>
-      <span class="pill">Material pass: visible model textures</span>
-      <span class="pill">Sky pass: moon + clouds</span>
-      <span class="pill">Biome pass: luminous grass</span>
-      <span class="pill">Map pass: expanded camp districts</span>
-      <span class="pill">Market pass: walk-under canopy</span>
-      <span class="pill">Glow pass: bright meadow warmth</span>
-      <span class="pill">Camera pass: ground-level texture view</span>
-      <span class="pill">Detail pass: etched stones + woven market textures</span>
-      <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
-      <span class="pill">Market 1/10: entry identity + offerings</span>
-      <span class="pill">Market 2/10: vendor booth silhouettes</span>
-      <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
+    <div class="controls-row">
+      <span class="pill">WASD / Arrows: move</span>
+      <span class="pill">Drag / touch: look · Pinch: zoom</span>
+      <button id="camera-reset" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Reset Camera (R)</button>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
       <details class="pass-log">
@@ -74,6 +55,12 @@
         <span class="pill">Cozy market home details</span>
         <span class="pill">Load + structure reinforcement</span>
         <span class="pill">Rain + camera stability pass</span>
+        <span class="pill">Global pulse / MPC-style sync</span>
+        <span class="pill">Detail pass: etched stones + woven market textures</span>
+        <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
+        <span class="pill">Market 1/10: entry identity + offerings</span>
+        <span class="pill">Market 2/10: vendor booth silhouettes</span>
+        <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
       </details>
     </div>
   </header>
@@ -272,6 +259,42 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
       ctx.fillStyle = i % 2 ? "#f0abfc" : "#1d1230";
       ctx.fillRect((i * 89) % size, (i * 43) % size, 34 + (i % 4) * 12, 10 + (i % 3) * 7);
     }
+  } else if (style === "wovenTile") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 30; i++) {
+      const p = (i / 30) * size;
+      ctx.globalAlpha = i % 2 ? 0.16 : 0.08;
+      ctx.strokeStyle = i % 3 === 0 ? "#ffd58a" : i % 3 === 1 ? "#8b5cf6" : "#7dd3fc";
+      ctx.beginPath();
+      ctx.moveTo(p, 0);
+      ctx.lineTo(p + Math.sin(i * 0.8) * 16, size);
+      ctx.moveTo(0, p);
+      ctx.lineTo(size, p + Math.cos(i * 0.7) * 16);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 18; i++) {
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = i % 2 ? "#3b1d62" : "#f0abfc";
+      ctx.fillRect((i * 59) % size, (i * 101) % size, 38, 8);
+    }
+  } else if (style === "leafVein") {
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 24; i++) {
+      const x = (i * 41) % size;
+      ctx.globalAlpha = 0.12 + (i % 4) * 0.025;
+      ctx.strokeStyle = i % 2 ? "#a7f3d0" : "#14532d";
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.bezierCurveTo(x + 34, size * 0.28, x - 22, size * 0.62, x + 18, size);
+      ctx.stroke();
+      for (let j = 0; j < 4; j++) {
+        const y = (j + 1) * size / 5;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.sin(j) * 10, y);
+        ctx.lineTo(x + 48 + j * 8, y - 22);
+        ctx.stroke();
+      }
+    }
   } else if (style === "marketStone") {
     ctx.lineWidth = 2;
     for (let y = 0; y < size; y += 64) {
@@ -426,7 +449,7 @@ function makeZoneLabel(name, role, x, y, z, color = "#ffd58a") {
 }
 
 const textureSet = {
-  ground: makeProceduralTexture("luminous_mossy_ground", 0x143548, [0x225f55, 0x2d7654, 0x10243a, 0x7dd3fc], { repeatX: 24, repeatY: 24, count: 230, style: "moss" }),
+  ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
   marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
@@ -449,10 +472,62 @@ const marketFocusButton = document.getElementById("market-focus");
 const cameraResetButton = document.getElementById("camera-reset");
 const hudMode = document.getElementById("hud-mode");
 const hudCause = document.getElementById("hud-cause");
+const marketEnvironment = {
+  glowIntensity: 1,
+  aisleIntensity: 1,
+  runeOpacity: 0.36,
+  lanternOpacity: 0.24
+};
+const lumariaPulse = {
+  seconds: 0,
+  globalFlicker: 1,
+  globalPulse: 0.11,
+  slowBreath: 1,
+  rainFall: 1,
+  faunaOrbit: 1
+};
+
+function updateLumariaPulse(t = 0) {
+  const seconds = t * 0.001;
+  lumariaPulse.seconds = seconds;
+  lumariaPulse.globalFlicker = 0.92 + Math.sin(seconds * 0.9) * 0.14;
+  lumariaPulse.globalPulse = 0.11 + Math.sin(seconds * 0.14) * 0.02;
+  lumariaPulse.slowBreath = 1 + Math.sin(seconds * 0.32) * 0.045;
+  lumariaPulse.rainFall = timeMode === "rain" ? 1.45 : 1;
+  lumariaPulse.faunaOrbit = 0.0011 + Math.sin(seconds * 0.18) * 0.00018;
+}
 
 function nextTimeMode(mode) {
   const index = TIME_MODES.indexOf(mode);
   return TIME_MODES[(index + 1) % TIME_MODES.length] ?? "night";
+}
+
+function updateMarketMode(mode) {
+  const isNight = mode === "night";
+  const isRain = mode === "rain";
+  const isSunset = mode === "sunset";
+  marketEnvironment.glowIntensity = isNight ? 1.5 : isRain ? 1.25 : isSunset ? 1.05 : 0.35;
+  marketEnvironment.aisleIntensity = isNight ? 1.35 : isRain ? 1.1 : isSunset ? 0.95 : 0.42;
+  marketEnvironment.runeOpacity = isNight ? 0.5 : isRain ? 0.44 : isSunset ? 0.38 : 0.2;
+  marketEnvironment.lanternOpacity = isNight ? 0.3 : isRain ? 0.26 : isSunset ? 0.22 : 0.1;
+
+  if (typeof marketPlaza !== "undefined") {
+    marketPlaza.userData.aisle.material.opacity = 0.08 * marketEnvironment.aisleIntensity;
+    marketPlaza.userData.aisleLight.intensity = 0.5 + marketEnvironment.aisleIntensity * 1.8;
+    marketPlaza.userData.runes.forEach((rune) => {
+      rune.material.opacity = marketEnvironment.runeOpacity;
+    });
+  }
+  if (typeof marketOverhang !== "undefined") {
+    marketOverhang.userData.lanterns.forEach((lantern) => {
+      lantern.glow.material.opacity = marketEnvironment.lanternOpacity;
+    });
+  }
+  if (typeof marketStringLights !== "undefined") {
+    marketStringLights.userData.lanterns.forEach((lantern) => {
+      lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85;
+    });
+  }
 }
 
 function applyTimeMode(mode) {
@@ -462,6 +537,7 @@ function applyTimeMode(mode) {
   const isSunset = mode === "sunset";
   const isRain = mode === "rain";
   const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+  updateMarketMode(mode);
   scene.background.set(isRain ? 0x6689a8 : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
   scene.fog.color.set(isRain ? 0x86a6bf : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
   scene.fog.near = isDay || isSunset ? 34 : 18;
@@ -532,23 +608,29 @@ function applyTimeMode(mode) {
   groundMaterial.color.set(isRain ? 0x275b69 : isDay ? 0x3f7a51 : isSunset ? 0x355c48 : 0x16365a);
   groundMaterial.emissive.set(isRain ? 0x0e3a35 : isDay ? 0x123a22 : isSunset ? 0x2a2434 : 0x0b2d4a);
   groundMaterial.emissiveIntensity = isRain ? 0.18 : isDay ? 0.08 : isSunset ? 0.12 : 0.2;
-  groundLumenVeil.material.color.set(isRain ? 0x8fffe1 : isDay ? 0x90f7ad : isSunset ? 0xffc879 : 0x60e7ff);
-  groundLumenVeil.material.opacity = isRain ? 0.13 : isDay ? 0.06 : isSunset ? 0.08 : 0.11;
-  outerMeadowGlow.material.color.set(isRain ? 0xa7f3d0 : isDay ? 0xbbf7d0 : isSunset ? 0xfed7aa : 0x7dd3fc);
-  outerMeadowGlow.material.opacity = isRain ? 0.09 : isDay ? 0.035 : isSunset ? 0.055 : 0.075;
-  mountainBackdrop.userData.peakMats.forEach((mat) => {
-    mat.color.set(isRain ? 0x526f88 : isDay ? 0x6b8091 : isSunset ? 0x58495d : 0x243452);
-    mat.emissive.set(isRain ? 0x162f3b : isDay ? 0x172436 : isSunset ? 0x281832 : 0x081a33);
-    mat.emissiveIntensity = isRain ? 0.12 : isDay ? 0.035 : isSunset ? 0.08 : 0.13;
-  });
-  mountainBackdrop.userData.snowMats.forEach((mat) => {
-    mat.color.set(isRain ? 0xd9f7ff : isDay ? 0xf4fbff : isSunset ? 0xffd7c2 : 0xbddcff);
-    mat.opacity = isDay ? 0.72 : 0.6;
-  });
-  mountainBackdrop.userData.mists.forEach((mist, idx) => {
-    mist.material.color.set(isRain ? 0xc5e5f4 : isDay ? 0xf2fbff : isSunset ? 0xffcfb5 : 0x8fb9ff);
-    mist.material.opacity = (isRain ? 0.18 : isDay ? 0.1 : isSunset ? 0.13 : 0.11) - idx * 0.012;
-  });
+  if (typeof groundLumenVeil !== "undefined") {
+    groundLumenVeil.material.color.set(isRain ? 0x8fffe1 : isDay ? 0x90f7ad : isSunset ? 0xffc879 : 0x60e7ff);
+    groundLumenVeil.material.opacity = isRain ? 0.13 : isDay ? 0.06 : isSunset ? 0.08 : 0.11;
+  }
+  if (typeof outerMeadowGlow !== "undefined") {
+    outerMeadowGlow.material.color.set(isRain ? 0xa7f3d0 : isDay ? 0xbbf7d0 : isSunset ? 0xfed7aa : 0x7dd3fc);
+    outerMeadowGlow.material.opacity = isRain ? 0.09 : isDay ? 0.035 : isSunset ? 0.055 : 0.075;
+  }
+  if (typeof mountainBackdrop !== "undefined") {
+    mountainBackdrop.userData.peakMats.forEach((mat) => {
+      mat.color.set(isRain ? 0x526f88 : isDay ? 0x6b8091 : isSunset ? 0x58495d : 0x243452);
+      mat.emissive.set(isRain ? 0x162f3b : isDay ? 0x172436 : isSunset ? 0x281832 : 0x081a33);
+      mat.emissiveIntensity = isRain ? 0.12 : isDay ? 0.035 : isSunset ? 0.08 : 0.13;
+    });
+    mountainBackdrop.userData.snowMats.forEach((mat) => {
+      mat.color.set(isRain ? 0xd9f7ff : isDay ? 0xf4fbff : isSunset ? 0xffd7c2 : 0xbddcff);
+      mat.opacity = isDay ? 0.72 : 0.6;
+    });
+    mountainBackdrop.userData.mists.forEach((mist, idx) => {
+      mist.material.color.set(isRain ? 0xc5e5f4 : isDay ? 0xf2fbff : isSunset ? 0xffcfb5 : 0x8fb9ff);
+      mist.material.opacity = (isRain ? 0.18 : isDay ? 0.1 : isSunset ? 0.13 : 0.11) - idx * 0.012;
+    });
+  }
   mushrooms.forEach((cluster) => {
     cluster.children.forEach((part) => {
       if (part.material && "emissiveIntensity" in part.material) {
@@ -565,69 +647,6 @@ function applyTimeMode(mode) {
   if (hudCause) {
     hudCause.textContent = isRain ? "rain brightens the living moss" : isSunset ? "sunset warms the whole camp" : isDay ? "day opens a bright meadow path" : "moonlit glow keeps camp gentle";
   }
-}
-
-function makeMountainPeak(id, x, z, height, radius, rot = 0, color = 0x243452) {
-  const g = new THREE.Group();
-  const rockMat = surfaceMaterial({ color, map: textureSet.mountainRock, roughness: 0.96, metalness: 0.02, bumpScale: 0.06, emissive: 0x081a33, emissiveIntensity: 0.12 });
-  const snowMat = new THREE.MeshBasicMaterial({ color: 0xbddcff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
-  const peak = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 5), rockMat);
-  peak.position.y = height * 0.5 - 0.3;
-  peak.rotation.y = rot;
-  peak.scale.z = 0.52 + (height % 3) * 0.08;
-  const snow = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.24, 5), snowMat);
-  snow.position.y = height * 0.88 - 0.3;
-  snow.rotation.y = rot + Math.PI / 5;
-  snow.scale.z = peak.scale.z;
-  const ridgeGlow = warmGlowBillboard(`${id}_ridge_glow`, x, height * 0.58, z, radius * 1.5, 0x7dd3fc, 0.055);
-  g.add(peak, snow);
-  g.position.set(x, 0, z);
-  g.userData.visualId = id;
-  g.userData.rockMat = rockMat;
-  g.userData.snowMat = snowMat;
-  g.userData.ridgeGlow = ridgeGlow;
-  markShadows(g, false, false);
-  scene.add(g);
-  return g;
-}
-
-function makeMountainMist(id, x, z, sx, sy, rot = 0) {
-  const mist = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1),
-    new THREE.MeshBasicMaterial({ color: 0x8fb9ff, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-  );
-  mist.position.set(x, sy * 0.48, z);
-  mist.scale.set(sx, sy, 1);
-  mist.rotation.y = rot;
-  mist.userData.visualId = id;
-  scene.add(mist);
-  return mist;
-}
-
-function makeMountainBackdrop() {
-  const specs = [
-    [-38, -45, 10.8, 5.4, 0.2], [-24, -50, 13.5, 6.6, -0.35], [-9, -52, 9.6, 5.2, 0.42],
-    [9, -53, 12.8, 6.2, -0.12], [25, -48, 10.4, 5.6, 0.38], [39, -43, 12.1, 6.1, -0.28],
-    [-54, -13, 8.4, 4.4, 0.9], [-57, 8, 9.8, 4.8, 1.18], [54, -12, 8.8, 4.6, -1.0], [58, 12, 10.2, 5.0, -1.22],
-    [-35, 40, 8.9, 4.7, 2.8], [-15, 46, 10.6, 5.1, 3.05], [16, 45, 9.5, 4.9, -2.9], [36, 39, 8.6, 4.4, -2.65]
-  ];
-  const peaks = specs.map((spec, idx) => makeMountainPeak(`base_camp_mountain_backdrop_${idx + 1}`, ...spec));
-  const mists = [
-    makeMountainMist("base_camp_mountain_mist_north", 0, -41.5, 82, 5.2, 0),
-    makeMountainMist("base_camp_mountain_mist_west", -45, 0, 50, 4.4, Math.PI / 2),
-    makeMountainMist("base_camp_mountain_mist_east", 45, 0, 50, 4.4, -Math.PI / 2),
-    makeMountainMist("base_camp_mountain_mist_south", 0, 37.5, 62, 4.2, Math.PI)
-  ];
-  return {
-    peaks,
-    mists,
-    userData: {
-      peakMats: peaks.map((peak) => peak.userData.rockMat),
-      snowMats: peaks.map((peak) => peak.userData.snowMat),
-      ridgeGlows: peaks.map((peak) => peak.userData.ridgeGlow),
-      mists
-    }
-  };
 }
 
 const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
@@ -649,7 +668,7 @@ moon.shadow.camera.top = 22;
 moon.shadow.camera.bottom = -22;
 scene.add(moon);
 
-const groundMaterial = surfaceMaterial({ color: 0x143452, map: textureSet.ground, roughness: 1, bumpScale: 0.024, emissive: 0x0b2d4a, emissiveIntensity: 0.18 });
+const groundMaterial = surfaceMaterial({ color: 0x0c1b30, map: textureSet.ground, roughness: 1, bumpScale: 0.022 });
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(140, 140),
   groundMaterial
@@ -794,6 +813,69 @@ for (let i = 0; i < 42; i++) {
   splash.visible = false;
   rainSplashes.push(splash);
   scene.add(splash);
+}
+
+function makeMountainPeak(id, x, z, height, radius, rot = 0, color = 0x243452) {
+  const g = new THREE.Group();
+  const rockMat = surfaceMaterial({ color, map: textureSet.mountainRock, roughness: 0.96, metalness: 0.02, bumpScale: 0.06, emissive: 0x081a33, emissiveIntensity: 0.12 });
+  const snowMat = new THREE.MeshBasicMaterial({ color: 0xbddcff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+  const peak = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 5), rockMat);
+  peak.position.y = height * 0.5 - 0.3;
+  peak.rotation.y = rot;
+  peak.scale.z = 0.52 + (height % 3) * 0.08;
+  const snow = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.24, 5), snowMat);
+  snow.position.y = height * 0.88 - 0.3;
+  snow.rotation.y = rot + Math.PI / 5;
+  snow.scale.z = peak.scale.z;
+  const ridgeGlow = warmGlowBillboard(`${id}_ridge_glow`, x, height * 0.58, z, radius * 1.5, 0x7dd3fc, 0.055);
+  g.add(peak, snow);
+  g.position.set(x, 0, z);
+  g.userData.visualId = id;
+  g.userData.rockMat = rockMat;
+  g.userData.snowMat = snowMat;
+  g.userData.ridgeGlow = ridgeGlow;
+  markShadows(g, false, false);
+  scene.add(g);
+  return g;
+}
+
+function makeMountainMist(id, x, z, sx, sy, rot = 0) {
+  const mist = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x8fb9ff, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  mist.position.set(x, sy * 0.48, z);
+  mist.scale.set(sx, sy, 1);
+  mist.rotation.y = rot;
+  mist.userData.visualId = id;
+  scene.add(mist);
+  return mist;
+}
+
+function makeMountainBackdrop() {
+  const specs = [
+    [-38, -45, 10.8, 5.4, 0.2], [-24, -50, 13.5, 6.6, -0.35], [-9, -52, 9.6, 5.2, 0.42],
+    [9, -53, 12.8, 6.2, -0.12], [25, -48, 10.4, 5.6, 0.38], [39, -43, 12.1, 6.1, -0.28],
+    [-54, -13, 8.4, 4.4, 0.9], [-57, 8, 9.8, 4.8, 1.18], [54, -12, 8.8, 4.6, -1.0], [58, 12, 10.2, 5.0, -1.22],
+    [-35, 40, 8.9, 4.7, 2.8], [-15, 46, 10.6, 5.1, 3.05], [16, 45, 9.5, 4.9, -2.9], [36, 39, 8.6, 4.4, -2.65]
+  ];
+  const peaks = specs.map((spec, idx) => makeMountainPeak(`base_camp_mountain_backdrop_${idx + 1}`, ...spec));
+  const mists = [
+    makeMountainMist("base_camp_mountain_mist_north", 0, -41.5, 82, 5.2, 0),
+    makeMountainMist("base_camp_mountain_mist_west", -45, 0, 50, 4.4, Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_east", 45, 0, 50, 4.4, -Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_south", 0, 37.5, 62, 4.2, Math.PI)
+  ];
+  return {
+    peaks,
+    mists,
+    userData: {
+      peakMats: peaks.map((peak) => peak.userData.rockMat),
+      snowMats: peaks.map((peak) => peak.userData.snowMat),
+      ridgeGlows: peaks.map((peak) => peak.userData.ridgeGlow),
+      mists
+    }
+  };
 }
 
 function hut(x, z, c=0x5a4a3a) {
@@ -1181,7 +1263,7 @@ function makeMemoryGate() {
 function makeCanopyCluster(id, x, z, scale = 1, color = 0x1f5a3f) {
   const g = new THREE.Group();
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x382515, map: textureSet.wood, roughness: 0.96 });
-  const leafMaterial = new THREE.MeshStandardMaterial({ color, emissive: 0x0c3027, emissiveIntensity: 0.04, roughness: 0.82 });
+  const leafMaterial = surfaceMaterial({ color, map: textureSet.leafVein, roughness: 0.82, bumpScale: 0.035, emissive: 0x0c3027, emissiveIntensity: 0.04 });
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.32 * scale, 3.6 * scale, 8), trunkMat);
   trunk.position.set(0, 1.8 * scale, 0);
   trunk.rotation.z = 0.18;
@@ -1373,12 +1455,16 @@ function makeMarketPlaza(id, x, z, rot = 0) {
   });
 
   const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 4.35, 3.1, 0xffb35f, 0.12);
+  const aisleLight = new THREE.PointLight(0xffb35f, 1.8, 9, 2.1);
+  aisleLight.position.set(0, 1.25, -0.25);
+  g.add(aisleLight);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
   g.userData.runes = runes;
   g.userData.edgeStones = edgeStones;
   g.userData.aisle = aisle;
+  g.userData.aisleLight = aisleLight;
   markShadows(g, true, true);
   scene.add(g);
   softShadow(`${id}_shadow`, x, z, 4.7, 3.35, 0.18);
@@ -1582,7 +1668,7 @@ function makeMarketOverhang(id, x, z, rot = 0) {
 
 
 function makeMarketTextureRunner(id, x, z, rot = 0) {
-  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.04, emissive: 0x24103a, emissiveIntensity: 0.06 });
+  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.046, emissive: 0x24103a, emissiveIntensity: 0.06 });
   runnerMat.transparent = true;
   runnerMat.opacity = 0.74;
   const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 5.35), runnerMat);
@@ -1647,7 +1733,7 @@ function makeMarketCompanion(id, x, z, color = 0xe9d5ff) {
 function makeMarketHomeDetail(id, x, z, rot = 0, accent = 0xf0abfc) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.92, bumpScale: 0.055 });
-  const cloth = surfaceMaterial({ color: accent, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.038, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  const cloth = surfaceMaterial({ color: accent, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.044, emissive: 0x24103a, emissiveIntensity: 0.035 });
   cloth.transparent = true;
   cloth.opacity = 0.84;
   const basketMat = surfaceMaterial({ color: 0x9b6b3d, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
@@ -1935,6 +2021,8 @@ const marketHomeDetails = [
 ];
 const worldReinforcements = makeWorldReinforcementDetails("market_canopy_structural_reinforcements", 0.25, 8.1, 0.03);
 
+const marketEntryOfferings = makeMarketEntryOfferings("market_entry_offerings", 0.18, 6.05, 0.02);
+
 const closeGrasses = [
   makeGrassTuft("grass_fire_west", -1.9, 1.2, 1.2, 0x68c17e),
   makeGrassTuft("grass_fire_south", 0.9, 2.2, 0.9, 0x5fbf7a),
@@ -1972,6 +2060,78 @@ const fallenPetals = [
   makePetalScatter("petal_bench_01", -2.1, 2.12, 0.18, 0xd9a7ff)
 ];
 
+function makeMarketEntryOfferings(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x5f3b24, map: textureSet.wood, roughness: 0.9, bumpScale: 0.052 });
+  const woven = surfaceMaterial({ color: 0x6d3f91, map: textureSet.wovenTile, roughness: 0.94, bumpScale: 0.045, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  const gold = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.86 });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.36, 0.08), wood);
+  sign.position.set(0, 0.86, -0.34);
+  const signRune = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.14, 6), gold.clone());
+  signRune.position.set(0, 0.86, -0.285);
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.72), woven);
+  mat.position.set(0, 0.11, 0.1);
+  mat.rotation.x = -Math.PI / 2;
+  const offerings = [];
+  [-0.38, 0, 0.38].forEach((ox, idx) => {
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.12, 12), wood);
+    bowl.position.set(ox, 0.2, 0.04 + (idx % 2) * 0.14);
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.08), gold.clone());
+    gem.position.set(ox, 0.34, bowl.position.z);
+    gem.userData.phase = idx * 0.8;
+    offerings.push(gem);
+    g.add(bowl, gem);
+  });
+  const glow = warmLightPool(`${id}_welcome_glow`, x, z + 0.05, 1.22, 0.78, 0xffd58a, 0.1);
+  g.add(sign, signRune, mat);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.offerings = offerings;
+  g.userData.signRune = signRune;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 0.9, 0.45, 0.16);
+  return g;
+}
+
+function makeFirepitReferenceDetails(id) {
+  const g = new THREE.Group();
+  const crystalMat = new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.86 });
+  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.88 });
+  const bookMat = new THREE.MeshStandardMaterial({ color: 0x24143d, roughness: 0.72, metalness: 0.04, emissive: 0x16052f, emissiveIntensity: 0.12 });
+  const details = [];
+  [[-1.55, -0.62], [1.48, 0.72], [-0.92, 1.42], [1.15, -1.34]].forEach(([x, z], idx) => {
+    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.14 + idx * 0.015), crystalMat.clone());
+    crystal.position.set(x, 0.33, z);
+    crystal.userData.phase = idx * 0.67;
+    details.push(crystal);
+    g.add(crystal);
+  });
+  [[-1.92, 0.78], [1.92, -0.78]].forEach(([x, z], idx) => {
+    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.24, 8), lanternMat.clone());
+    lantern.position.set(x, 0.28, z);
+    const glow = warmGlowBillboard(`${id}_tiny_lantern_glow_${idx}`, x, 0.48, z, 0.65, 0xffc879, 0.18);
+    details.push(lantern, glow);
+    g.add(lantern);
+  });
+  const grimoire = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.08, 0.42), bookMat);
+  grimoire.position.set(-1.72, 0.17, -1.2);
+  grimoire.rotation.y = -0.55;
+  const pageGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.28), new THREE.MeshBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 0.28, side: THREE.DoubleSide }));
+  pageGlow.position.set(-1.72, 0.218, -1.2);
+  pageGlow.rotation.x = -Math.PI / 2;
+  pageGlow.rotation.z = -0.55;
+  g.add(grimoire, pageGlow);
+  g.userData.visualId = id;
+  g.userData.details = details;
+  g.userData.pageGlow = pageGlow;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
+}
+
 const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95, bumpScale: 0.055 }));
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
@@ -1992,6 +2152,7 @@ const fireLightPools = [
   warmLightPool("fire_rune_pool_gold", 0, 0, 5.35, 3.2, 0xffcf75, 0.12)
 ];
 const fireBillboardGlow = warmGlowBillboard("fire_billboard_glow", 0, 1.25, 0, 3.4, 0xff8f42, 0.24);
+const firepitReferenceDetails = makeFirepitReferenceDetails("firepit_crystal_lantern_grimoire_details");
 
 const flameMeshes = [];
 [
@@ -2230,6 +2391,7 @@ renderer.domElement.addEventListener('touchend', () => { drag = false; pinchDist
 
 
 function animate(t = 0) {
+  updateLumariaPulse(t);
   const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
   const right = new THREE.Vector3(dir.z, 0, -dir.x);
   const speed = 0.09;
@@ -2239,20 +2401,7 @@ function animate(t = 0) {
   if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
   if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
 
-  const groundGlowBase = timeMode === "rain" ? 0.13 : timeMode === "day" || timeMode === "morning" ? 0.06 : timeMode === "sunset" ? 0.08 : 0.11;
-  const meadowGlowBase = timeMode === "rain" ? 0.09 : timeMode === "day" || timeMode === "morning" ? 0.035 : timeMode === "sunset" ? 0.055 : 0.075;
-  groundLumenVeil.material.opacity = groundGlowBase + Math.sin(t * 0.0014) * 0.014;
-  outerMeadowGlow.rotation.z += 0.0005;
-  outerMeadowGlow.material.opacity = meadowGlowBase + Math.sin(t * 0.0011) * 0.006;
-  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
-    glow.material.opacity = (timeMode === "day" ? 0.028 : 0.06) + Math.sin(t * 0.0015 + idx * 0.6) * 0.018;
-    glow.scale.setScalar((idx % 3 === 0 ? 7.8 : 6.2) + Math.sin(t * 0.001 + idx) * 0.38);
-  });
-  mountainBackdrop.userData.mists.forEach((mist, idx) => {
-    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.16;
-  });
-
-  const flicker = 1.9 + Math.sin(t * 0.012) * 0.45 + Math.sin(t * 0.039) * 0.25;
+  const flicker = 1.45 + lumariaPulse.globalFlicker * 0.62 + Math.sin(t * 0.039) * 0.18;
   if (timeMode === "night" || timeMode === "rain") {
     flame.intensity = flicker;
     ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
@@ -2343,24 +2492,25 @@ function animate(t = 0) {
   marketTransition.userData.banner.rotation.z = Math.sin(t * 0.0018) * 0.035;
   marketPlaza.userData.runes.forEach((rune) => {
     rune.rotation.z += 0.004;
-    rune.material.opacity = (timeMode === "day" ? 0.18 : 0.42) + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
+    rune.material.opacity = marketEnvironment.runeOpacity + Math.sin(t * 0.004 + rune.userData.phase) * 0.1;
   });
-  marketPlaza.userData.aisle.material.opacity = (timeMode === "day" ? 0.06 : 0.14) + Math.sin(t * 0.003) * 0.035;
+  marketPlaza.userData.aisle.material.opacity = 0.08 * marketEnvironment.aisleIntensity + Math.sin(t * 0.003) * 0.028;
+  marketPlaza.userData.aisleLight.intensity = 0.5 + marketEnvironment.aisleIntensity * 1.8 + Math.sin(t * 0.004) * 0.18;
   marketOverhang.userData.roof.material.opacity = (timeMode === "day" ? 0.82 : 0.9) + Math.sin(t * 0.0015) * 0.025;
   marketOverhang.userData.roofPeak.material.opacity = marketOverhang.userData.roof.material.opacity;
   marketOverhang.userData.ribbons.forEach((ribbon) => {
     ribbon.material.opacity = (timeMode === "day" ? 0.42 : 0.64) + Math.sin(t * 0.0028 + ribbon.userData.phase) * 0.08;
   });
   marketOverhang.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = 0.88 + Math.sin(t * 0.0065 + idx * 0.7) * 0.12;
+    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.0065 + idx * 0.7) * 0.06;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = (timeMode === "day" ? 0.09 : 0.24) * pulse;
+    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * pulse;
   });
   marketTextureRunner.material.opacity = (timeMode === "day" ? 0.62 : 0.78) + Math.sin(t * 0.002) * 0.035;
   marketStringLights.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
+    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.006 + idx * 0.8) * 0.06;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) * pulse;
+    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85 * pulse;
   });
   marketStands.forEach((stand, standIdx) => {
     stand.userData.wares.forEach((ware, wareIdx) => {
@@ -2372,6 +2522,35 @@ function animate(t = 0) {
     companion.userData.body.position.y = 0.56 + Math.sin(t * 0.003 + idx) * 0.045;
     companion.userData.cap.rotation.y += 0.008;
     companion.userData.glow.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.06;
+  });
+
+  marketEntryOfferings.userData.offerings.forEach((gem, idx) => {
+    gem.rotation.y += 0.012 + idx * 0.002;
+    gem.position.y = 0.34 + Math.sin(t * 0.004 + gem.userData.phase) * 0.035;
+    gem.material.opacity = (timeMode === "day" ? 0.62 : 0.86) + Math.sin(t * 0.004 + idx) * 0.08;
+  });
+  marketEntryOfferings.userData.signRune.rotation.z += 0.008;
+  marketEntryOfferings.userData.glow.material.opacity = (timeMode === "day" ? 0.05 : 0.11) + Math.sin(t * 0.003) * 0.025;
+
+  marketHomeDetails.forEach((detail, idx) => {
+    detail.userData.rug.material.opacity = (timeMode === "day" ? 0.76 : 0.86) + Math.sin(t * 0.0018 + idx) * 0.025;
+    detail.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.025;
+    detail.userData.herbs.forEach((herb, herbIdx) => {
+      herb.rotation.z += Math.sin(t * 0.0024 + herb.userData.phase + idx) * 0.0009;
+      herb.material.emissiveIntensity = (timeMode === "day" ? 0.06 : 0.16) + Math.sin(t * 0.004 + herbIdx) * 0.035;
+    });
+    detail.userData.motes.forEach((mote) => {
+      mote.position.y = mote.userData.base.y + Math.sin(t * 0.003 + mote.userData.phase) * 0.045;
+      mote.material.opacity = (timeMode === "day" ? 0.32 : 0.72) + Math.sin(t * 0.005 + mote.userData.phase) * 0.14;
+    });
+    detail.userData.baskets.forEach((basket) => { basket.rotation.y += 0.0025; });
+  });
+
+  worldReinforcements.userData.ropes.forEach((rope) => {
+    rope.material.opacity = 0.52 + Math.sin(t * 0.002 + rope.userData.phase) * 0.08;
+  });
+  worldReinforcements.userData.stitches.forEach((stitch) => {
+    stitch.material.opacity = (timeMode === "day" ? 0.34 : 0.5) + Math.sin(t * 0.003 + stitch.userData.phase) * 0.06;
   });
 
   floorTiles.forEach((tile, idx) => {
@@ -2394,7 +2573,7 @@ function animate(t = 0) {
       part.rotation.z += Math.sin(t * 0.0026 + part.userData.phase + idx) * 0.0011;
       if (part.material && "opacity" in part.material) part.material.opacity = 0.58 + Math.sin(t * 0.004 + part.userData.phase) * 0.22;
     });
-    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.002;
+    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.001 + lumariaPulse.globalPulse * 0.0008;
     patch.userData.glow.material.opacity = Math.max(0.05, Math.min(0.38, patch.userData.glow.material.opacity + Math.sin(t * 0.003 + idx) * 0.002));
   });
 
@@ -2432,12 +2611,12 @@ function animate(t = 0) {
   });
 
   rainVeil.children.forEach((drop) => {
-    drop.position.y -= drop.userData.fall;
+    drop.position.y -= drop.userData.fall * lumariaPulse.rainFall;
     if (drop.position.y < 0.2) {
       drop.position.y = 12 + Math.random() * 3;
     }
   });
-  rainMist.material.opacity = timeMode === "rain" ? 0.095 + Math.sin(t * 0.0015) * 0.025 : 0;
+  rainMist.material.opacity = timeMode === "rain" ? 0.08 + lumariaPulse.globalPulse * 0.42 : 0;
   rainSplashes.forEach((splash, idx) => {
     if (!splash.visible) return;
     const pulse = (Math.sin(t * 0.008 + splash.userData.phase + idx) + 1) * 0.5;
@@ -2446,7 +2625,7 @@ function animate(t = 0) {
   });
 
   fireflies.forEach((f, i) => {
-    const tt = t * 0.0011 + f.userData.seed + i * 0.13;
+    const tt = t * lumariaPulse.faunaOrbit + f.userData.seed + i * 0.13;
     f.position.set(Math.cos(tt) * f.userData.radius, f.userData.height + Math.sin(tt * 2) * 0.3, Math.sin(tt) * f.userData.radius);
     f.material.opacity = 0.5 + Math.sin(tt * 5) * 0.5;
   });
@@ -2455,9 +2634,26 @@ function animate(t = 0) {
     const flamePulse = 0.92 + Math.sin(t * 0.009 + i) * 0.14;
     mesh.scale.y = mesh.userData.baseY ? mesh.userData.baseY * flamePulse : mesh.scale.y;
     mesh.rotation.y += 0.018 + i * 0.004;
-    mesh.material.opacity = 0.58 + Math.sin(t * 0.011 + i) * 0.16;
+    mesh.material.opacity = 0.5 + lumariaPulse.globalPulse * 1.2 + Math.sin(t * 0.011 + i) * 0.1;
   });
-  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.08 : 0.16) + Math.sin(t * 0.006) * 0.035;
+  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.06 : 0.13) + lumariaPulse.globalPulse * 0.28;
+  groundLumenVeil.material.opacity = Math.max(0.025, groundLumenVeil.material.opacity + Math.sin(t * 0.0018) * 0.0014);
+  outerMeadowGlow.material.opacity = Math.max(0.025, outerMeadowGlow.material.opacity + Math.sin(t * 0.0013) * 0.0011);
+  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
+    glow.material.opacity = 0.035 + lumariaPulse.globalPulse * 0.22 + Math.sin(t * 0.0012 + idx) * 0.012;
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.12;
+  });
+  firepitReferenceDetails.userData.details.forEach((detail, idx) => {
+    if (detail.isSprite) {
+      detail.material.opacity = (timeMode === "day" ? 0.08 : 0.18) + Math.sin(t * 0.004 + idx) * 0.04;
+    } else {
+      detail.rotation.y += 0.008 + idx * 0.001;
+      if (detail.material && "opacity" in detail.material) detail.material.opacity = (timeMode === "day" ? 0.55 : 0.82) + Math.sin(t * 0.004 + idx) * 0.08;
+    }
+  });
+  firepitReferenceDetails.userData.pageGlow.material.opacity = (timeMode === "day" ? 0.12 : 0.28) + Math.sin(t * 0.004) * 0.08;
 
   avatarYou.halo.rotation.z += 0.008;
   avatarYou.body.position.y = 0.52 + Math.sin(t * 0.002) * 0.035;

@@ -351,8 +351,6 @@
         "market_texture_runner": "walkable cloth runner across the exchange hall floor to make close-up movement feel detailed",
         "market_companions": "three small vendor/traveler/keeper presences bob gently near the trade path",
         "natural_glow": "brighter sky fill, softer fog, and small happy flower clusters around market path, campfire, and welcome edge",
-        "luminous_ground": "slightly emissive moss plane with a soft additive meadow veil and outer glow ring across the camp footprint",
-        "mountain_backdrop": "low-poly mountain ring, snow caps, ridge glows, and drifting mist bands around the town boundary",
         "stables": "Companions + Support lodge near the garden path",
         "welcome_grove": "Arrival + Care arch on the north path",
         "south_gate": "Journey Beyond waypoint gate on the south path",
@@ -363,14 +361,74 @@
         "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black",
         "compact_controls": "demo header keeps only movement, reset camera, market focus, mode, and a collapsed visual pass log to recover vertical screen space",
         "camera_safety": "reset camera button plus R hotkey restores a stable camp view; pitch clamps prevent looking too far down into the ground plane",
-        "rain_readability": "rain mode now uses brighter ambient light, mist, and splash rings so it reads as weather instead of muddy darkness"
+        "rain_readability": "rain mode now uses brighter ambient light, mist, and splash rings so it reads as weather instead of muddy darkness",
+        "market_environment_manager": "centralized market glow controller updates rune opacity, lantern glow, and the Exchange Plaza aisle point light per time mode",
+        "global_pulse_sync": "MPC-style lumariaPulse object centralizes GlobalFlicker, GlobalPulse, rain speed, and fauna orbit timing for the web prototype"
       },
-      "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview", "market_exchange_preview", "full_size_market_plaza", "market_district_focus", "walk_under_market_canopy", "ground_level_texture_view", "luminous_ground_plane", "mountain_backdrop_depth", "town_boundary_context"],
-      "mood_tags": ["storybook_map", "cozy_town", "readable_landmarks", "expanded_but_safe", "bright_happy", "natural_glow", "held_by_landscape", "softly_luminous_ground"],
-      "causal_links": ["bridge_overview", "world_flow", "time_of_day", "memory_weave", "resource_exchange_state", "natural_light_state"],
-      "allowed_transitions": ["preview", "market_focus", "full_plaza_focus", "walk_under_canopy", "ground_texture_focus", "district_focus", "linked", "future_route_unlock"],
-      "safety_notes": ["landmarks_are_read_only", "do_not_imply_external_travel_without_confirm", "keep_labels_small_and_non_intrusive"],
-      "residual_trace": "the whole base camp now sits in a held landscape: luminous moss below, market detail at eye level, and a mountain-and-mist rim around the town"
+      "functional_role": [
+        "camp_orientation",
+        "future_navigation",
+        "world_scale",
+        "district_preview",
+        "market_exchange_preview",
+        "full_size_market_plaza",
+        "market_district_focus",
+        "walk_under_market_canopy",
+        "ground_level_texture_view",
+        "cozy_home_base",
+        "market_detail_readability",
+        "corrected_walk_controls",
+        "hosted_build_debuggability",
+        "canopy_structural_reinforcement",
+        "compact_demo_header",
+        "camera_safety_reset",
+        "rain_mode_readability",
+        "centralized_market_glow_control",
+        "exchange_aisle_light_control",
+        "mpc_style_global_sync",
+        "future_engine_translation_anchor"
+      ],
+      "mood_tags": [
+        "storybook_map",
+        "cozy_town",
+        "readable_landmarks",
+        "expanded_but_safe",
+        "bright_happy",
+        "natural_glow",
+        "homey",
+        "handmade_market",
+        "soft_details"
+      ],
+      "causal_links": [
+        "bridge_overview",
+        "world_flow",
+        "time_of_day",
+        "memory_weave",
+        "resource_exchange_state",
+        "natural_light_state"
+      ],
+      "allowed_transitions": [
+        "preview",
+        "market_focus",
+        "full_plaza_focus",
+        "walk_under_canopy",
+        "ground_texture_focus",
+        "district_focus",
+        "linked",
+        "future_route_unlock",
+        "home_detail_focus",
+        "reinforced_hosted_render",
+        "reset_camera_view",
+        "rain_readability_view",
+        "market_glow_mode_update",
+        "global_pulse_mode_update"
+      ],
+      "safety_notes": [
+        "landmarks_are_read_only",
+        "do_not_imply_external_travel_without_confirm",
+        "keep_labels_small_and_non_intrusive"
+      ],
+      "residual_trace": "the market has grown into a bright, walk-under base-camp exchange hall with compact controls, corrected A/D movement, centralized market glow/aisle-light control, MPC-style pulse sync, reset camera safety, rain particles/mist/splashes, hosted-build status reporting, reinforced canopy braces/ropes, lower camera, richer canopy/plaza textures, cozy herb-and-basket nooks, and enough ground detail to inspect while moving"
     },
     {
       "id": "memory_gate_01",
@@ -405,6 +463,25 @@
         "no_private_seed_exposure"
       ],
       "residual_trace": "the archive is near, but not hungry"
+    },
+    {
+      "id": "base_camp_luminous_backdrop_01",
+      "label": "Base Camp luminous ground and mountain backdrop",
+      "state": "visible",
+      "description": "Adds a soft ground-lumen veil, outer meadow glow, distant mountain silhouettes, ridge glows, and drifting mist to keep hosted/rain views readable and world-scaled."
+    },
+    {
+      "id": "firepit_reference_details_01",
+      "label": "Firepit crystals, lanterns, mushrooms, and grimoire",
+      "state": "visible",
+      "description": "Adds small campfire reference details around the sanctuary ring so close ground-level views read cozy rather than empty."
+    },
+    {
+      "id": "market_entry_offerings_01",
+      "label": "Market entry identity and offerings",
+      "state": "visible",
+      "description": "Adds a woven mat, small sign rune, offering bowls, and glowing wares at the campfire-to-market transition."
     }
-  ]
+  ],
+  "latest_visual_pass": "Base Camp polish wave: luminous ground/backdrop, firepit reference details, woven textures, and market entry offerings."
 }

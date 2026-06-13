@@ -6,13 +6,15 @@
     "name": "Ophelia / Lumaria",
     "current_frontend_focus": "A1 Bridge Camp 3D world demo",
     "entry_flow": "Enter Lumaria opens the embedded 3D A1 Bridge Camp while preserving chat access.",
-    "current_visual_wave": "Base Camp market is now a reinforced walk-under exchange hall with compact controls, camera reset/pitch safety, rain readability particles, corrected A/D strafing, hosted-build status overlay, cozy herb/basket home nooks, and natural meadow glow."
+    "current_visual_wave": "A1 Bridge Camp now has compact controls, camera/rain stability, centralized market glow/MPC-style pulse sync, and a Base Camp polish/import wave: luminous ground veil, outer meadow glow, distant mountain backdrop, woven market textiles, firepit crystals/lanterns/grimoire, and market entry offerings. The UE5 roadmap now includes the market environment-manager contract, HISM edge-stone construction scripts, spline transition path, cable/string-light translation, and validation checklist."
   },
   "active_surfaces": [
     {
       "path": "demos/world-3d-blockout.html",
       "role": "Primary playable 3D A1 Bridge Camp prototype",
       "safe_next_work": [
+        "UE5 roadmap alignment",
+        "global pulse consolidation",
         "rain/camera readability passes",
         "rest-of-camp vibe detailing",
         "structural reinforcement details",
@@ -21,7 +23,15 @@
         "small scoped visual passes",
         "one district or object group per prompt",
         "lighting/material tuning",
-        "mobile camera refinements"
+        "mobile camera refinements",
+        "base camp backdrop polish",
+        "woven texture detailing",
+        "firepit reference details",
+        "market entry/offering details",
+        "UE5 import planning",
+        "market MPC contract parity",
+        "HISM/Spline UE validation",
+        "cable light translation checks"
       ]
     },
     {
