@@ -79,6 +79,7 @@ const mapOpenChatButton = document.getElementById("map-open-chat");
 const campStatusTime = document.getElementById("camp-status-time");
 const campStatusBraid = document.getElementById("camp-status-braid");
 const campStatusMemory = document.getElementById("camp-status-memory");
+const worldTimeButtons = document.querySelectorAll("button[data-world-mode]");
 const navEarthPanel = document.getElementById("nav-earth-panel");
 const navHarmonizedPanel = document.getElementById("nav-harmonized-panel");
 const navTabEarth = document.getElementById("nav-tab-earth");
@@ -243,7 +244,14 @@ function syncWorldTimeMode(mode) {
   if (campStatusTime) {
     campStatusTime.textContent = worldTimeLabel(currentWorldTimeMode);
   }
-  const worldFrame = document.querySelector('#map-screen iframe');
+  worldTimeButtons.forEach((button) => {
+    const isActive = button.dataset.worldMode === currentWorldTimeMode;
+    button.classList.toggle("border-cyan-400/60", isActive);
+    button.classList.toggle("bg-cyan-500/10", isActive);
+    button.classList.toggle("text-cyan-100", isActive);
+    button.classList.toggle("text-slate-300", !isActive);
+  });
+  const worldFrame = document.getElementById('three-basecamp-iframe') || document.querySelector('#map-screen iframe');
   if (worldFrame && worldFrame.contentWindow) {
     worldFrame.contentWindow.postMessage({ type: 'lumaria-time-mode', mode: currentWorldTimeMode }, '*');
   }
@@ -1865,6 +1873,18 @@ if (globalTimeToggleButton) {
     syncWorldTimeMode(nextWorldTimeMode(currentWorldTimeMode));
     logAudit(`World time mode set to ${currentWorldTimeMode}`);
   });
+}
+
+worldTimeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    syncWorldTimeMode(button.dataset.worldMode);
+    logAudit(`World weather panel set to ${currentWorldTimeMode}`);
+  });
+});
+
+const threeBasecampFrame = document.getElementById("three-basecamp-iframe");
+if (threeBasecampFrame) {
+  threeBasecampFrame.addEventListener("load", () => syncWorldTimeMode(currentWorldTimeMode));
 }
 
 if (mapOpenChatButton) {

@@ -55,7 +55,10 @@
     "woven_market_texture_runner",
     "firepit_crystal_lantern_grimoire_details",
     "market_entry_offerings",
-    "market_vendor_silhouettes"
+    "market_vendor_silhouettes",
+    "cinematic_aurora_curtains",
+    "cinematic_lens_mote_field",
+    "mirror_pool_reflections"
   ],
   "mood": "bright_warm_presence",
   "functional_tags": [
@@ -98,7 +101,10 @@
     "etched_stone_and_woven_texture_pass",
     "firepit_reference_detail_pass",
     "market_entry_identity",
-    "ue5_import_alignment"
+    "ue5_import_alignment",
+    "cinematic_depth_pass",
+    "aurora_life_lighting",
+    "mirror_pool_reflection_readability"
   ],
   "active_agent": "you",
   "avatar_state": {
@@ -136,6 +142,6 @@
       "external_publish"
     ]
   },
-  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with compact controls, reset camera support, pitch clamps, centralized market glow control, MPC-style global pulse sync, rain mist/splash particles, a textured walk-under canopy, reinforced braces/ropes/stitches, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition.",
-  "latest_visual_pass": "Base Camp polish: luminous ground veil, mountain backdrop, woven market textures, firepit crystals/lanterns/grimoire, and market entry offerings."
+  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with compact controls, reset camera support, pitch clamps, centralized market glow control, MPC-style global pulse sync, rain mist/splash particles, a textured walk-under canopy, reinforced braces/ropes/stitches, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition; the newest cinematic life pass adds aurora curtains, lens motes, and mirror-pool reflections while preserving the lightweight public shell.",
+  "latest_visual_pass": "Cinematic life pass: aurora curtains, lens motes, and mirror-pool reflections layered over the existing camp without external assets."
 }

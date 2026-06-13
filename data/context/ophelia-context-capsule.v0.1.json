@@ -6,7 +6,7 @@
     "name": "Ophelia / Lumaria",
     "current_frontend_focus": "A1 Bridge Camp 3D world demo",
     "entry_flow": "Enter Lumaria opens the embedded 3D A1 Bridge Camp while preserving chat access.",
-    "current_visual_wave": "A1 Bridge Camp now has compact controls, camera/rain stability, centralized market glow/MPC-style pulse sync, and a Base Camp polish/import wave: luminous ground veil, outer meadow glow, distant mountain backdrop, woven market textiles, firepit crystals/lanterns/grimoire, and market entry offerings. The UE5 roadmap now includes the market environment-manager contract, HISM edge-stone construction scripts, spline transition path, cable/string-light translation, and validation checklist."
+    "current_visual_wave": "A1 Bridge Camp now has compact controls, camera/rain stability, centralized market glow/MPC-style pulse sync, and a Base Camp polish/import wave: luminous ground veil, outer meadow glow, distant mountain backdrop, woven market textiles, firepit crystals/lanterns/grimoire, and market entry offerings. The UE5 roadmap now includes the market environment-manager contract, HISM edge-stone construction scripts, spline transition path, cable/string-light translation, and validation checklist. The Flight Deck shell now cache-busts the 3D iframe and exposes direct weather/time controls beside the embedded world. A local world-model packet tool now turns visual-state/context into observe-act-predict-validate planning artifacts for future worldbuilding passes. The latest cinematic life pass adds procedural aurora curtains, lens-mote depth, and mirror-pool reflections inside the Three.js scene without external assets."
   },
   "active_surfaces": [
     {
@@ -31,12 +31,14 @@
         "UE5 import planning",
         "market MPC contract parity",
         "HISM/Spline UE validation",
-        "cable light translation checks"
+        "cable light translation checks",
+        "cinematic depth polish",
+        "aurora/reflection readability checks"
       ]
     },
     {
       "path": "index.html",
-      "role": "Flight Deck shell and Enter Lumaria routing surface"
+      "role": "Flight Deck shell, Enter Lumaria routing surface, and embedded A1 world/weather control host"
     },
     {
       "path": "script.js",
@@ -48,7 +50,7 @@
     },
     {
       "path": "data/visual-state/sample-scene.json",
-      "role": "Compact scene-level visual-state packet"
+      "role": "Compact scene-level visual-state packet and input to the world-model packet generator"
     }
   ],
   "architecture_rules": [
@@ -65,6 +67,7 @@
     "Do not expose sealed/private material in public shell artifacts."
   ],
   "standard_checks": [
+    "make world-model-packet",
     "node --check /tmp/world-3d-check.js",
     "python3 -m json.tool data/visual-state/sample-scene.json >/tmp/scene.json",
     "python3 -m json.tool data/visual-state/sample-bridge-camp-state.json >/tmp/bridge.json",

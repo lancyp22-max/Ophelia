@@ -6,7 +6,7 @@
     <title>LUMARIA // SOVEREIGN MIRROR</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#008080" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data:; font-src 'self' data:;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ws://localhost:8766 ws://127.0.0.1:8766 ws://localhost:11434 http://localhost:11434 http://127.0.0.1:8766 http://127.0.0.1:8080 http://localhost:8080;" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -1066,7 +1066,14 @@
           <article class="relative overflow-hidden rounded-2xl border border-cyan-400/25 bg-slate-950/50 p-3">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(90,120,255,0.30),transparent_45%),radial-gradient(circle_at_75%_35%,rgba(40,220,255,0.20),transparent_50%),linear-gradient(145deg,rgba(4,10,25,0.95),rgba(12,24,54,0.9))]"></div>
             <div class="relative z-10 h-[clamp(420px,56vh,680px)] overflow-hidden rounded-xl border border-cyan-500/15" style="background-image:url('demos/world-bridge-map.html'); background-size:cover; background-position:center;">
-              <iframe title="Lumarian Bridge 3D" src="demos/world-3d-blockout.html" class="block h-full w-full rounded-xl border-0"></iframe>
+              <iframe id="three-basecamp-iframe" title="Lumarian Bridge 3D" src="demos/world-3d-blockout.html?v=basecamp-polish-3" class="block h-full w-full rounded-xl border-0"></iframe>
+              <div id="three-weather-panel" class="absolute right-3 top-3 z-20 flex flex-wrap justify-end gap-2 rounded-2xl border border-cyan-400/20 bg-slate-950/55 p-2 text-[0.54rem] uppercase tracking-[0.18em] backdrop-blur-md">
+                <button data-world-mode="morning" type="button" class="weather-btn rounded-full border border-slate-600/70 px-2.5 py-1 text-slate-300 hover:border-cyan-300/50 hover:text-cyan-100">Morn</button>
+                <button data-world-mode="day" type="button" class="weather-btn rounded-full border border-slate-600/70 px-2.5 py-1 text-slate-300 hover:border-cyan-300/50 hover:text-cyan-100">Day</button>
+                <button data-world-mode="sunset" type="button" class="weather-btn rounded-full border border-slate-600/70 px-2.5 py-1 text-slate-300 hover:border-cyan-300/50 hover:text-cyan-100">Sunset</button>
+                <button data-world-mode="night" type="button" class="weather-btn rounded-full border border-cyan-400/60 bg-cyan-500/10 px-2.5 py-1 text-cyan-100">Night</button>
+                <button data-world-mode="rain" type="button" class="weather-btn rounded-full border border-slate-600/70 px-2.5 py-1 text-slate-300 hover:border-cyan-300/50 hover:text-cyan-100">Rain</button>
+              </div>
             </div>
             <div class="relative z-10 mt-2 text-[0.58rem] uppercase tracking-[0.18em] text-slate-300">Lumarian Bridge · Grid Square A1 · 3D live space · 2560×1440-friendly fit. Use C to open full chat interface.</div>
           </article>
@@ -1103,7 +1110,7 @@
               <p class="mt-1 text-[0.56rem] text-slate-200">Name: <strong>you</strong></p>
               <p class="mt-1 text-[0.56rem] text-slate-400">Role: Base-camp builder</p>
             </div>
-            <a href="demos/world-3d-blockout.html" target="_blank" rel="noopener" class="mt-3 block rounded-full border border-cyan-300/35 px-3 py-2 text-center text-[0.56rem] text-cyan-100 hover:bg-cyan-500/20">Launch World v0 3D Blockout ↗</a>
+            <a href="demos/world-3d-blockout.html?v=basecamp-polish-3" target="_blank" rel="noopener" class="mt-3 block rounded-full border border-cyan-300/35 px-3 py-2 text-center text-[0.56rem] text-cyan-100 hover:bg-cyan-500/20">Launch World v0 3D Blockout ↗</a>
             <button id="map-open-chat" type="button" class="mt-3 block w-full rounded-full border border-fuchsia-300/35 px-3 py-2 text-center text-[0.56rem] text-fuchsia-100 hover:bg-fuchsia-500/20">Open Camp Chat (C)</button>
             <p class="mt-2 text-[0.56rem] text-slate-400">Chat interface stays active via the C mode bubble and this shortcut.</p>
             <div class="mt-4 rounded-xl border border-emerald-300/25 bg-emerald-900/15 p-3">
