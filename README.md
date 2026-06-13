@@ -339,3 +339,7 @@ Run `make world-model-packet` to generate a local observe → act → predict �
 ### Cinematic life pass
 
 The A1 world now includes procedural aurora curtains, floating lens motes, and mirror-pool reflections to push the scene toward a more life-like, future-facing look while keeping the public demo dependency-free and asset-light.
+
+### UE5 implementation playbook
+
+`docs/ue5-lumaria-implementation-playbook.md` translates the current web prototype into UE5.6 contracts for `ALumariaEnvManager`, campfire flicker, HISM market construction, Niagara rain/fauna/aurora systems, and material recipes for luminous ground, canopy cloth, and mirror-pool reflections.

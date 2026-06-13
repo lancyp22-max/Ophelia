@@ -124,3 +124,14 @@ Implementation notes:
 - Use MPC values for global day/night/rain/flicker state instead of per-actor dynamic material updates.
 - Enable Nanite on huts, plaza stones, mountain rocks, and sturdy architectural meshes where the final UE asset supports it.
 - Keep translucent overdraw controlled: large canopy cloth should have simplified LODs, while tiny glow cards should distance-cull aggressively.
+
+## Cinematic life pass UE5 mapping
+
+The web scene now includes aurora curtains, floating lens motes, and mirror-pool reflection surfaces. In UE5 these should become a small cinematic VFX layer rather than many ticked actors:
+
+- Aurora curtains: use `M_AuroraCurtain` on mesh cards or `NS_Aurora` ribbon emitters driven by `MPC_LumariaWorld.GlobalPulse`.
+- Lens motes: convert to a Niagara GPU emitter with vortex/sine motion and distance culling.
+- Mirror pools: use shallow planar reflection/water materials with emissive edge color and rain/night parameter boosts.
+- Keep all three controlled by the environment manager so day/rain/sunset/night readability remains synchronized.
+
+For the implementation contracts, material recipes, and validation checklist, see `docs/ue5-lumaria-implementation-playbook.md`.
