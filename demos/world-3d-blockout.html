@@ -61,6 +61,7 @@
         <span class="pill">Market 1/10: entry identity + offerings</span>
         <span class="pill">Market 2/10: vendor booth silhouettes</span>
         <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
+        <span class="pill">Cinematic life pass: aurora, lens motes, mirror pools</span>
       </details>
     </div>
   </header>
@@ -165,6 +166,75 @@ function warmGlowBillboard(name, x, y, z, size, color = 0xffc879, opacity = 0.32
   sprite.scale.set(size, size, 1);
   scene.add(sprite);
   return sprite;
+}
+
+function makeAuroraCurtain(id, x, y, z, width, height, colorA = 0x7dd3fc, colorB = 0xc084fc) {
+  const group = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(width * (0.72 + i * 0.08), height * (0.82 + i * 0.04), 8, 1),
+      new THREE.MeshBasicMaterial({
+        color: i % 2 ? colorB : colorA,
+        transparent: true,
+        opacity: 0.08 + i * 0.012,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      })
+    );
+    mesh.position.set((i - 2) * width * 0.09, Math.sin(i) * 0.2, i * 0.05);
+    mesh.rotation.y = (i - 2) * 0.035;
+    mesh.userData.phase = i * 0.7;
+    group.add(mesh);
+  }
+  group.name = id;
+  group.position.set(x, y, z);
+  group.userData.visualId = id;
+  scene.add(group);
+  return group;
+}
+
+function makeCinematicBokehField(id, count, radius = 18) {
+  const group = new THREE.Group();
+  const palette = [0x7dd3fc, 0xc4b5fd, 0xffd58a, 0xa7f3d0];
+  for (let i = 0; i < count; i++) {
+    const mote = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        color: palette[i % palette.length],
+        transparent: true,
+        opacity: 0.1 + (i % 5) * 0.025,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    const angle = (i / count) * Math.PI * 2;
+    const r = 3 + ((i * 37) % 100) / 100 * radius;
+    mote.position.set(Math.cos(angle) * r, 0.8 + ((i * 29) % 80) / 22, Math.sin(angle) * r + 2.2);
+    const size = 0.12 + ((i * 17) % 30) / 100;
+    mote.scale.set(size, size, 1);
+    mote.userData.base = mote.position.clone();
+    mote.userData.phase = i * 0.43;
+    group.add(mote);
+  }
+  group.name = id;
+  group.userData.visualId = id;
+  scene.add(group);
+  return group;
+}
+
+function makeMirrorPool(id, x, z, sx, sz, color = 0x8ddcff) {
+  const pool = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 96),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  pool.name = id;
+  pool.position.set(x, 0.064, z);
+  pool.rotation.x = -Math.PI / 2;
+  pool.scale.set(sx, sz, 1);
+  pool.userData.visualId = id;
+  pool.userData.baseOpacity = 0.14;
+  scene.add(pool);
+  return pool;
 }
 
 function colorToHex(color) {
@@ -557,6 +627,21 @@ function applyTimeMode(mode) {
   sunHalo.visible = isDay || isSunset;
   starField.visible = !isDay && !isSunset && !isRain;
   starField.material.opacity = mode === "night" ? 0.92 : 0.42;
+  if (typeof cinematicAuroras !== "undefined") {
+    cinematicAuroras.forEach((curtain) => {
+      curtain.visible = !isDay;
+      curtain.children.forEach((band, idx) => {
+        band.material.opacity = isRain ? 0.05 + idx * 0.008 : isSunset ? 0.09 + idx * 0.01 : 0.12 + idx * 0.014;
+        band.material.color.set(isRain ? 0xa7f3ff : isSunset ? 0xffb4d6 : idx % 2 ? 0xc084fc : 0x7dd3fc);
+      });
+    });
+  }
+  if (typeof mirrorPools !== "undefined") {
+    mirrorPools.forEach((pool, idx) => {
+      pool.material.color.set(isRain ? 0x9fe8ff : isDay ? 0x9fffd1 : isSunset ? 0xffc879 : idx % 2 ? 0xc4b5fd : 0x8ddcff);
+      pool.userData.baseOpacity = isRain ? 0.18 : isDay ? 0.07 : isSunset ? 0.11 : 0.14;
+    });
+  }
   cloudBanks.forEach((cloud, idx) => {
     cloud.visible = isDay || isSunset || isRain || idx < 2;
     cloud.userData.mat.color.set(isRain ? 0xb8cad9 : isSunset ? 0xffd0b2 : isDay ? 0xffffff : 0x7e90b0);
@@ -2284,6 +2369,17 @@ stars.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35, transparent: true, opacity: 0.92 }));
 scene.add(starField);
 
+const cinematicAuroras = [
+  makeAuroraCurtain("cinematic_aurora_crown", -7.5, 7.6, -18, 9.2, 4.8, 0x7dd3fc, 0xc084fc),
+  makeAuroraCurtain("cinematic_aurora_market", 7.8, 6.4, -15.5, 7.8, 3.8, 0xa7f3ff, 0xffb4d6)
+];
+const cinematicBokeh = makeCinematicBokehField("cinematic_lens_mote_field", 72, 20);
+const mirrorPools = [
+  makeMirrorPool("mirror_pool_fire_reflection", 0.1, 0.35, 3.1, 1.25, 0xffb35f),
+  makeMirrorPool("mirror_pool_market_reflection", 0.25, 8.0, 4.8, 2.15, 0x8ddcff),
+  makeMirrorPool("mirror_pool_waterfall_reflection", 8.2, -6.2, 2.8, 1.2, 0x7ed6ff)
+];
+
 const fireflies = [];
 for (let i = 0; i < 36; i++) {
   const f = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc266 }));
@@ -2677,6 +2773,27 @@ function animate(t = 0) {
   memoryGate.ring.rotation.z -= 0.006;
   gardenBed.children.forEach((child, i) => {
     if (i > 1) child.rotation.z = Math.sin(t * 0.0015 + i) * 0.08;
+  });
+
+  cinematicAuroras.forEach((curtain, curtainIdx) => {
+    curtain.rotation.z = Math.sin(t * 0.00045 + curtainIdx) * 0.028;
+    curtain.children.forEach((band) => {
+      band.position.y = Math.sin(t * 0.0012 + band.userData.phase) * 0.22;
+      band.scale.x = 1 + Math.sin(t * 0.0009 + band.userData.phase) * 0.06;
+    });
+  });
+  cinematicBokeh.children.forEach((mote, idx) => {
+    const phase = t * 0.00085 + mote.userData.phase;
+    mote.position.set(
+      mote.userData.base.x + Math.sin(phase) * 0.32,
+      mote.userData.base.y + Math.sin(phase * 1.7) * 0.16,
+      mote.userData.base.z + Math.cos(phase * 0.8) * 0.28
+    );
+    mote.material.opacity = (timeMode === "day" ? 0.035 : timeMode === "rain" ? 0.12 : 0.16) + Math.sin(t * 0.002 + idx) * 0.045;
+  });
+  mirrorPools.forEach((pool, idx) => {
+    pool.rotation.z += 0.0009 + idx * 0.00025;
+    pool.material.opacity = Math.max(0.035, pool.userData.baseOpacity + Math.sin(t * 0.0022 + idx) * 0.035);
   });
 
   const target = new THREE.Vector3(camera.position.x + Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 7, camera.position.z + Math.cos(yaw) * 10);

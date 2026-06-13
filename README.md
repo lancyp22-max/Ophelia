@@ -336,3 +336,7 @@ The Lumaria Flight Deck now hosts the A1 world iframe with an explicit cache-bus
 ### World-model packet tool
 
 Run `make world-model-packet` to generate a local observe → act → predict → validate packet from the current visual-state JSON and context capsule. The tool writes JSON and Markdown under `artifacts/` and helps keep Lumaria worldbuilding causal, auditable, public-shell safe, and ready for a future UE5 handoff.
+
+### Cinematic life pass
+
+The A1 world now includes procedural aurora curtains, floating lens motes, and mirror-pool reflections to push the scene toward a more life-like, future-facing look while keeping the public demo dependency-free and asset-light.
