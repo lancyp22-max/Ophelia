@@ -9,7 +9,17 @@
     #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
     header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
     canvas { display:block; width:100%; height:100%; }
+    #scene { position:relative; min-height:0; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
+    .world-status { position:absolute; inset:auto 14px 14px auto; z-index:6; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.34); border-radius:16px; padding:10px 12px; background:rgba(5,10,22,.78); color:#d9e8ff; box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); font-size:12px; line-height:1.45; }
+    .world-status strong { color:#a7f3ff; letter-spacing:.12em; text-transform:uppercase; font-size:10px; display:block; margin-bottom:4px; }
+    .world-ready .world-status { display:none; }
     .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
+    .controls-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; }
+    .pass-log { display:inline-block; }
+    .pass-log summary { cursor:pointer; list-style:none; }
+    .pass-log summary::-webkit-details-marker { display:none; }
+    .pass-log[open] { flex-basis:100%; padding:6px 0 0; }
+    .pass-log[open] .pill { margin-top:4px; }
     .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
@@ -48,11 +58,36 @@
       <span class="pill">Town makeup: archive, forge, observatory, garden</span>
       <span class="pill">Campfire stone tile pass: reusable ring texture</span>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
-      <span class="pill">Focus section: B2 Market</span>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
+      <details class="pass-log">
+        <summary class="pill">Visual pass log ▾</summary>
+        <span class="pill">Wave 10: depth + texture</span>
+        <span class="pill">Reference 4: cozy detail</span>
+        <span class="pill">Fire + lantern lighting</span>
+        <span class="pill">Auri agent + staff</span>
+        <span class="pill">6ft grass + tiny fauna</span>
+        <span class="pill">Visible model textures</span>
+        <span class="pill">Moon/cloud sky</span>
+        <span class="pill">Luminous grass biome</span>
+        <span class="pill">Expanded camp districts</span>
+        <span class="pill">Walk-under market canopy</span>
+        <span class="pill">Bright meadow warmth</span>
+        <span class="pill">Ground-level texture camera</span>
+        <span class="pill">Cozy market home details</span>
+        <span class="pill">Load + structure reinforcement</span>
+        <span class="pill">Rain + camera stability pass</span>
+        <span class="pill">Global pulse / MPC-style sync</span>
+        <span class="pill">Detail pass: etched stones + woven market textures</span>
+        <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
+        <span class="pill">Market 1/10: entry identity + offerings</span>
+        <span class="pill">Market 2/10: vendor booth silhouettes</span>
+        <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
+        <span class="pill">Cinematic life pass: aurora, lens motes, mirror pools</span>
+        <span class="pill">Stone detail pass: cracks, pebbles, etched inlays</span>
+      </details>
     </div>
   </header>
-  <div id="scene"></div>
+  <div id="scene"><div id="world-status" class="world-status"><strong>World loading</strong><span>Preparing Lumaria A1. If the canvas stays dark, the loader will report the blocked resource or WebGL issue here.</span></div></div>
   <aside class="hud" aria-label="Lumaria visual state packet">
     <div class="hud-title"><span class="state-dot"></span>A1 Visual State</div>
     <div class="hud-grid">
@@ -63,6 +98,21 @@
     </div>
   </aside>
 </div>
+<script>
+(function () {
+  const report = (message) => {
+    const status = document.getElementById('world-status');
+    if (!status) return;
+    status.innerHTML = `<strong>World status</strong><span>${String(message).replace(/[<>&]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]))}</span>`;
+  };
+  window.addEventListener('error', (event) => report(event.message || 'A world script failed before the scene could render.'));
+  window.addEventListener('unhandledrejection', (event) => report(event.reason?.message || event.reason || 'A world resource failed to load.'));
+  window.__lumariaWorldReady = () => {
+    const host = document.getElementById('scene');
+    if (host) host.classList.add('world-ready');
+  };
+})();
+</script>
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
 
@@ -75,7 +125,14 @@ const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHei
 let cameraDistance = 9.2;
 camera.position.set(0, 2.05, cameraDistance);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (error) {
+  const status = document.getElementById('world-status');
+  if (status) status.innerHTML = `<strong>WebGL unavailable</strong><span>${String(error.message || error).replace(/[<>&]/g, (ch) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]))}</span>`;
+  throw error;
+}
 renderer.setSize(host.clientWidth, host.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
@@ -83,6 +140,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
+window.__lumariaWorldReady?.();
 
 function markShadows(object, cast = true, receive = true) {
   object.traverse((child) => {
@@ -130,6 +188,110 @@ function warmGlowBillboard(name, x, y, z, size, color = 0xffc879, opacity = 0.32
   sprite.scale.set(size, size, 1);
   scene.add(sprite);
   return sprite;
+}
+
+function makeAuroraCurtain(id, x, y, z, width, height, colorA = 0x7dd3fc, colorB = 0xc084fc) {
+  const group = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(width * (0.72 + i * 0.08), height * (0.82 + i * 0.04), 8, 1),
+      new THREE.MeshBasicMaterial({
+        color: i % 2 ? colorB : colorA,
+        transparent: true,
+        opacity: 0.08 + i * 0.012,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      })
+    );
+    mesh.position.set((i - 2) * width * 0.09, Math.sin(i) * 0.2, i * 0.05);
+    mesh.rotation.y = (i - 2) * 0.035;
+    mesh.userData.phase = i * 0.7;
+    group.add(mesh);
+  }
+  group.name = id;
+  group.position.set(x, y, z);
+  group.userData.visualId = id;
+  scene.add(group);
+  return group;
+}
+
+function makeCinematicBokehField(id, count, radius = 18) {
+  const group = new THREE.Group();
+  const palette = [0x7dd3fc, 0xc4b5fd, 0xffd58a, 0xa7f3d0];
+  for (let i = 0; i < count; i++) {
+    const mote = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        color: palette[i % palette.length],
+        transparent: true,
+        opacity: 0.1 + (i % 5) * 0.025,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    const angle = (i / count) * Math.PI * 2;
+    const r = 3 + ((i * 37) % 100) / 100 * radius;
+    mote.position.set(Math.cos(angle) * r, 0.8 + ((i * 29) % 80) / 22, Math.sin(angle) * r + 2.2);
+    const size = 0.12 + ((i * 17) % 30) / 100;
+    mote.scale.set(size, size, 1);
+    mote.userData.base = mote.position.clone();
+    mote.userData.phase = i * 0.43;
+    group.add(mote);
+  }
+  group.name = id;
+  group.userData.visualId = id;
+  scene.add(group);
+  return group;
+}
+
+function makeMirrorPool(id, x, z, sx, sz, color = 0x8ddcff) {
+  const pool = new THREE.Mesh(
+    new THREE.CircleGeometry(1, 96),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  pool.name = id;
+  pool.position.set(x, 0.064, z);
+  pool.rotation.x = -Math.PI / 2;
+  pool.scale.set(sx, sz, 1);
+  pool.userData.visualId = id;
+  pool.userData.baseOpacity = 0.14;
+  scene.add(pool);
+  return pool;
+}
+
+function addStoneEtching(parent, id, width, depth, options = {}) {
+  const material = new THREE.MeshBasicMaterial({
+    color: options.color ?? 0xffd58a,
+    transparent: true,
+    opacity: options.opacity ?? 0.22,
+    depthWrite: false,
+    blending: options.blend ?? THREE.AdditiveBlending,
+    side: THREE.DoubleSide
+  });
+  const etching = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), material);
+  etching.name = id;
+  etching.position.set(options.x ?? 0, options.y ?? 0.041, options.z ?? 0);
+  etching.rotation.x = -Math.PI / 2;
+  etching.rotation.z = options.rot ?? 0;
+  etching.userData.phase = options.phase ?? 0;
+  etching.userData.baseOpacity = material.opacity;
+  parent.add(etching);
+  if (typeof etchedStoneDetails !== "undefined") etchedStoneDetails.push(etching);
+  return etching;
+}
+
+function addStonePebble(parent, id, options = {}) {
+  const pebble = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(options.radius ?? 0.035, 0),
+    new THREE.MeshStandardMaterial({ color: options.color ?? 0x9c8b76, roughness: 0.96, metalness: 0.02 })
+  );
+  pebble.name = id;
+  pebble.position.set(options.x ?? 0, options.y ?? 0.05, options.z ?? 0);
+  pebble.scale.set(1, options.squash ?? 0.42, options.stretch ?? 0.8);
+  pebble.rotation.set(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0);
+  pebble.userData.phase = options.phase ?? 0;
+  parent.add(pebble);
+  return pebble;
 }
 
 function colorToHex(color) {
@@ -567,12 +729,65 @@ const TIME_MODES = ["morning", "day", "sunset", "night", "rain"];
 let timeMode = "night";
 const timeToggleButton = document.getElementById("time-toggle");
 const marketFocusButton = document.getElementById("market-focus");
+const cameraResetButton = document.getElementById("camera-reset");
 const hudMode = document.getElementById("hud-mode");
 const hudCause = document.getElementById("hud-cause");
+const marketEnvironment = {
+  glowIntensity: 1,
+  aisleIntensity: 1,
+  runeOpacity: 0.36,
+  lanternOpacity: 0.24
+};
+const lumariaPulse = {
+  seconds: 0,
+  globalFlicker: 1,
+  globalPulse: 0.11,
+  slowBreath: 1,
+  rainFall: 1,
+  faunaOrbit: 1
+};
+
+function updateLumariaPulse(t = 0) {
+  const seconds = t * 0.001;
+  lumariaPulse.seconds = seconds;
+  lumariaPulse.globalFlicker = 0.92 + Math.sin(seconds * 0.9) * 0.14;
+  lumariaPulse.globalPulse = 0.11 + Math.sin(seconds * 0.14) * 0.02;
+  lumariaPulse.slowBreath = 1 + Math.sin(seconds * 0.32) * 0.045;
+  lumariaPulse.rainFall = timeMode === "rain" ? 1.45 : 1;
+  lumariaPulse.faunaOrbit = 0.0011 + Math.sin(seconds * 0.18) * 0.00018;
+}
 
 function nextTimeMode(mode) {
   const index = TIME_MODES.indexOf(mode);
   return TIME_MODES[(index + 1) % TIME_MODES.length] ?? "night";
+}
+
+function updateMarketMode(mode) {
+  const isNight = mode === "night";
+  const isRain = mode === "rain";
+  const isSunset = mode === "sunset";
+  marketEnvironment.glowIntensity = isNight ? 1.5 : isRain ? 1.25 : isSunset ? 1.05 : 0.35;
+  marketEnvironment.aisleIntensity = isNight ? 1.35 : isRain ? 1.1 : isSunset ? 0.95 : 0.42;
+  marketEnvironment.runeOpacity = isNight ? 0.5 : isRain ? 0.44 : isSunset ? 0.38 : 0.2;
+  marketEnvironment.lanternOpacity = isNight ? 0.3 : isRain ? 0.26 : isSunset ? 0.22 : 0.1;
+
+  if (typeof marketPlaza !== "undefined") {
+    marketPlaza.userData.aisle.material.opacity = 0.08 * marketEnvironment.aisleIntensity;
+    marketPlaza.userData.aisleLight.intensity = 0.5 + marketEnvironment.aisleIntensity * 1.8;
+    marketPlaza.userData.runes.forEach((rune) => {
+      rune.material.opacity = marketEnvironment.runeOpacity;
+    });
+  }
+  if (typeof marketOverhang !== "undefined") {
+    marketOverhang.userData.lanterns.forEach((lantern) => {
+      lantern.glow.material.opacity = marketEnvironment.lanternOpacity;
+    });
+  }
+  if (typeof marketStringLights !== "undefined") {
+    marketStringLights.userData.lanterns.forEach((lantern) => {
+      lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85;
+    });
+  }
 }
 
 function applyTimeMode(mode) {
@@ -582,16 +797,17 @@ function applyTimeMode(mode) {
   const isSunset = mode === "sunset";
   const isRain = mode === "rain";
   const label = mode.charAt(0).toUpperCase() + mode.slice(1);
-  scene.background.set(isRain ? 0x4f6f8b : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
-  scene.fog.color.set(isRain ? 0x6d89a5 : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
+  updateMarketMode(mode);
+  scene.background.set(isRain ? 0x6689a8 : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
+  scene.fog.color.set(isRain ? 0x86a6bf : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
   scene.fog.near = isDay || isSunset ? 34 : 18;
   scene.fog.far = isRain ? 82 : isDay || isSunset ? 145 : 92;
   moon.color.set(isSunset ? 0xffbf7d : isDay ? 0xfff8df : 0xaecbff);
-  moon.intensity = isRain ? 0.58 : isSunset ? 1.1 : isDay ? 1.35 : 0.82;
-  ambient.intensity = isRain ? 0.44 : isSunset ? 0.58 : isDay ? 0.66 : 0.36;
-  hemi.intensity = isRain ? 0.34 : isSunset ? 0.48 : isDay ? 0.52 : 0.32;
-  naturalFill.intensity = isRain ? 0.28 : isSunset ? 0.42 : isDay ? 0.36 : 0.18;
-  renderer.toneMappingExposure = isRain ? 1.02 : isSunset ? 1.14 : isDay ? 1.22 : 1.18;
+  moon.intensity = isRain ? 0.82 : isSunset ? 1.1 : isDay ? 1.35 : 0.82;
+  ambient.intensity = isRain ? 0.56 : isSunset ? 0.58 : isDay ? 0.66 : 0.36;
+  hemi.intensity = isRain ? 0.46 : isSunset ? 0.48 : isDay ? 0.52 : 0.32;
+  naturalFill.intensity = isRain ? 0.36 : isSunset ? 0.42 : isDay ? 0.36 : 0.18;
+  renderer.toneMappingExposure = isRain ? 1.16 : isSunset ? 1.14 : isDay ? 1.22 : 1.18;
   flame.color.set(isRain ? 0xff8f42 : isDay ? 0xff9a4a : 0xffa85c);
   runeRing.material.color.set(isRain ? 0x9bdcff : isDay ? 0xffcf7a : 0xffb366);
   const moonVisible = mode === "night";
@@ -601,6 +817,21 @@ function applyTimeMode(mode) {
   sunHalo.visible = isDay || isSunset;
   starField.visible = !isDay && !isSunset && !isRain;
   starField.material.opacity = mode === "night" ? 0.92 : 0.42;
+  if (typeof cinematicAuroras !== "undefined") {
+    cinematicAuroras.forEach((curtain) => {
+      curtain.visible = !isDay;
+      curtain.children.forEach((band, idx) => {
+        band.material.opacity = isRain ? 0.05 + idx * 0.008 : isSunset ? 0.09 + idx * 0.01 : 0.12 + idx * 0.014;
+        band.material.color.set(isRain ? 0xa7f3ff : isSunset ? 0xffb4d6 : idx % 2 ? 0xc084fc : 0x7dd3fc);
+      });
+    });
+  }
+  if (typeof mirrorPools !== "undefined") {
+    mirrorPools.forEach((pool, idx) => {
+      pool.material.color.set(isRain ? 0x9fe8ff : isDay ? 0x9fffd1 : isSunset ? 0xffc879 : idx % 2 ? 0xc4b5fd : 0x8ddcff);
+      pool.userData.baseOpacity = isRain ? 0.18 : isDay ? 0.07 : isSunset ? 0.11 : 0.14;
+    });
+  }
   cloudBanks.forEach((cloud, idx) => {
     cloud.visible = isDay || isSunset || isRain || idx < 2;
     cloud.userData.mat.color.set(isRain ? 0xb8cad9 : isSunset ? 0xffd0b2 : isDay ? 0xffffff : 0x7e90b0);
@@ -613,6 +844,8 @@ function applyTimeMode(mode) {
     ray.material.opacity = ray.userData.baseOpacity;
   });
   rainVeil.visible = isRain;
+  rainMist.visible = isRain;
+  rainSplashes.forEach((splash) => { splash.visible = isRain; });
   fireflies.forEach((f) => { f.visible = !isDay; });
   lanterns.forEach((l) => { l.userData.core.material.color.set(isDay ? 0xffe2a8 : 0xffc979); });
   waterfallGlow.material.opacity = isRain ? 0.38 : isDay ? 0.3 : 0.21;
@@ -634,6 +867,12 @@ function applyTimeMode(mode) {
   });
   campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
   campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  if (typeof marketHomeDetails !== "undefined") {
+    marketHomeDetails.forEach((detail) => {
+      detail.userData.glow.material.opacity = isDay ? 0.045 : isRain ? 0.12 : 0.09;
+      detail.userData.rug.material.emissiveIntensity = isDay ? 0.015 : 0.055;
+    });
+  }
   if (avatarYou) {
     avatarYou.agentLight.intensity = isDay ? 0.22 : isRain ? 0.58 : 0.72;
     avatarYou.nameplate.material.opacity = isDay ? 0.58 : 0.78;
@@ -808,6 +1047,9 @@ runeRing.rotation.x = -Math.PI / 2;
 runeRing.position.y = 0.035;
 scene.add(runeRing);
 
+const etchedStoneDetails = [];
+const stonePebbleDetails = [];
+
 const floorTiles = [];
 for (let i = 0; i < 64; i++) {
   const a = (i / 64) * Math.PI * 2;
@@ -820,6 +1062,15 @@ for (let i = 0; i < 64; i++) {
   tile.rotation.y = -a + Math.PI / 2;
   tile.castShadow = true;
   tile.receiveShadow = true;
+  if (i % 3 === 0) {
+    addStoneEtching(tile, `floor_tile_crack_${i}`, 0.28, 0.018, { y: 0.033, z: -0.12, rot: (i % 5 - 2) * 0.32, opacity: 0.18, color: 0x211915, blend: THREE.NormalBlending, phase: i * 0.21 });
+  }
+  if (i % 4 === 1) {
+    addStoneEtching(tile, `floor_tile_gold_inlay_${i}`, 0.2, 0.012, { y: 0.034, x: 0.06, z: 0.11, rot: Math.PI / 2.8, opacity: 0.28, color: 0xffd58a, phase: i * 0.18 });
+  }
+  if (i % 7 === 2) {
+    stonePebbleDetails.push(addStonePebble(tile, `floor_tile_pebble_${i}`, { x: -0.12, y: 0.055, z: 0.19, radius: 0.026, color: 0x8d7b67, ry: i * 0.4, phase: i * 0.2 }));
+  }
   floorTiles.push(tile);
   scene.add(tile);
 }
@@ -852,6 +1103,11 @@ for (let i = 0; i < 28; i++) {
   stone.userData.phase = i * 0.35;
   stone.castShadow = true;
   stone.receiveShadow = true;
+  addStoneEtching(stone, `rune_stone_spine_${i}`, 0.32, 0.018, { y: 0.045, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.35 });
+  addStoneEtching(stone, `rune_stone_hairline_${i}`, 0.22, 0.012, { y: 0.046, x: 0.06, z: -0.1, rot: -0.45, opacity: 0.2, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.27 });
+  if (i % 5 === 0) {
+    stonePebbleDetails.push(addStonePebble(stone, `rune_stone_pebble_${i}`, { x: -0.12, y: 0.062, z: 0.18, radius: 0.024, color: 0xb69a70, phase: i * 0.24 }));
+  }
   runeStones.push(stone);
   scene.add(stone);
 }
@@ -885,7 +1141,91 @@ for (let i = 0; i < 90; i++) {
 rainVeil.visible = false;
 scene.add(rainVeil);
 
+const rainMist = new THREE.Mesh(
+  new THREE.PlaneGeometry(36, 18),
+  new THREE.MeshBasicMaterial({ color: 0x9fc8e6, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+rainMist.position.set(0, 1.9, 2.5);
+rainMist.rotation.x = -0.16;
+rainMist.visible = false;
+scene.add(rainMist);
 
+const rainSplashes = [];
+for (let i = 0; i < 42; i++) {
+  const splash = new THREE.Mesh(
+    new THREE.RingGeometry(0.045, 0.07, 10),
+    new THREE.MeshBasicMaterial({ color: 0xb7e7ff, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide })
+  );
+  splash.position.set((Math.random() - 0.5) * 18, 0.09, (Math.random() - 0.5) * 16 + 2);
+  splash.rotation.x = -Math.PI / 2;
+  splash.userData.phase = Math.random() * Math.PI * 2;
+  splash.visible = false;
+  rainSplashes.push(splash);
+  scene.add(splash);
+}
+
+function makeMountainPeak(id, x, z, height, radius, rot = 0, color = 0x243452) {
+  const g = new THREE.Group();
+  const rockMat = surfaceMaterial({ color, map: textureSet.mountainRock, roughness: 0.96, metalness: 0.02, bumpScale: 0.06, emissive: 0x081a33, emissiveIntensity: 0.12 });
+  const snowMat = new THREE.MeshBasicMaterial({ color: 0xbddcff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+  const peak = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 5), rockMat);
+  peak.position.y = height * 0.5 - 0.3;
+  peak.rotation.y = rot;
+  peak.scale.z = 0.52 + (height % 3) * 0.08;
+  const snow = new THREE.Mesh(new THREE.ConeGeometry(radius * 0.34, height * 0.24, 5), snowMat);
+  snow.position.y = height * 0.88 - 0.3;
+  snow.rotation.y = rot + Math.PI / 5;
+  snow.scale.z = peak.scale.z;
+  const ridgeGlow = warmGlowBillboard(`${id}_ridge_glow`, x, height * 0.58, z, radius * 1.5, 0x7dd3fc, 0.055);
+  g.add(peak, snow);
+  g.position.set(x, 0, z);
+  g.userData.visualId = id;
+  g.userData.rockMat = rockMat;
+  g.userData.snowMat = snowMat;
+  g.userData.ridgeGlow = ridgeGlow;
+  markShadows(g, false, false);
+  scene.add(g);
+  return g;
+}
+
+function makeMountainMist(id, x, z, sx, sy, rot = 0) {
+  const mist = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({ color: 0x8fb9ff, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+  );
+  mist.position.set(x, sy * 0.48, z);
+  mist.scale.set(sx, sy, 1);
+  mist.rotation.y = rot;
+  mist.userData.visualId = id;
+  scene.add(mist);
+  return mist;
+}
+
+function makeMountainBackdrop() {
+  const specs = [
+    [-38, -45, 10.8, 5.4, 0.2], [-24, -50, 13.5, 6.6, -0.35], [-9, -52, 9.6, 5.2, 0.42],
+    [9, -53, 12.8, 6.2, -0.12], [25, -48, 10.4, 5.6, 0.38], [39, -43, 12.1, 6.1, -0.28],
+    [-54, -13, 8.4, 4.4, 0.9], [-57, 8, 9.8, 4.8, 1.18], [54, -12, 8.8, 4.6, -1.0], [58, 12, 10.2, 5.0, -1.22],
+    [-35, 40, 8.9, 4.7, 2.8], [-15, 46, 10.6, 5.1, 3.05], [16, 45, 9.5, 4.9, -2.9], [36, 39, 8.6, 4.4, -2.65]
+  ];
+  const peaks = specs.map((spec, idx) => makeMountainPeak(`base_camp_mountain_backdrop_${idx + 1}`, ...spec));
+  const mists = [
+    makeMountainMist("base_camp_mountain_mist_north", 0, -41.5, 82, 5.2, 0),
+    makeMountainMist("base_camp_mountain_mist_west", -45, 0, 50, 4.4, Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_east", 45, 0, 50, 4.4, -Math.PI / 2),
+    makeMountainMist("base_camp_mountain_mist_south", 0, 37.5, 62, 4.2, Math.PI)
+  ];
+  return {
+    peaks,
+    mists,
+    userData: {
+      peakMats: peaks.map((peak) => peak.userData.rockMat),
+      snowMats: peaks.map((peak) => peak.userData.snowMat),
+      ridgeGlows: peaks.map((peak) => peak.userData.ridgeGlow),
+      mists
+    }
+  };
+}
 
 function hut(x, z, c=0x5a4a3a) {
   const g = new THREE.Group();
@@ -1688,6 +2028,8 @@ function makeMarketPlaza(id, x, z, rot = 0) {
       stone.rotation.y = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
       stone.castShadow = true;
       stone.receiveShadow = true;
+      if (i % 2 === 0) addStoneEtching(stone, `${id}_edge_topline_${i}_${row}`, 0.16, 0.012, { y: 0.035, rot: row ? -0.2 : 0.2, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.2 });
+      if (i % 5 === 0) addStoneEtching(stone, `${id}_edge_gold_inlay_${i}_${row}`, 0.11, 0.01, { y: 0.036, z: 0.04, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.26 });
       edgeStones.push(stone);
       g.add(stone);
     });
@@ -1701,6 +2043,8 @@ function makeMarketPlaza(id, x, z, rot = 0) {
       stone.rotation.y = (col ? 0.08 : -0.08) + Math.cos(i) * 0.04;
       stone.castShadow = true;
       stone.receiveShadow = true;
+      if (i % 2 === 1) addStoneEtching(stone, `${id}_side_crack_${i}_${col}`, 0.13, 0.012, { y: 0.035, rot: col ? 0.42 : -0.42, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.22 });
+      if (i % 6 === 2) addStoneEtching(stone, `${id}_side_rune_inlay_${i}_${col}`, 0.1, 0.01, { y: 0.036, x: 0.03, rot: Math.PI / 2, opacity: 0.22, color: 0x7dd3fc, phase: i * 0.31 });
       edgeStones.push(stone);
       g.add(stone);
     });
@@ -1724,6 +2068,9 @@ function makeMarketPlaza(id, x, z, rot = 0) {
     makePebbleScatter(`${id}_pebbles_south`, x + 0.2, z + 2.72, 0.75, 15)
   ];
   const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 4.35, 3.1, 0xffb35f, 0.12);
+  const aisleLight = new THREE.PointLight(0xffb35f, 1.8, 9, 2.1);
+  aisleLight.position.set(0, 1.25, -0.25);
+  g.add(aisleLight);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -1732,6 +2079,7 @@ function makeMarketPlaza(id, x, z, rot = 0) {
   g.userData.centerMosaic = centerMosaic;
   g.userData.cornerPebbles = cornerPebbles;
   g.userData.aisle = aisle;
+  g.userData.aisleLight = aisleLight;
   markShadows(g, true, true);
   scene.add(g);
   softShadow(`${id}_shadow`, x, z, 4.7, 3.35, 0.18);
@@ -1970,6 +2318,8 @@ function makeMarketTransitionPath(id, startZ = 4.8, endZ = 7.45) {
     stone.userData.phase = i * 0.4;
     stone.castShadow = true;
     stone.receiveShadow = true;
+    addStoneEtching(stone, `${id}_step_crack_${i}`, 0.42, 0.014, { y: 0.031, z: -0.05, rot: Math.sin(i) * 0.65, opacity: 0.18, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.4 });
+    if (i % 3 === 0) addStoneEtching(stone, `${id}_step_gold_thread_${i}`, 0.28, 0.01, { y: 0.032, x: 0.08, rot: Math.PI / 2.2, opacity: 0.24, color: 0xffd58a, phase: i * 0.36 });
     stones.push(stone);
     g.add(stone);
     if (i % 2 === 1) {
@@ -2110,7 +2460,7 @@ function makeMarketOverhang(id, x, z, rot = 0) {
 
 
 function makeMarketTextureRunner(id, x, z, rot = 0) {
-  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.04, emissive: 0x24103a, emissiveIntensity: 0.06 });
+  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.046, emissive: 0x24103a, emissiveIntensity: 0.06 });
   runnerMat.transparent = true;
   runnerMat.opacity = 0.74;
   const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 5.35), runnerMat);
@@ -2169,6 +2519,121 @@ function makeMarketCompanion(id, x, z, color = 0xe9d5ff) {
   markShadows(g);
   scene.add(g);
   softShadow(`${id}_shadow`, x, z, 0.38, 0.28, 0.2);
+  return g;
+}
+
+function makeMarketHomeDetail(id, x, z, rot = 0, accent = 0xf0abfc) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.92, bumpScale: 0.055 });
+  const cloth = surfaceMaterial({ color: accent, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.044, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  cloth.transparent = true;
+  cloth.opacity = 0.84;
+  const basketMat = surfaceMaterial({ color: 0x9b6b3d, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
+  const herbMat = new THREE.MeshStandardMaterial({ color: 0x82d08a, emissive: 0x143b22, emissiveIntensity: 0.12, roughness: 0.82 });
+  const moteMat = new THREE.MeshBasicMaterial({ color: 0xffe2a8, transparent: true, opacity: 0.76 });
+
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.74), cloth);
+  rug.position.set(0, 0.145, 0.04);
+  rug.rotation.x = -Math.PI / 2;
+  rug.receiveShadow = true;
+
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.12, 0.18), wood);
+  shelf.position.set(0, 0.62, -0.26);
+  const shelfPostL = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.88, 8), wood);
+  shelfPostL.position.set(-0.42, 0.44, -0.28);
+  const shelfPostR = shelfPostL.clone();
+  shelfPostR.position.x = 0.42;
+
+  const baskets = [];
+  [-0.32, 0.02, 0.35].forEach((bx, idx) => {
+    const basket = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.18, 10), basketMat);
+    basket.position.set(bx, 0.28, 0.16 + (idx % 2) * 0.08);
+    basket.userData.phase = idx * 0.8;
+    baskets.push(basket);
+    g.add(basket);
+  });
+
+  const herbs = [];
+  [-0.28, -0.08, 0.14, 0.33].forEach((hx, idx) => {
+    const herb = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.38, 7), herbMat.clone());
+    herb.position.set(hx, 0.82, -0.24);
+    herb.rotation.z = (idx - 1.5) * 0.11;
+    herb.userData.phase = idx * 0.65;
+    herbs.push(herb);
+    g.add(herb);
+  });
+
+  const motes = [];
+  for (let i = 0; i < 5; i++) {
+    const mote = new THREE.Mesh(new THREE.SphereGeometry(0.026, 7, 7), moteMat.clone());
+    mote.position.set(-0.42 + i * 0.21, 0.34 + (i % 2) * 0.12, 0.34);
+    mote.userData.base = mote.position.clone();
+    mote.userData.phase = i * 0.74;
+    motes.push(mote);
+    g.add(mote);
+  }
+
+  const glow = warmLightPool(`${id}_home_glow`, x, z + 0.08, 1.08, 0.72, 0xffd58a, 0.08);
+  g.add(rug, shelf, shelfPostL, shelfPostR);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.rug = rug;
+  g.userData.baskets = baskets;
+  g.userData.herbs = herbs;
+  g.userData.motes = motes;
+  g.userData.glow = glow;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 0.8, 0.48, 0.16);
+  return g;
+}
+
+function makeWorldReinforcementDetails(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x5f3b24, map: textureSet.wood, roughness: 0.9, bumpScale: 0.055 });
+  const ropeMat = new THREE.MeshBasicMaterial({ color: 0xd6b77a, transparent: true, opacity: 0.64 });
+  const stitchMat = new THREE.MeshBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+
+  const braces = [];
+  [[-4.05, -2.92, -0.56], [4.05, -2.92, 0.56], [-4.05, 2.92, 0.56], [4.05, 2.92, -0.56]].forEach(([bx, bz, angle], idx) => {
+    const brace = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.55, 0.09), wood);
+    brace.position.set(bx, 1.55, bz);
+    brace.rotation.z = angle;
+    brace.rotation.y = idx % 2 ? 0.18 : -0.18;
+    braces.push(brace);
+    g.add(brace);
+  });
+
+  const ropes = [];
+  [[-3.85, 0, -2.82, 0], [3.85, 0, -2.82, 0], [-3.85, 0, 2.82, 0], [3.85, 0, 2.82, 0]].forEach(([rx, ry, rz], idx) => {
+    const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 2.25, 6), ropeMat.clone());
+    rope.position.set(rx, 2.08, rz);
+    rope.rotation.z = Math.PI / 2 + (idx % 2 ? 0.18 : -0.18);
+    rope.rotation.y = idx < 2 ? 0.28 : -0.28;
+    rope.userData.phase = idx * 0.72;
+    ropes.push(rope);
+    g.add(rope);
+  });
+
+  const stitches = [];
+  [-3.1, -1.55, 0, 1.55, 3.1].forEach((sx, idx) => {
+    const stitch = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.035), stitchMat.clone());
+    stitch.position.set(sx, 2.51, -3.08);
+    stitch.rotation.x = -Math.PI / 2;
+    stitch.userData.phase = idx * 0.53;
+    stitches.push(stitch);
+    g.add(stitch);
+  });
+
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.braces = braces;
+  g.userData.ropes = ropes;
+  g.userData.stitches = stitches;
+  markShadows(g);
+  scene.add(g);
   return g;
 }
 
@@ -2629,6 +3094,19 @@ const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35,
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
 campfireStone.receiveShadow = true;
+for (let i = 0; i < 10; i++) {
+  const a = (i / 10) * Math.PI * 2;
+  addStoneEtching(campfireStone, `campfire_ring_etched_spoke_${i}`, 0.46, 0.018, {
+    x: Math.cos(a) * 0.55,
+    y: 0.181,
+    z: Math.sin(a) * 0.55,
+    rot: -a,
+    opacity: i % 2 ? 0.18 : 0.28,
+    color: i % 2 ? 0x2b2119 : 0xffd58a,
+    blend: i % 2 ? THREE.NormalBlending : THREE.AdditiveBlending,
+    phase: i * 0.4
+  });
+}
 scene.add(campfireStone);
 softShadow("campfire_shadow", 0, 0, 2.2, 1.35, 0.42);
 
@@ -2645,6 +3123,7 @@ const fireLightPools = [
   warmLightPool("fire_rune_pool_gold", 0, 0, 5.35, 3.2, 0xffcf75, 0.12)
 ];
 const fireBillboardGlow = warmGlowBillboard("fire_billboard_glow", 0, 1.25, 0, 3.4, 0xff8f42, 0.24);
+const firepitReferenceDetails = makeFirepitReferenceDetails("firepit_crystal_lantern_grimoire_details");
 
 const flameMeshes = [];
 [
@@ -2776,6 +3255,17 @@ stars.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35, transparent: true, opacity: 0.92 }));
 scene.add(starField);
 
+const cinematicAuroras = [
+  makeAuroraCurtain("cinematic_aurora_crown", -7.5, 7.6, -18, 9.2, 4.8, 0x7dd3fc, 0xc084fc),
+  makeAuroraCurtain("cinematic_aurora_market", 7.8, 6.4, -15.5, 7.8, 3.8, 0xa7f3ff, 0xffb4d6)
+];
+const cinematicBokeh = makeCinematicBokehField("cinematic_lens_mote_field", 72, 20);
+const mirrorPools = [
+  makeMirrorPool("mirror_pool_fire_reflection", 0.1, 0.35, 3.1, 1.25, 0xffb35f),
+  makeMirrorPool("mirror_pool_market_reflection", 0.25, 8.0, 4.8, 2.15, 0x8ddcff),
+  makeMirrorPool("mirror_pool_waterfall_reflection", 8.2, -6.2, 2.8, 1.2, 0x7ed6ff)
+];
+
 const fireflies = [];
 for (let i = 0; i < 36; i++) {
   const f = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc266 }));
@@ -2802,22 +3292,40 @@ window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
   keys.add(key);
   if (key === 'm') focusMarketTransition();
+  if (key === 'r') resetCameraView();
 });
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 let yaw = Math.PI;
-let pitch = -0.12;
+let pitch = -0.16;
+const PITCH_MIN = -0.36;
+const PITCH_MAX = 0.18;
+
+function clampPitch(value) {
+  return Math.max(PITCH_MIN, Math.min(PITCH_MAX, value));
+}
+
+function resetCameraView() {
+  camera.position.set(0.55, 2.32, 11.4);
+  cameraDistance = 10.8;
+  yaw = Math.PI;
+  pitch = -0.16;
+  if (hudCause) hudCause.textContent = "camera reset: stable bridge camp view";
+}
 
 function focusMarketTransition() {
-  camera.position.set(-0.15, 2.05, 12.9);
+  camera.position.set(-0.15, 2.18, 12.85);
   cameraDistance = 11.6;
   yaw = Math.PI * 0.995;
-  pitch = -0.12;
+  pitch = -0.14;
   if (hudCause) hudCause.textContent = "ground camera: walk under canopy + inspect textures";
 }
 
 if (marketFocusButton) {
   marketFocusButton.addEventListener("click", focusMarketTransition);
+}
+if (cameraResetButton) {
+  cameraResetButton.addEventListener("click", resetCameraView);
 }
 
 let drag = false;
@@ -2827,7 +3335,7 @@ window.addEventListener('mouseup', () => drag = false);
 window.addEventListener('mousemove', e => {
   if (!drag) return;
   yaw -= (e.clientX - lx) * 0.004;
-  pitch = Math.max(-0.72, Math.min(0.4, pitch - (e.clientY - ly) * 0.003));
+  pitch = clampPitch(pitch - (e.clientY - ly) * 0.003);
   lx = e.clientX; ly = e.clientY;
 });
 
@@ -2848,7 +3356,7 @@ renderer.domElement.addEventListener('touchmove', (e) => {
     const nextDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     if (pinchDistance) {
       cameraDistance = Math.max(4.8, Math.min(14, cameraDistance - (nextDistance - pinchDistance) * 0.02));
-      camera.position.y = Math.max(1.35, Math.min(3.6, 0.75 + cameraDistance * 0.16));
+      camera.position.y = Math.max(1.8, Math.min(3.6, 0.95 + cameraDistance * 0.14));
     }
     pinchDistance = nextDistance;
     return;
@@ -2857,7 +3365,7 @@ renderer.domElement.addEventListener('touchmove', (e) => {
   const tx = e.touches[0].clientX;
   const ty = e.touches[0].clientY;
   yaw -= (tx - lx) * 0.0045;
-  pitch = Math.max(-0.72, Math.min(0.4, pitch - (ty - ly) * 0.0035));
+  pitch = clampPitch(pitch - (ty - ly) * 0.0035);
   lx = tx;
   ly = ty;
 }, { passive: true });
@@ -2865,13 +3373,15 @@ renderer.domElement.addEventListener('touchend', () => { drag = false; pinchDist
 
 
 function animate(t = 0) {
+  updateLumariaPulse(t);
   const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
   const right = new THREE.Vector3(dir.z, 0, -dir.x);
   const speed = 0.09;
   if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
   if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
-  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, -speed);
-  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, speed);
+  // Strafe controls use the player's view direction: A = left, D = right.
+  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
+  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
 
   const groundGlowBase = timeMode === "rain" ? 0.13 : timeMode === "day" || timeMode === "morning" ? 0.06 : timeMode === "sunset" ? 0.08 : 0.11;
   const meadowGlowBase = timeMode === "rain" ? 0.09 : timeMode === "day" || timeMode === "morning" ? 0.035 : timeMode === "sunset" ? 0.055 : 0.075;
@@ -3010,7 +3520,7 @@ function animate(t = 0) {
   marketTransition.userData.banner.rotation.z = Math.sin(t * 0.0018) * 0.035;
   marketPlaza.userData.runes.forEach((rune) => {
     rune.rotation.z += 0.004;
-    rune.material.opacity = (timeMode === "day" ? 0.18 : 0.42) + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
+    rune.material.opacity = marketEnvironment.runeOpacity + Math.sin(t * 0.004 + rune.userData.phase) * 0.1;
   });
   marketPlaza.userData.centerMosaic.userData.tiles.forEach((tile) => {
     tile.material.opacity = (timeMode === "day" ? 0.26 : 0.44) + Math.sin(t * 0.0035 + tile.userData.phase) * 0.08;
@@ -3022,9 +3532,9 @@ function animate(t = 0) {
     ribbon.material.opacity = (timeMode === "day" ? 0.42 : 0.64) + Math.sin(t * 0.0028 + ribbon.userData.phase) * 0.08;
   });
   marketOverhang.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = 0.88 + Math.sin(t * 0.0065 + idx * 0.7) * 0.12;
+    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.0065 + idx * 0.7) * 0.06;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = (timeMode === "day" ? 0.09 : 0.24) * pulse;
+    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * pulse;
   });
   marketOverhang.userData.vines.forEach((vineCluster, clusterIdx) => {
     vineCluster.userData.strands.forEach((strand, strandIdx) => {
@@ -3036,9 +3546,9 @@ function animate(t = 0) {
   });
   marketTextureRunner.material.opacity = (timeMode === "day" ? 0.62 : 0.78) + Math.sin(t * 0.002) * 0.035;
   marketStringLights.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
+    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.006 + idx * 0.8) * 0.06;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) * pulse;
+    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85 * pulse;
   });
   marketStands.forEach((stand, standIdx) => {
     stand.userData.wares.forEach((ware, wareIdx) => {
@@ -3098,6 +3608,35 @@ function animate(t = 0) {
     });
   });
 
+  marketEntryOfferings.userData.offerings.forEach((gem, idx) => {
+    gem.rotation.y += 0.012 + idx * 0.002;
+    gem.position.y = 0.34 + Math.sin(t * 0.004 + gem.userData.phase) * 0.035;
+    gem.material.opacity = (timeMode === "day" ? 0.62 : 0.86) + Math.sin(t * 0.004 + idx) * 0.08;
+  });
+  marketEntryOfferings.userData.signRune.rotation.z += 0.008;
+  marketEntryOfferings.userData.glow.material.opacity = (timeMode === "day" ? 0.05 : 0.11) + Math.sin(t * 0.003) * 0.025;
+
+  marketHomeDetails.forEach((detail, idx) => {
+    detail.userData.rug.material.opacity = (timeMode === "day" ? 0.76 : 0.86) + Math.sin(t * 0.0018 + idx) * 0.025;
+    detail.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.025;
+    detail.userData.herbs.forEach((herb, herbIdx) => {
+      herb.rotation.z += Math.sin(t * 0.0024 + herb.userData.phase + idx) * 0.0009;
+      herb.material.emissiveIntensity = (timeMode === "day" ? 0.06 : 0.16) + Math.sin(t * 0.004 + herbIdx) * 0.035;
+    });
+    detail.userData.motes.forEach((mote) => {
+      mote.position.y = mote.userData.base.y + Math.sin(t * 0.003 + mote.userData.phase) * 0.045;
+      mote.material.opacity = (timeMode === "day" ? 0.32 : 0.72) + Math.sin(t * 0.005 + mote.userData.phase) * 0.14;
+    });
+    detail.userData.baskets.forEach((basket) => { basket.rotation.y += 0.0025; });
+  });
+
+  worldReinforcements.userData.ropes.forEach((rope) => {
+    rope.material.opacity = 0.52 + Math.sin(t * 0.002 + rope.userData.phase) * 0.08;
+  });
+  worldReinforcements.userData.stitches.forEach((stitch) => {
+    stitch.material.opacity = (timeMode === "day" ? 0.34 : 0.5) + Math.sin(t * 0.003 + stitch.userData.phase) * 0.06;
+  });
+
   floorTiles.forEach((tile, idx) => {
     const shade = 0.9 + Math.sin(t * 0.0012 + idx * 0.2) * 0.08;
     tile.material.color.setRGB(0.44 * shade, 0.37 * shade, 0.29 * shade);
@@ -3118,7 +3657,7 @@ function animate(t = 0) {
       part.rotation.z += Math.sin(t * 0.0026 + part.userData.phase + idx) * 0.0011;
       if (part.material && "opacity" in part.material) part.material.opacity = 0.58 + Math.sin(t * 0.004 + part.userData.phase) * 0.22;
     });
-    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.002;
+    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.001 + lumariaPulse.globalPulse * 0.0008;
     patch.userData.glow.material.opacity = Math.max(0.05, Math.min(0.38, patch.userData.glow.material.opacity + Math.sin(t * 0.003 + idx) * 0.002));
   });
 
@@ -3187,14 +3726,21 @@ function animate(t = 0) {
   });
 
   rainVeil.children.forEach((drop) => {
-    drop.position.y -= drop.userData.fall;
+    drop.position.y -= drop.userData.fall * lumariaPulse.rainFall;
     if (drop.position.y < 0.2) {
       drop.position.y = 12 + Math.random() * 3;
     }
   });
+  rainMist.material.opacity = timeMode === "rain" ? 0.08 + lumariaPulse.globalPulse * 0.42 : 0;
+  rainSplashes.forEach((splash, idx) => {
+    if (!splash.visible) return;
+    const pulse = (Math.sin(t * 0.008 + splash.userData.phase + idx) + 1) * 0.5;
+    splash.scale.setScalar(0.55 + pulse * 1.35);
+    splash.material.opacity = 0.08 + pulse * 0.24;
+  });
 
   fireflies.forEach((f, i) => {
-    const tt = t * 0.0011 + f.userData.seed + i * 0.13;
+    const tt = t * lumariaPulse.faunaOrbit + f.userData.seed + i * 0.13;
     f.position.set(Math.cos(tt) * f.userData.radius, f.userData.height + Math.sin(tt * 2) * 0.3, Math.sin(tt) * f.userData.radius);
     f.material.opacity = 0.5 + Math.sin(tt * 5) * 0.5;
   });
@@ -3203,9 +3749,26 @@ function animate(t = 0) {
     const flamePulse = 0.92 + Math.sin(t * 0.009 + i) * 0.14;
     mesh.scale.y = mesh.userData.baseY ? mesh.userData.baseY * flamePulse : mesh.scale.y;
     mesh.rotation.y += 0.018 + i * 0.004;
-    mesh.material.opacity = 0.58 + Math.sin(t * 0.011 + i) * 0.16;
+    mesh.material.opacity = 0.5 + lumariaPulse.globalPulse * 1.2 + Math.sin(t * 0.011 + i) * 0.1;
   });
-  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.08 : 0.16) + Math.sin(t * 0.006) * 0.035;
+  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.06 : 0.13) + lumariaPulse.globalPulse * 0.28;
+  groundLumenVeil.material.opacity = Math.max(0.025, groundLumenVeil.material.opacity + Math.sin(t * 0.0018) * 0.0014);
+  outerMeadowGlow.material.opacity = Math.max(0.025, outerMeadowGlow.material.opacity + Math.sin(t * 0.0013) * 0.0011);
+  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
+    glow.material.opacity = 0.035 + lumariaPulse.globalPulse * 0.22 + Math.sin(t * 0.0012 + idx) * 0.012;
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.12;
+  });
+  firepitReferenceDetails.userData.details.forEach((detail, idx) => {
+    if (detail.isSprite) {
+      detail.material.opacity = (timeMode === "day" ? 0.08 : 0.18) + Math.sin(t * 0.004 + idx) * 0.04;
+    } else {
+      detail.rotation.y += 0.008 + idx * 0.001;
+      if (detail.material && "opacity" in detail.material) detail.material.opacity = (timeMode === "day" ? 0.55 : 0.82) + Math.sin(t * 0.004 + idx) * 0.08;
+    }
+  });
+  firepitReferenceDetails.userData.pageGlow.material.opacity = (timeMode === "day" ? 0.12 : 0.28) + Math.sin(t * 0.004) * 0.08;
 
   avatarYou.halo.rotation.z += 0.008;
   avatarYou.body.position.y = 0.52 + Math.sin(t * 0.002) * 0.035;
@@ -3231,12 +3794,40 @@ function animate(t = 0) {
     if (i > 1) child.rotation.z = Math.sin(t * 0.0015 + i) * 0.08;
   });
 
+  cinematicAuroras.forEach((curtain, curtainIdx) => {
+    curtain.rotation.z = Math.sin(t * 0.00045 + curtainIdx) * 0.028;
+    curtain.children.forEach((band) => {
+      band.position.y = Math.sin(t * 0.0012 + band.userData.phase) * 0.22;
+      band.scale.x = 1 + Math.sin(t * 0.0009 + band.userData.phase) * 0.06;
+    });
+  });
+  cinematicBokeh.children.forEach((mote, idx) => {
+    const phase = t * 0.00085 + mote.userData.phase;
+    mote.position.set(
+      mote.userData.base.x + Math.sin(phase) * 0.32,
+      mote.userData.base.y + Math.sin(phase * 1.7) * 0.16,
+      mote.userData.base.z + Math.cos(phase * 0.8) * 0.28
+    );
+    mote.material.opacity = (timeMode === "day" ? 0.035 : timeMode === "rain" ? 0.12 : 0.16) + Math.sin(t * 0.002 + idx) * 0.045;
+  });
+  mirrorPools.forEach((pool, idx) => {
+    pool.rotation.z += 0.0009 + idx * 0.00025;
+    pool.material.opacity = Math.max(0.035, pool.userData.baseOpacity + Math.sin(t * 0.0022 + idx) * 0.035);
+  });
+  etchedStoneDetails.forEach((etch, idx) => {
+    etch.material.opacity = Math.max(0.04, etch.userData.baseOpacity + Math.sin(t * 0.0028 + etch.userData.phase + idx * 0.03) * 0.035);
+  });
+  stonePebbleDetails.forEach((pebble, idx) => {
+    pebble.rotation.y += 0.0008 + idx * 0.00002;
+  });
+
   const target = new THREE.Vector3(camera.position.x + Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 7, camera.position.z + Math.cos(yaw) * 10);
   camera.lookAt(target);
 
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
+resetCameraView();
 applyTimeMode("night");
 animate();
 

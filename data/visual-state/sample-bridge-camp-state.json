@@ -2,7 +2,13 @@
   "scene_id": "bridge_a1_arrival_state",
   "location": "Lumaria Base Camp / Bridge A1",
   "visual_level_target": "L3_persistent_scene_memory",
-  "arrival_states": ["morning", "day", "sunset", "night", "rain"],
+  "arrival_states": [
+    "morning",
+    "day",
+    "sunset",
+    "night",
+    "rain"
+  ],
   "camp_status": {
     "active_location": "A1 Bridge Camp",
     "braid_status": "quiet",
@@ -10,11 +16,31 @@
     "sanctuary_test": "make the pilot exhale before asking them to act"
   },
   "ops_presence": [
-    { "id": "auri", "display_name": "Auri", "state": "present" },
-    { "id": "ophelia", "display_name": "Ophelia", "state": "quiet" },
-    { "id": "gemma", "display_name": "Gemma", "state": "reviewing" },
-    { "id": "glass_warden", "display_name": "Glass Warden", "state": "watching" },
-    { "id": "qwen", "display_name": "Qwen", "state": "available" }
+    {
+      "id": "auri",
+      "display_name": "Auri",
+      "state": "present"
+    },
+    {
+      "id": "ophelia",
+      "display_name": "Ophelia",
+      "state": "quiet"
+    },
+    {
+      "id": "gemma",
+      "display_name": "Gemma",
+      "state": "reviewing"
+    },
+    {
+      "id": "glass_warden",
+      "display_name": "Glass Warden",
+      "state": "watching"
+    },
+    {
+      "id": "qwen",
+      "display_name": "Qwen",
+      "state": "available"
+    }
   ],
   "visual_elements": [
     {
@@ -43,11 +69,27 @@
         "cloth": "violet_runner",
         "occupancy": "open"
       },
-      "functional_role": ["pause", "conversation", "observation"],
-      "mood_tags": ["welcoming", "grounded"],
-      "causal_links": ["arrival_state", "chat_state"],
-      "allowed_transitions": ["empty", "reserved", "conversation_ready"],
-      "safety_notes": ["never imply user must stay seated"],
+      "functional_role": [
+        "pause",
+        "conversation",
+        "observation"
+      ],
+      "mood_tags": [
+        "welcoming",
+        "grounded"
+      ],
+      "causal_links": [
+        "arrival_state",
+        "chat_state"
+      ],
+      "allowed_transitions": [
+        "empty",
+        "reserved",
+        "conversation_ready"
+      ],
+      "safety_notes": [
+        "never imply user must stay seated"
+      ],
       "residual_trace": "a place to sit without being captured"
     },
     {
@@ -59,11 +101,28 @@
         "soil": "damp",
         "density": "small_cluster"
       },
-      "functional_role": ["night_orientation", "restorative_signal"],
-      "mood_tags": ["soft", "alive", "magical_but_grounded"],
-      "causal_links": ["time_of_day", "rain", "garden_state"],
-      "allowed_transitions": ["dim_day", "glow_night", "bright_after_rain"],
-      "safety_notes": ["keep glow gentle on mobile screens"],
+      "functional_role": [
+        "night_orientation",
+        "restorative_signal"
+      ],
+      "mood_tags": [
+        "soft",
+        "alive",
+        "magical_but_grounded"
+      ],
+      "causal_links": [
+        "time_of_day",
+        "rain",
+        "garden_state"
+      ],
+      "allowed_transitions": [
+        "dim_day",
+        "glow_night",
+        "bright_after_rain"
+      ],
+      "safety_notes": [
+        "keep glow gentle on mobile screens"
+      ],
       "residual_trace": "tiny proof the world responds quietly"
     },
     {
@@ -71,17 +130,41 @@
       "type": "campfire_presence_agent",
       "location": "Bridge_A1_Campfire",
       "visible_state": {
-        "label": "Auri · Campfire Agent",
+        "label": "Auri \u00b7 Campfire Agent",
         "glow": "violet eyes, held orb, crown gem, staff gem",
         "posture": "seated_guardian_near_fire",
         "silhouette": "long lavender hair, soft elf ears, gold crown arc, readable nameplate",
         "ground_detail": "six-foot intimacy radius with grass tufts, dew, petals, and tiny fauna"
       },
-      "functional_role": ["orientation", "embodiment_anchor", "campfire_companionship", "texture_scale_anchor"],
-      "mood_tags": ["gentle", "unforced", "cozy_guardian", "storybook_texture", "gentle_micro_life"],
-      "causal_links": ["user_presence", "chat_channel", "safety_state", "local_biome_texture"],
-      "allowed_transitions": ["present", "listening", "speaking", "resting"],
-      "safety_notes": ["presence_over_account_identity", "human_remains_pilot"],
+      "functional_role": [
+        "orientation",
+        "embodiment_anchor",
+        "campfire_companionship",
+        "texture_scale_anchor"
+      ],
+      "mood_tags": [
+        "gentle",
+        "unforced",
+        "cozy_guardian",
+        "storybook_texture",
+        "gentle_micro_life"
+      ],
+      "causal_links": [
+        "user_presence",
+        "chat_channel",
+        "safety_state",
+        "local_biome_texture"
+      ],
+      "allowed_transitions": [
+        "present",
+        "listening",
+        "speaking",
+        "resting"
+      ],
+      "safety_notes": [
+        "presence_over_account_identity",
+        "human_remains_pilot"
+      ],
       "residual_trace": "resident, not prompt source"
     },
     {
@@ -94,11 +177,32 @@
         "clouds": "slow drifting low-poly puff banks",
         "rays": "gentle sun shafts for day and sunset modes"
       },
-      "functional_role": ["atmosphere", "time_orientation", "scene_depth"],
-      "mood_tags": ["soft", "storybook_sky", "cozy_not_harsh"],
-      "causal_links": ["time_of_day", "rain_state", "campfire_contrast"],
-      "allowed_transitions": ["morning", "day", "sunset", "night", "rain"],
-      "safety_notes": ["avoid_strobe", "keep_sky_light_readable_on_mobile"],
+      "functional_role": [
+        "atmosphere",
+        "time_orientation",
+        "scene_depth"
+      ],
+      "mood_tags": [
+        "soft",
+        "storybook_sky",
+        "cozy_not_harsh"
+      ],
+      "causal_links": [
+        "time_of_day",
+        "rain_state",
+        "campfire_contrast"
+      ],
+      "allowed_transitions": [
+        "morning",
+        "day",
+        "sunset",
+        "night",
+        "rain"
+      ],
+      "safety_notes": [
+        "avoid_strobe",
+        "keep_sky_light_readable_on_mobile"
+      ],
       "residual_trace": "the sky changes the camp mood before asking the pilot to do anything"
     },
     {
@@ -110,11 +214,33 @@
         "glow_behavior": "dim in day, stronger at night and after rain",
         "motion": "small wind sway with pulsing dew tips"
       },
-      "functional_role": ["night_orientation", "cozy_biome_detail", "camp_depth"],
-      "mood_tags": ["luminous", "gentle", "alive", "not_cluttered"],
-      "causal_links": ["time_of_day", "rain_state", "auri_presence", "campfire_light"],
-      "allowed_transitions": ["day_dim", "night_glow", "rain_brightened", "resting"],
-      "safety_notes": ["keep_low_frequency_pulse", "decorative_only"],
+      "functional_role": [
+        "night_orientation",
+        "cozy_biome_detail",
+        "camp_depth"
+      ],
+      "mood_tags": [
+        "luminous",
+        "gentle",
+        "alive",
+        "not_cluttered"
+      ],
+      "causal_links": [
+        "time_of_day",
+        "rain_state",
+        "auri_presence",
+        "campfire_light"
+      ],
+      "allowed_transitions": [
+        "day_dim",
+        "night_glow",
+        "rain_brightened",
+        "resting"
+      ],
+      "safety_notes": [
+        "keep_low_frequency_pulse",
+        "decorative_only"
+      ],
       "residual_trace": "tiny glowing grass makes the ground feel kind without pulling focus"
     },
     {
@@ -128,11 +254,33 @@
         "texture_priority": "readable close-range charm over photorealism",
         "material_display": "procedural bump-mapped moss, stone, cedar, cloth, and soil textures"
       },
-      "functional_role": ["scale", "warmth", "arrival_detail", "central_user_orientation"],
-      "mood_tags": ["cozy", "mid_2000s_storybook", "alive_but_uncluttered"],
-      "causal_links": ["campfire_light", "auri_presence", "time_of_day", "rain_state"],
-      "allowed_transitions": ["day_dew", "night_glow", "rain_freshened", "resting"],
-      "safety_notes": ["decorative_only", "do_not_obscure_navigation_or_text"],
+      "functional_role": [
+        "scale",
+        "warmth",
+        "arrival_detail",
+        "central_user_orientation"
+      ],
+      "mood_tags": [
+        "cozy",
+        "mid_2000s_storybook",
+        "alive_but_uncluttered"
+      ],
+      "causal_links": [
+        "campfire_light",
+        "auri_presence",
+        "time_of_day",
+        "rain_state"
+      ],
+      "allowed_transitions": [
+        "day_dew",
+        "night_glow",
+        "rain_freshened",
+        "resting"
+      ],
+      "safety_notes": [
+        "decorative_only",
+        "do_not_obscure_navigation_or_text"
+      ],
       "residual_trace": "the world feels alive at the pilot's feet without demanding attention"
     },
     {
@@ -144,11 +292,28 @@
         "water": "balanced",
         "flowers": "violet_teal"
       },
-      "functional_role": ["growth", "pattern_visibility"],
-      "mood_tags": ["restorative", "patient"],
-      "causal_links": ["rain", "memory_weave", "active_seed"],
-      "allowed_transitions": ["resting", "sprouting", "blooming", "rain_fed"],
-      "safety_notes": ["do_not_overanimate_rest_states"],
+      "functional_role": [
+        "growth",
+        "pattern_visibility"
+      ],
+      "mood_tags": [
+        "restorative",
+        "patient"
+      ],
+      "causal_links": [
+        "rain",
+        "memory_weave",
+        "active_seed"
+      ],
+      "allowed_transitions": [
+        "resting",
+        "sprouting",
+        "blooming",
+        "rain_fed"
+      ],
+      "safety_notes": [
+        "do_not_overanimate_rest_states"
+      ],
       "residual_trace": "growth without pressure"
     },
     {
@@ -178,7 +343,16 @@
         "stables": "Companions + Support lodge near the garden path",
         "welcome_grove": "Arrival + Care arch on the north path",
         "south_gate": "Journey Beyond waypoint gate on the south path",
-        "labels": "soft sprite nameplates keep the districts readable from the world camera"
+        "labels": "soft sprite nameplates keep the districts readable from the world camera",
+        "market_home_details": "three cozy under-canopy nooks with rugs, baskets, shelf posts, hanging herbs, soft ground glow, and floating golden motes so the market feels like a lived-in home space rather than only a trade marker",
+        "movement_controls": "A and D strafe directions corrected for ground-level walk-under navigation",
+        "market_reinforcements": "structural braces, rope lines, and stitch strips on the walk-under market canopy so the exchange hall reads sturdier and less flat",
+        "world_loader": "visible world-status overlay reports module/WebGL failures instead of leaving the GitHub Pages demo silently black",
+        "compact_controls": "demo header keeps only movement, reset camera, market focus, mode, and a collapsed visual pass log to recover vertical screen space",
+        "camera_safety": "reset camera button plus R hotkey restores a stable camp view; pitch clamps prevent looking too far down into the ground plane",
+        "rain_readability": "rain mode now uses brighter ambient light, mist, and splash rings so it reads as weather instead of muddy darkness",
+        "market_environment_manager": "centralized market glow controller updates rune opacity, lantern glow, and the Exchange Plaza aisle point light per time mode",
+        "global_pulse_sync": "MPC-style lumariaPulse object centralizes GlobalFlicker, GlobalPulse, rain speed, and fauna orbit timing for the web prototype"
       },
       "functional_role": ["camp_orientation", "future_navigation", "world_scale", "district_preview", "market_exchange_preview", "full_size_market_plaza", "market_district_focus", "walk_under_market_canopy", "ground_level_texture_view", "luminous_ground_plane", "mountain_backdrop_depth", "town_boundary_context", "archive_lore_preview", "forge_creation_preview", "observatory_insight_preview", "garden_growth_preview", "waypoint_navigation_preview", "companion_support_preview", "local_material_library_seed"],
       "mood_tags": ["storybook_map", "cozy_town", "readable_landmarks", "expanded_but_safe", "bright_happy", "natural_glow", "held_by_landscape", "softly_luminous_ground"],
@@ -196,12 +370,49 @@
         "runes": "idle",
         "access": "read_only"
       },
-      "functional_role": ["memory_boundary", "archive_orientation"],
-      "mood_tags": ["reverent", "safe"],
-      "causal_links": ["memory_weave", "warden_gate", "surface_ack"],
-      "allowed_transitions": ["idle", "preview", "linked", "sealed"],
-      "safety_notes": ["no_deep_archive_load_without_need", "no_private_seed_exposure"],
+      "functional_role": [
+        "memory_boundary",
+        "archive_orientation"
+      ],
+      "mood_tags": [
+        "reverent",
+        "safe"
+      ],
+      "causal_links": [
+        "memory_weave",
+        "warden_gate",
+        "surface_ack"
+      ],
+      "allowed_transitions": [
+        "idle",
+        "preview",
+        "linked",
+        "sealed"
+      ],
+      "safety_notes": [
+        "no_deep_archive_load_without_need",
+        "no_private_seed_exposure"
+      ],
       "residual_trace": "the archive is near, but not hungry"
+    },
+    {
+      "id": "base_camp_luminous_backdrop_01",
+      "label": "Base Camp luminous ground and mountain backdrop",
+      "state": "visible",
+      "description": "Adds a soft ground-lumen veil, outer meadow glow, distant mountain silhouettes, ridge glows, and drifting mist to keep hosted/rain views readable and world-scaled."
+    },
+    {
+      "id": "firepit_reference_details_01",
+      "label": "Firepit crystals, lanterns, mushrooms, and grimoire",
+      "state": "visible",
+      "description": "Adds small campfire reference details around the sanctuary ring so close ground-level views read cozy rather than empty."
+    },
+    {
+      "id": "market_entry_offerings_01",
+      "label": "Market entry identity and offerings",
+      "state": "visible",
+      "description": "Adds a woven mat, small sign rune, offering bowls, and glowing wares at the campfire-to-market transition."
     }
-  ]
+  ],
+  "latest_visual_pass": "Base Camp polish wave: luminous ground/backdrop, firepit reference details, woven textures, and market entry offerings."
 }

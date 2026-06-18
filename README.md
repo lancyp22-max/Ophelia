@@ -176,6 +176,8 @@ make mirror10-demo
 # then visit http://localhost:8010/demos/world-3d-blockout.html
 ```
 
+Future engine translation notes are captured in `docs/ue5-lumaria-world-roadmap.md`; the current repo remains the lightweight web iteration surface.
+
 ### Bridge world map prototype (2.5D)
 
 A new prototype map is available at `demos/world-bridge-map.html` to start the "base game" visual layer.
@@ -378,3 +380,29 @@ Use the Ophelia context capsule. Do not replay old chat.
 Task: improve only <one small area>.
 Constraints: no new dependencies, no binary assets, public-shell safe.
 ```
+
+### A1 Base Camp polish/import wave
+
+The latest A1 world pass reinforces the “hold the world together” direction for the importable Lumaria camp: it adds a luminous ground veil, outer meadow glow, distant mountain silhouettes with mist/ridge glow, woven market textiles, a small market-entry offering mat, and firepit reference details (crystals, tiny lanterns, mushrooms/grimoire language) without adding binary assets or external dependencies.
+
+This keeps the hosted Three.js scene lightweight while documenting the same objects as future UE5 translation targets: the mountain/backdrop layer maps to environment actors and fog cards, woven market mats map to two-sided canopy/cloth materials, and the market/firepit detail pockets map to Blueprint actor clusters or ISM/HISM construction-script pieces.
+
+### Flight Deck embedded world controls
+
+The Lumaria Flight Deck now hosts the A1 world iframe with an explicit cache-busting query string and an in-frame weather selector for Morning, Day, Sunset, Night, and Rain. The shell posts the selected mode to the 3D world with the existing `lumaria-time-mode` message contract so hosted Pages deployments can recover from stale iframe caches and test the rain/night readability passes directly from the map screen.
+
+### World-model packet tool
+
+Run `make world-model-packet` to generate a local observe → act → predict → validate packet from the current visual-state JSON and context capsule. The tool writes JSON and Markdown under `artifacts/` and helps keep Lumaria worldbuilding causal, auditable, public-shell safe, and ready for a future UE5 handoff.
+
+### Cinematic life pass
+
+The A1 world now includes procedural aurora curtains, floating lens motes, and mirror-pool reflections to push the scene toward a more life-like, future-facing look while keeping the public demo dependency-free and asset-light.
+
+### UE5 implementation playbook
+
+`docs/ue5-lumaria-implementation-playbook.md` translates the current web prototype into UE5.6 contracts for `ALumariaEnvManager`, campfire flicker, HISM market construction, Niagara rain/fauna/aurora systems, and material recipes for luminous ground, canopy cloth, and mirror-pool reflections.
+
+### Stone detail pass
+
+The A1 world now has close-range stone storytelling: individual floor tiles, rune stones, market edge blocks, campfire-ring stones, and transition-path stones carry procedural cracks, small pebble accents, and gold/cyan inlays that pulse subtly in the existing global animation loop.
