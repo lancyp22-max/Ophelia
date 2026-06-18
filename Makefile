@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief backend-build backend-run ci-check repo-link-check public-leak-guard install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief oplite-eyes espresso espresso-watch backend-build backend-run ci-check repo-link-check public-leak-guard install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -13,6 +13,15 @@ mirror10-demo:
 
 context-brief:
 	python3 scripts/context_brief.py
+
+oplite-eyes:
+	python3 scripts/oplite_eyes_brief.py
+
+espresso:
+	python3 scripts/project_espresso.py
+
+espresso-watch:
+	python3 scripts/project_espresso.py --watch
 
 backend-build:
 	mvn -B -ntp verify
