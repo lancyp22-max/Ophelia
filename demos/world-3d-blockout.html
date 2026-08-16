@@ -72,9 +72,7 @@
         <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
         <span class="pill">Cinematic life pass: aurora, lens motes, mirror pools</span>
         <span class="pill">Stone detail pass: cracks, pebbles, etched inlays</span>
-        <span class="pill">Pixel-log pass: bark rings + support wireframes</span>
-        <span class="pill">Distant-lands texture cards for horizon depth</span>
-        <span class="pill">Campfire stone tile: one texture multiplied around ring</span>
+        <span class="pill">Return pass: adaptive render health + atmospheric motes</span>
       </details>
     </div>
   </header>
@@ -548,305 +546,6 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
   return texture;
 }
 
-function makeLogBarkTexture(name = "pixel_bark_wrap") {
-  const size = 512;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  const bark = ctx.createLinearGradient(0, 0, size, size);
-  bark.addColorStop(0, "#2a160d");
-  bark.addColorStop(0.38, "#6f4324");
-  bark.addColorStop(0.72, "#3b2114");
-  bark.addColorStop(1, "#9a6336");
-  ctx.fillStyle = bark;
-  ctx.fillRect(0, 0, size, size);
-
-  // Pixel-by-pixel bark: deterministic 8px cells, vertical grain, knots, cuts, and ember scars.
-  for (let y = 0; y < size; y += 8) {
-    for (let x = 0; x < size; x += 8) {
-      const grain = Math.sin((x * 0.055) + Math.sin(y * 0.031) * 2.4);
-      const hash = ((x * 73856093) ^ (y * 19349663)) >>> 0;
-      const shade = (hash % 41) - 20;
-      const r = Math.max(20, Math.min(160, 82 + shade + grain * 26));
-      const g = Math.max(12, Math.min(105, 48 + shade * 0.55 + grain * 14));
-      const b = Math.max(8, Math.min(70, 28 + shade * 0.35));
-      ctx.fillStyle = `rgb(${r},${g},${b})`;
-      ctx.globalAlpha = 0.28 + ((hash % 17) / 100);
-      ctx.fillRect(x, y, 8, 8);
-    }
-  }
-  ctx.globalAlpha = 1;
-  for (let i = 0; i < 46; i++) {
-    const x = (i * 37) % size;
-    ctx.strokeStyle = i % 3 ? "rgba(31,17,10,.58)" : "rgba(197,128,65,.34)";
-    ctx.lineWidth = 1 + (i % 4);
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    for (let y = 0; y <= size; y += 48) {
-      ctx.lineTo((x + Math.sin(y * 0.018 + i) * (18 + i % 9) + size) % size, y);
-    }
-    ctx.stroke();
-  }
-  for (let i = 0; i < 9; i++) {
-    const x = (i * 67 + 41) % size;
-    const y = (i * 109 + 73) % size;
-    ctx.fillStyle = "rgba(24,12,7,.72)";
-    ctx.beginPath();
-    ctx.ellipse(x, y, 18 + (i % 3) * 7, 7 + (i % 4) * 3, i * 0.7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(221,146,73,.26)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.name = name;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(3.6, 1);
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.magFilter = THREE.NearestFilter;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-function makeLogEndTexture(name = "pixel_log_cut_rings") {
-  const size = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#8b5a32";
-  ctx.fillRect(0, 0, size, size);
-  const cx = size / 2;
-  const cy = size / 2;
-  for (let r = 112; r > 8; r -= 9) {
-    ctx.strokeStyle = r % 3 ? "rgba(64,33,18,.58)" : "rgba(232,167,93,.38)";
-    ctx.lineWidth = r % 4 ? 2 : 4;
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.sin(r) * 2, cy + Math.cos(r * 0.7) * 2, r, r * (0.86 + (r % 5) * 0.018), r * 0.01, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  for (let i = 0; i < 42; i++) {
-    ctx.strokeStyle = i % 2 ? "rgba(42,22,12,.32)" : "rgba(255,207,117,.2)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    const a = i * 0.37;
-    ctx.lineTo(cx + Math.cos(a) * (70 + (i % 6) * 8), cy + Math.sin(a) * (64 + (i % 5) * 7));
-    ctx.stroke();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.name = name;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-function makeCampfireStoneTileTexture(name = "campfire_stone_tile_multiplied") {
-  const size = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-
-  const base = ctx.createLinearGradient(0, 0, size, size);
-  base.addColorStop(0, "#776a5f");
-  base.addColorStop(0.46, "#51463f");
-  base.addColorStop(1, "#8b7a69");
-  ctx.fillStyle = base;
-  ctx.fillRect(0, 0, size, size);
-
-  // One hand-authored tile texture: multiplied across every campfire ring stone.
-  for (let y = 0; y < size; y += 16) {
-    for (let x = 0; x < size; x += 16) {
-      const hash = ((x * 92837111) ^ (y * 689287499)) >>> 0;
-      const warm = hash % 3 === 0;
-      ctx.globalAlpha = 0.07 + (hash % 11) / 120;
-      ctx.fillStyle = warm ? "#c0a177" : "#2f2925";
-      ctx.fillRect(x, y, 16, 16);
-    }
-  }
-  ctx.globalAlpha = 1;
-
-  ctx.strokeStyle = "rgba(31,24,20,.46)";
-  ctx.lineWidth = 3;
-  [[18, 44, 94, 62, 128, 38], [41, 180, 112, 148, 202, 164], [144, 82, 178, 118, 235, 96]].forEach((crack) => {
-    ctx.beginPath();
-    ctx.moveTo(crack[0], crack[1]);
-    ctx.lineTo(crack[2], crack[3]);
-    ctx.lineTo(crack[4], crack[5]);
-    ctx.stroke();
-  });
-
-  ctx.strokeStyle = "rgba(255,213,138,.34)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(128, 128, 58, 0.28, 2.7);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(128, 72);
-  ctx.lineTo(128, 105);
-  ctx.moveTo(128, 151);
-  ctx.lineTo(128, 184);
-  ctx.stroke();
-
-  for (let i = 0; i < 28; i++) {
-    const x = (i * 47) % size;
-    const y = (i * 83) % size;
-    ctx.globalAlpha = i % 4 === 0 ? 0.28 : 0.13;
-    ctx.fillStyle = i % 5 === 0 ? "#ffd58a" : "#1f1713";
-    ctx.beginPath();
-    ctx.arc(x, y, 1.5 + (i % 4), 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1;
-
-  const vignette = ctx.createRadialGradient(128, 120, 20, 128, 128, 148);
-  vignette.addColorStop(0, "rgba(255,178,89,.1)");
-  vignette.addColorStop(0.7, "rgba(0,0,0,0)");
-  vignette.addColorStop(1, "rgba(0,0,0,.26)");
-  ctx.fillStyle = vignette;
-  ctx.fillRect(0, 0, size, size);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.name = name;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2, 2);
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.magFilter = THREE.NearestFilter;
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-function makeDistantLandTexture(name = "distant_lands_texture_cards") {
-  const width = 1024;
-  const height = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, width, height);
-
-  const skyFade = ctx.createLinearGradient(0, 0, 0, height);
-  skyFade.addColorStop(0, "rgba(125,211,252,0)");
-  skyFade.addColorStop(0.46, "rgba(54,76,116,0.12)");
-  skyFade.addColorStop(1, "rgba(12,22,42,0.68)");
-  ctx.fillStyle = skyFade;
-  ctx.fillRect(0, 0, width, height);
-
-  const layers = [
-    { y: 142, amp: 34, step: 48, color: "rgba(35,54,86,.62)", glow: "rgba(125,211,252,.18)" },
-    { y: 172, amp: 24, step: 34, color: "rgba(23,42,66,.78)", glow: "rgba(196,181,253,.12)" },
-    { y: 204, amp: 16, step: 24, color: "rgba(12,29,43,.9)", glow: "rgba(255,213,138,.08)" }
-  ];
-
-  layers.forEach((layer, layerIndex) => {
-    ctx.beginPath();
-    ctx.moveTo(0, height);
-    for (let x = 0; x <= width + layer.step; x += layer.step) {
-      const y = layer.y + Math.sin(x * 0.013 + layerIndex * 1.7) * layer.amp + Math.sin(x * 0.037) * layer.amp * 0.28;
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(width, height);
-    ctx.closePath();
-    ctx.fillStyle = layer.color;
-    ctx.fill();
-
-    ctx.strokeStyle = layer.glow;
-    ctx.lineWidth = 4 - layerIndex;
-    ctx.beginPath();
-    for (let x = 0; x <= width + layer.step; x += layer.step) {
-      const y = layer.y + Math.sin(x * 0.013 + layerIndex * 1.7) * layer.amp + Math.sin(x * 0.037) * layer.amp * 0.28;
-      if (x === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  });
-
-  // Tiny Morrowind-style distant-land hints: low-resolution readable silhouettes, not hero geometry.
-  for (let i = 0; i < 180; i++) {
-    const x = (i * 73) % width;
-    const y = 150 + ((i * 29) % 88);
-    ctx.globalAlpha = 0.08 + (i % 5) * 0.018;
-    ctx.fillStyle = i % 3 ? "#7dd3fc" : "#ffd58a";
-    ctx.fillRect(x, y, 1 + (i % 3), 1 + (i % 2));
-  }
-  ctx.globalAlpha = 1;
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.name = name;
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.repeat.set(1, 1);
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-function makeFireLog(id, angle, radius = 0.4) {
-  const group = new THREE.Group();
-  group.name = id;
-  const barkMat = surfaceMaterial({ color: 0x5a321d, map: textureSet.logBark, roughness: 1, bumpScale: 0.085, emissive: 0x1c0902, emissiveIntensity: 0.04 });
-  const cutMat = surfaceMaterial({ color: 0x8a5a33, map: textureSet.logEnd, roughness: 0.96, bumpScale: 0.045 });
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 1.46, 18, 5, false), [barkMat, cutMat, cutMat]);
-  body.name = `${id}_bark_pixel_wrap`;
-  body.castShadow = true;
-  body.receiveShadow = true;
-  group.add(body);
-
-  const support = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.106, 0.132, 1.36, 8, 3, false),
-    new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.11, wireframe: true, depthWrite: false })
-  );
-  support.name = `${id}_inner_support_wireframe`;
-  group.add(support);
-
-  [-0.19, 0.19].forEach((zOffset, idx) => {
-    const cradle = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.012, 0.012, 1.22, 6),
-      new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.22 })
-    );
-    cradle.name = `${id}_underside_wire_cradle_${idx}`;
-    cradle.position.set(0, -0.13, zOffset);
-    cradle.rotation.z = Math.PI / 2;
-    group.add(cradle);
-  });
-
-  for (let j = 0; j < 7; j++) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.126 + j * 0.002, 0.004, 5, 18),
-      new THREE.MeshStandardMaterial({ color: j % 2 ? 0x2a160d : 0xb87940, roughness: 1, emissive: j === 3 ? 0x451100 : 0x000000, emissiveIntensity: j === 3 ? 0.18 : 0 })
-    );
-    ring.name = `${id}_raised_bark_ring_${j}`;
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = -0.54 + j * 0.18;
-    group.add(ring);
-  }
-
-  const coalScar = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.42, 0.12),
-    new THREE.MeshBasicMaterial({ color: 0xff6a00, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false })
-  );
-  coalScar.name = `${id}_ember_scar_detail`;
-  coalScar.position.set(0, 0.18, 0.125);
-  group.add(coalScar);
-
-  group.position.set(Math.cos(angle) * radius, 0.45, Math.sin(angle) * radius);
-  group.rotation.z = Math.PI / 2.6;
-  group.rotation.y = angle;
-  group.userData.visualId = id;
-  logs.push(group);
-  scene.add(group);
-  return group;
-}
-
 function surfaceMaterial({ color, map, roughness = 0.9, metalness = 0, bumpScale = 0.035, emissive = 0x000000, emissiveIntensity = 0 }) {
   return new THREE.MeshStandardMaterial({ color, map, bumpMap: map, bumpScale, roughness, metalness, emissive, emissiveIntensity });
 }
@@ -946,7 +645,6 @@ const textureSet = {
   ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
-  campfireStoneTile: makeCampfireStoneTileTexture(),
   marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
   wood: makeProceduralTexture("cedar_wood", 0x6a4228, [0x8b5c34, 0x3a2418, 0xb77a43], { repeatX: 4, repeatY: 1, count: 150, style: "wood" }),
   cloth: makeProceduralTexture("violet_cloth", 0x5b3b84, [0x7c5aa5, 0x34204e, 0xb8a4ff], { repeatX: 3, repeatY: 3, count: 120, style: "cloth" }),
@@ -955,9 +653,6 @@ const textureSet = {
   leafVein: makeProceduralTexture("leaf_vein_detail", 0x1f5a3f, [0x2f8f5d, 0x14532d, 0xa7f3d0], { repeatX: 3, repeatY: 3, count: 130, style: "leafVein" }),
   mountainRock: makeProceduralTexture("distant_mountain_rock", 0x25334c, [0x415a77, 0x101827, 0x6d7f9d, 0x9bdcff], { repeatX: 3, repeatY: 2, count: 110, style: "stone" }),
   soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 4, repeatY: 3, count: 150, style: "soil" }),
-  logBark: makeLogBarkTexture(),
-  logEnd: makeLogEndTexture(),
-  distantLand: makeDistantLandTexture(),
   sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
   auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
 };
@@ -1240,7 +935,7 @@ for (let i = 0; i < 64; i++) {
   const r = 6.1 + (i % 2) * 0.22;
   const tile = new THREE.Mesh(
     new THREE.BoxGeometry(0.45, 0.06, 0.68),
-    surfaceMaterial({ color: (i % 3 === 0) ? 0x6e6259 : 0x76695f, map: textureSet.campfireStoneTile, roughness: 0.96, metalness: 0.035, bumpScale: 0.064 })
+    surfaceMaterial({ color: (i % 3 === 0) ? 0x5e534b : 0x6b5e54, map: textureSet.stone, roughness: 0.93, metalness: 0.04, bumpScale: 0.045 })
   );
   tile.position.set(Math.cos(a) * r, 0.035, Math.sin(a) * r);
   tile.rotation.y = -a + Math.PI / 2;
@@ -1385,21 +1080,6 @@ function makeMountainMist(id, x, z, sx, sy, rot = 0) {
   return mist;
 }
 
-
-function makeDistantLandCard(id, x, z, sx, sy, rot = 0, opacity = 0.58) {
-  const card = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1, 1, 1),
-    new THREE.MeshBasicMaterial({ map: textureSet.distantLand, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide })
-  );
-  card.name = id;
-  card.position.set(x, sy * 0.52, z);
-  card.scale.set(sx, sy, 1);
-  card.rotation.y = rot;
-  card.userData.visualId = id;
-  scene.add(card);
-  return card;
-}
-
 function makeMountainBackdrop() {
   const specs = [
     [-38, -45, 10.8, 5.4, 0.2], [-24, -50, 13.5, 6.6, -0.35], [-9, -52, 9.6, 5.2, 0.42],
@@ -1408,11 +1088,6 @@ function makeMountainBackdrop() {
     [-35, 40, 8.9, 4.7, 2.8], [-15, 46, 10.6, 5.1, 3.05], [16, 45, 9.5, 4.9, -2.9], [36, 39, 8.6, 4.4, -2.65]
   ];
   const peaks = specs.map((spec, idx) => makeMountainPeak(`base_camp_mountain_backdrop_${idx + 1}`, ...spec));
-  const distantCards = [
-    makeDistantLandCard("distant_lands_north_texture_card", 0, -63, 104, 17, 0, 0.52),
-    makeDistantLandCard("distant_lands_west_texture_card", -64, 0, 78, 14, Math.PI / 2, 0.42),
-    makeDistantLandCard("distant_lands_east_texture_card", 64, 0, 78, 14, -Math.PI / 2, 0.42)
-  ];
   const mists = [
     makeMountainMist("base_camp_mountain_mist_north", 0, -41.5, 82, 5.2, 0),
     makeMountainMist("base_camp_mountain_mist_west", -45, 0, 50, 4.4, Math.PI / 2),
@@ -1426,7 +1101,6 @@ function makeMountainBackdrop() {
       peakMats: peaks.map((peak) => peak.userData.rockMat),
       snowMats: peaks.map((peak) => peak.userData.snowMat),
       ridgeGlows: peaks.map((peak) => peak.userData.ridgeGlow),
-      distantCards,
       mists
     }
   };
@@ -2692,7 +2366,7 @@ function makeFirepitReferenceDetails(id) {
   return g;
 }
 
-const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x3f332a, map: textureSet.campfireStoneTile, roughness:0.97, bumpScale: 0.072 }));
+const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95, bumpScale: 0.055 }));
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
 campfireStone.receiveShadow = true;
@@ -2746,7 +2420,17 @@ const flameMeshes = [];
 
 const logs = [];
 for (let i = 0; i < 4; i++) {
-  makeFireLog(`campfire_pixel_log_${i}`, i * Math.PI / 2);
+  const log = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.14, 1.4, 10),
+    surfaceMaterial({ color: 0x4a2f1e, map: textureSet.wood, roughness: 1, bumpScale: 0.052 })
+  );
+  log.position.set(Math.cos(i * Math.PI / 2) * 0.4, 0.45, Math.sin(i * Math.PI / 2) * 0.4);
+  log.rotation.z = Math.PI / 2.6;
+  log.rotation.y = i * Math.PI / 2;
+  log.castShadow = true;
+  log.receiveShadow = true;
+  logs.push(log);
+  scene.add(log);
 }
 
 const flame = new THREE.PointLight(0xffa85c, 2.7, 18, 2);
