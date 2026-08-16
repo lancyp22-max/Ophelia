@@ -351,3 +351,11 @@ The A1 world now has close-range stone storytelling: individual floor tiles, run
 ### Embedded world fit pass
 
 The Flight Deck map now gives the A1 world more room: the embedded iframe uses a wider/taller viewport, a slimmer responsive side rail, cache-busted world URL, and a compact embedded-world header so the 3D canvas is not squeezed by controls.
+
+### Return pass: runtime health and atmosphere
+
+The embedded A1 world now waits for a successful first render before reporting ready, publishes FPS/quality/time-mode health back to the Flight Deck, adapts pixel ratio and shadows when frame rate falls, responds to container resizing, surfaces WebGL context loss/recovery, and adds a low-cost atmospheric mote field. Run `make world-module-check` to syntax-check the inline Three.js module locally; the same check now runs in pre-commit and CI. The Flight Deck map button now routes correctly to the world screen, and header layering no longer blocks the mode controls.
+
+### Intentional undefined
+
+Lumaria does not treat every unresolved pathway as a TODO. Classify gaps first: encode invariants, enforce safety boundaries, implement known mechanics, preserve contextual judgment, and record unknown-future decisions as `intentionally_not_decided_yet` with a rationale and reconsideration trigger. See `AGENTS.md`, `docs/intentional-undefined.md`, and `data/decision-boundaries/lumaria-decision-register.v0.1.json`. Run `make decision-boundary-check` to validate the register.
