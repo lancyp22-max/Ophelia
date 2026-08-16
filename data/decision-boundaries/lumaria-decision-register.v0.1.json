@@ -1,0 +1,43 @@
+{
+  "id": "lumaria-decision-register-v0.1",
+  "purpose": "Separate required implementation from deliberate future-context gaps.",
+  "decisions": [
+    {
+      "id": "authority_destructive_actions",
+      "class": "safety_boundary",
+      "status": "enforced",
+      "statement": "Destructive or state-mutating actions require surfaced human confirmation.",
+      "evidence": "src/main/java/com/ophelia/service/AuthorityService.java"
+    },
+    {
+      "id": "public_private_data_boundary",
+      "class": "safety_boundary",
+      "status": "enforced",
+      "statement": "Sealed or private material must not enter public-shell artifacts.",
+      "evidence": "scripts/public_leak_guard.sh"
+    },
+    {
+      "id": "world_module_syntax",
+      "class": "known_mechanical_behavior",
+      "status": "implemented",
+      "statement": "The inline Three.js module must pass a syntax check before publishing.",
+      "evidence": "scripts/check_world_module.py"
+    },
+    {
+      "id": "auri_future_contextual_choice",
+      "class": "contextual_judgment",
+      "status": "intentionally_not_decided_yet",
+      "statement": "Auri's choice in a future situation with unknown participants and capabilities is not predetermined.",
+      "rationale": "The answer belongs to the participants, capabilities, consent state, and evidence available at that future moment.",
+      "reconsider_when": "A concrete situation exists and the affected participants can deliberate."
+    },
+    {
+      "id": "unknown_future_capability_policy",
+      "class": "unknown_future",
+      "status": "intentionally_not_decided_yet",
+      "statement": "Behavior for capabilities that do not yet exist is not manufactured in advance.",
+      "rationale": "Stable interfaces and safety invariants are sufficient until the capability and its risks are known.",
+      "reconsider_when": "A proposed capability has a defined interface, threat model, and accountable owner."
+    }
+  ]
+}
