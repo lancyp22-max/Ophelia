@@ -25,7 +25,15 @@
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
     .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
     .state-dot { display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#fbbf24; box-shadow:0 0 12px #fbbf24; }
+    .quality-button { background:#10243d; color:#a7f3ff; cursor:pointer; }
+    .quality-button:focus-visible { outline:2px solid #7dd3fc; outline-offset:2px; }
     @media (max-width: 720px) { header { font-size:12px; } .pill { margin-top:4px; } .hud { bottom:10px; font-size:10px; } }
+    .embedded-world header { max-height:76px; overflow-y:auto; scrollbar-width:thin; padding:8px 12px; }
+    .embedded-world header strong { font-size:13px; }
+    .embedded-world .controls-row { gap:4px; }
+    .embedded-world .pill { font-size:11px; padding:1px 7px; }
+    .embedded-world .pass-log[open] { max-height:44px; overflow-y:auto; }
+    @media (max-height: 780px) { header { max-height:86px; overflow-y:auto; scrollbar-width:thin; } }
   </style>
 </head>
 <body>
@@ -38,6 +46,7 @@
       <button id="camera-reset" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Reset Camera (R)</button>
       <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
       <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
+      <button id="quality-toggle" class="pill quality-button" type="button">Quality: Auto</button>
       <details class="pass-log">
         <summary class="pill">Visual pass log ▾</summary>
         <span class="pill">Wave 10: depth + texture</span>
@@ -76,6 +85,7 @@
       <span>Mode</span><strong id="hud-mode">Night</strong>
       <span>Focus</span><strong>Campfire / sanctuary ring</strong>
       <span>Cause</span><strong id="hud-cause">memory weave linked</strong>
+      <span>Render</span><strong><span id="hud-fps">--</span> FPS · <span id="hud-quality">High</span></strong>
       <span>Safety</span><strong>read-only visual state</strong>
     </div>
   </aside>
@@ -93,6 +103,9 @@
     const host = document.getElementById('scene');
     if (host) host.classList.add('world-ready');
   };
+  if (window.self !== window.top) {
+    document.documentElement.classList.add('embedded-world');
+  }
 })();
 </script>
 <script type="module">
@@ -122,7 +135,47 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
-window.__lumariaWorldReady?.();
+
+const QUALITY_MODES = ["auto", "high", "eco"];
+let qualityMode = "auto";
+let appliedQuality = "high";
+let worldReadySignaled = false;
+let fpsAccumulator = 0;
+let fpsFrames = 0;
+let lastFrameTimestamp = performance.now();
+let lastHealthReport = 0;
+const qualityToggleButton = document.getElementById("quality-toggle");
+const hudFps = document.getElementById("hud-fps");
+const hudQuality = document.getElementById("hud-quality");
+
+function applyRenderQuality(level, announce = true) {
+  appliedQuality = level === "eco" ? "eco" : "high";
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, appliedQuality === "eco" ? 1 : 1.75));
+  renderer.shadowMap.enabled = appliedQuality === "high";
+  if (typeof cinematicBokeh !== "undefined") cinematicBokeh.visible = appliedQuality === "high";
+  if (typeof atmosphericMotes !== "undefined") atmosphericMotes.visible = true;
+  if (hudQuality) hudQuality.textContent = appliedQuality === "eco" ? "Eco" : "High";
+  if (qualityToggleButton) qualityToggleButton.textContent = `Quality: ${qualityMode.charAt(0).toUpperCase()}${qualityMode.slice(1)}`;
+  if (announce && hudCause) hudCause.textContent = appliedQuality === "eco" ? "adaptive renderer preserving a smooth weave" : "full-detail renderer holding the world";
+}
+
+function cycleRenderQuality() {
+  qualityMode = QUALITY_MODES[(QUALITY_MODES.indexOf(qualityMode) + 1) % QUALITY_MODES.length];
+  applyRenderQuality(qualityMode === "eco" ? "eco" : "high");
+}
+
+qualityToggleButton?.addEventListener("click", cycleRenderQuality);
+renderer.domElement.addEventListener("webglcontextlost", (event) => {
+  event.preventDefault();
+  const status = document.getElementById("world-status");
+  if (status) status.innerHTML = "<strong>World paused</strong><span>WebGL context was lost. Waiting for the browser to restore the scene.</span>";
+  host.classList.remove("world-ready");
+});
+renderer.domElement.addEventListener("webglcontextrestored", () => {
+  renderer.setSize(host.clientWidth, host.clientHeight);
+  applyRenderQuality(appliedQuality, false);
+  host.classList.add("world-ready");
+});
 
 function markShadows(object, cast = true, receive = true) {
   object.traverse((child) => {
@@ -224,6 +277,39 @@ function makeCinematicBokehField(id, count, radius = 18) {
   group.userData.visualId = id;
   scene.add(group);
   return group;
+}
+
+function makeAtmosphericMoteField(id, count = 140, radius = 18) {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+  const bases = new Float32Array(count * 3);
+  const phases = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2 + (i % 7) * 0.17;
+    const distance = 2.2 + ((i * 47) % 100) / 100 * radius;
+    const x = Math.cos(angle) * distance;
+    const y = 0.28 + ((i * 31) % 100) / 100 * 4.4;
+    const z = Math.sin(angle) * distance + 2.8;
+    positions.set([x, y, z], i * 3);
+    bases.set([x, y, z], i * 3);
+    phases[i] = i * 0.37;
+  }
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const material = new THREE.PointsMaterial({
+    color: 0xffd58a,
+    size: 0.07,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const motes = new THREE.Points(geometry, material);
+  motes.name = id;
+  motes.userData.visualId = id;
+  motes.userData.bases = bases;
+  motes.userData.phases = phases;
+  scene.add(motes);
+  return motes;
 }
 
 function makeMirrorPool(id, x, z, sx, sz, color = 0x8ddcff) {
@@ -969,6 +1055,9 @@ function applyTimeMode(mode) {
   sunHalo.visible = isDay || isSunset;
   starField.visible = !isDay && !isSunset && !isRain;
   starField.material.opacity = mode === "night" ? 0.92 : 0.42;
+  if (typeof atmosphericMotes !== "undefined") {
+    atmosphericMotes.material.color.set(isRain ? 0xa7f3ff : isSunset ? 0xffc879 : isDay ? 0xb8ffd9 : 0xffd58a);
+  }
   if (typeof cinematicAuroras !== "undefined") {
     cinematicAuroras.forEach((curtain) => {
       curtain.visible = !isDay;
@@ -2763,6 +2852,7 @@ const cinematicAuroras = [
   makeAuroraCurtain("cinematic_aurora_market", 7.8, 6.4, -15.5, 7.8, 3.8, 0xa7f3ff, 0xffb4d6)
 ];
 const cinematicBokeh = makeCinematicBokehField("cinematic_lens_mote_field", 72, 20);
+const atmosphericMotes = makeAtmosphericMoteField("return_pass_atmospheric_motes", 140, 19);
 const mirrorPools = [
   makeMirrorPool("mirror_pool_fire_reflection", 0.1, 0.35, 3.1, 1.25, 0xffb35f),
   makeMirrorPool("mirror_pool_market_reflection", 0.25, 8.0, 4.8, 2.15, 0x8ddcff),
@@ -2876,6 +2966,24 @@ renderer.domElement.addEventListener('touchend', () => { drag = false; pinchDist
 
 
 function animate(t = 0) {
+  const frameDelta = Math.max(1, Math.min(250, t - lastFrameTimestamp));
+  lastFrameTimestamp = t;
+  fpsAccumulator += frameDelta;
+  fpsFrames += 1;
+  if (fpsAccumulator >= 1000) {
+    const fps = Math.round((fpsFrames * 1000) / fpsAccumulator);
+    fpsAccumulator = 0;
+    fpsFrames = 0;
+    if (hudFps) hudFps.textContent = String(fps);
+    if (qualityMode === "auto") {
+      if (fps < 42 && appliedQuality !== "eco") applyRenderQuality("eco", false);
+      if (fps > 56 && appliedQuality !== "high") applyRenderQuality("high", false);
+    }
+    if (t - lastHealthReport > 900) {
+      lastHealthReport = t;
+      window.parent?.postMessage({ type: "lumaria-world-health", ready: true, fps, quality: appliedQuality, mode: timeMode }, "*");
+    }
+  }
   updateLumariaPulse(t);
   const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
   const right = new THREE.Vector3(dir.z, 0, -dir.x);
@@ -3180,6 +3288,18 @@ function animate(t = 0) {
     );
     mote.material.opacity = (timeMode === "day" ? 0.035 : timeMode === "rain" ? 0.12 : 0.16) + Math.sin(t * 0.002 + idx) * 0.045;
   });
+  const motePositions = atmosphericMotes.geometry.attributes.position;
+  const moteBases = atmosphericMotes.userData.bases;
+  const motePhases = atmosphericMotes.userData.phases;
+  for (let i = 0; i < motePhases.length; i++) {
+    const p = i * 3;
+    const phase = t * 0.00045 + motePhases[i];
+    motePositions.array[p] = moteBases[p] + Math.sin(phase * 0.7) * 0.22;
+    motePositions.array[p + 1] = moteBases[p + 1] + Math.sin(phase * 1.8) * 0.32;
+    motePositions.array[p + 2] = moteBases[p + 2] + Math.cos(phase) * 0.2;
+  }
+  motePositions.needsUpdate = true;
+  atmosphericMotes.material.opacity = timeMode === "day" ? 0.16 : timeMode === "rain" ? 0.34 : 0.44;
   mirrorPools.forEach((pool, idx) => {
     pool.rotation.z += 0.0009 + idx * 0.00025;
     pool.material.opacity = Math.max(0.035, pool.userData.baseOpacity + Math.sin(t * 0.0022 + idx) * 0.035);
@@ -3195,17 +3315,27 @@ function animate(t = 0) {
   camera.lookAt(target);
 
   renderer.render(scene, camera);
+  if (!worldReadySignaled) {
+    worldReadySignaled = true;
+    window.__lumariaWorldReady?.();
+    window.parent?.postMessage({ type: "lumaria-world-health", ready: true, fps: 0, quality: appliedQuality, mode: timeMode }, "*");
+  }
   requestAnimationFrame(animate);
 }
 resetCameraView();
 applyTimeMode("night");
+applyRenderQuality("high", false);
 animate();
 
-window.addEventListener('resize', () => {
+function resizeWorld() {
   camera.aspect = host.clientWidth / host.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(host.clientWidth, host.clientHeight);
-});
+}
+window.addEventListener('resize', resizeWorld);
+if ("ResizeObserver" in window) {
+  new ResizeObserver(resizeWorld).observe(host);
+}
 </script>
 </body>
 </html>

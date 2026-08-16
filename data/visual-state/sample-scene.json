@@ -63,7 +63,11 @@
     "rune_stone_hairline_cracks",
     "market_plaza_edge_inlays",
     "campfire_ring_etched_spokes",
-    "transition_path_stone_threads"
+    "transition_path_stone_threads",
+    "adaptive_render_quality",
+    "world_health_telemetry",
+    "atmospheric_mote_field",
+    "webgl_context_recovery"
   ],
   "mood": "bright_warm_presence",
   "functional_tags": [
@@ -113,7 +117,11 @@
     "stone_detail_pass",
     "close_range_ground_texture_readability",
     "hand_placed_pebble_storytelling",
-    "etched_rune_inlay_pass"
+    "etched_rune_inlay_pass",
+    "return_pass",
+    "adaptive_frame_health",
+    "first_frame_readiness",
+    "world_module_ci_guard"
   ],
   "active_agent": "you",
   "avatar_state": {
@@ -151,6 +159,6 @@
       "external_publish"
     ]
   },
-  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with compact controls, reset camera support, pitch clamps, centralized market glow control, MPC-style global pulse sync, rain mist/splash particles, a textured walk-under canopy, reinforced braces/ropes/stitches, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition; the newest cinematic life pass adds aurora curtains, lens motes, and mirror-pool reflections while preserving the lightweight public shell; the stone detail pass adds hand-placed cracks, gold/cyan inlays, pebbles, campfire spokes, and path threads for close camera inspection.",
-  "latest_visual_pass": "Stone detail pass: hand-placed cracks, gold/cyan inlays, pebble accents, campfire spokes, and transition-path stone threads."
+  "residual_trace": "Cute warm base camp; the market now reads from a corrected A/D ground-level view with compact controls, reset camera support, pitch clamps, centralized market glow control, MPC-style global pulse sync, rain mist/splash particles, a textured walk-under canopy, reinforced braces/ropes/stitches, cozy herb rugs, basket nooks, small golden motes, detailed plaza blockwork, textile runner, multiple stalls, string lights, meadow flower clusters, and a clear campfire-to-market transition; the newest cinematic life pass adds aurora curtains, lens motes, and mirror-pool reflections while preserving the lightweight public shell; the stone detail pass adds hand-placed cracks, gold/cyan inlays, pebbles, campfire spokes, and path threads for close camera inspection; the return pass now reports first-frame/FPS health to the Flight Deck and adapts render quality while adding a low-cost atmospheric mote layer.",
+  "latest_visual_pass": "Return pass: adaptive render quality, iframe health telemetry, WebGL recovery, responsive resizing, and atmospheric depth motes."
 }

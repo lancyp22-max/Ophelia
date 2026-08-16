@@ -6,7 +6,7 @@
     "name": "Ophelia / Lumaria",
     "current_frontend_focus": "A1 Bridge Camp 3D world demo",
     "entry_flow": "Enter Lumaria opens the embedded 3D A1 Bridge Camp while preserving chat access.",
-    "current_visual_wave": "A1 Bridge Camp now has compact controls, camera/rain stability, centralized market glow/MPC-style pulse sync, and a Base Camp polish/import wave: luminous ground veil, outer meadow glow, distant mountain backdrop, woven market textiles, firepit crystals/lanterns/grimoire, and market entry offerings. The UE5 roadmap now includes the market environment-manager contract, HISM edge-stone construction scripts, spline transition path, cable/string-light translation, and validation checklist. The Flight Deck shell now cache-busts the 3D iframe and exposes direct weather/time controls beside the embedded world. A local world-model packet tool now turns visual-state/context into observe-act-predict-validate planning artifacts for future worldbuilding passes. The latest cinematic life pass adds procedural aurora curtains, lens-mote depth, and mirror-pool reflections inside the Three.js scene without external assets. A UE5 implementation playbook now captures the environment-manager contract, material recipes, Blueprint/HISM actors, Niagara systems, and validation checklist for this pass. The current stone detail pass adds close-range cracks, glowing inlays, pebble accents, campfire stone spokes, and transition-path stone threads."
+    "current_visual_wave": "A1 Bridge Camp now has compact controls, camera/rain stability, centralized market glow/MPC-style pulse sync, and a Base Camp polish/import wave: luminous ground veil, outer meadow glow, distant mountain backdrop, woven market textiles, firepit crystals/lanterns/grimoire, and market entry offerings. The UE5 roadmap now includes the market environment-manager contract, HISM edge-stone construction scripts, spline transition path, cable/string-light translation, and validation checklist. The Flight Deck shell now cache-busts the 3D iframe and exposes direct weather/time controls beside the embedded world. A local world-model packet tool now turns visual-state/context into observe-act-predict-validate planning artifacts for future worldbuilding passes. The latest cinematic life pass adds procedural aurora curtains, lens-mote depth, and mirror-pool reflections inside the Three.js scene without external assets. A UE5 implementation playbook now captures the environment-manager contract, material recipes, Blueprint/HISM actors, Niagara systems, and validation checklist for this pass. The current stone detail pass adds close-range cracks, glowing inlays, pebble accents, campfire stone spokes, and transition-path stone threads. The embedded world view has also been widened with a taller iframe, narrower side rail, cache-busted world URL, and compact embedded-world header so the 3D viewport no longer feels squeezed. The return pass adds first-frame/FPS telemetry, adaptive quality, WebGL context recovery, ResizeObserver sizing, and low-cost atmospheric motes; CI now syntax-checks the inline world module directly. The Flight Deck map-mode router now opens the embedded world correctly, and its layered header no longer intercepts mode controls. Agent guidance now distinguishes invariants, safety boundaries, known mechanics, contextual judgment, and unknown-future decisions; intentional unknowns are recorded as intentionally_not_decided_yet rather than auto-filled."
   },
   "active_surfaces": [
     {
@@ -35,12 +35,16 @@
         "cinematic depth polish",
         "aurora/reflection readability checks",
         "stone close-up polish",
-        "ground-camera stone readability"
+        "ground-camera stone readability",
+        "embedded viewport fit checks",
+        "hosted cache-bust smoke test",
+        "adaptive render health tuning",
+        "atmospheric mote readability"
       ]
     },
     {
       "path": "index.html",
-      "role": "Flight Deck shell, Enter Lumaria routing surface, and embedded A1 world/weather control host"
+      "role": "Flight Deck shell, Enter Lumaria routing surface, and widened embedded A1 world/weather control host"
     },
     {
       "path": "script.js",
@@ -57,6 +61,14 @@
     {
       "path": "docs/ue5-lumaria-implementation-playbook.md",
       "role": "UE5.6 implementation playbook for Lumaria environment manager, materials, Blueprint actors, and Niagara VFX"
+    },
+    {
+      "path": "AGENTS.md",
+      "role": "Root coding-agent instruction to preserve intentional open space while enforcing concrete safety boundaries"
+    },
+    {
+      "path": "data/decision-boundaries/lumaria-decision-register.v0.1.json",
+      "role": "Machine-checkable register of encoded, enforced, implemented, and intentionally deferred decisions"
     }
   ],
   "architecture_rules": [
@@ -73,6 +85,8 @@
     "Do not expose sealed/private material in public shell artifacts."
   ],
   "standard_checks": [
+    "make decision-boundary-check",
+    "make world-module-check",
     "make world-model-packet",
     "node --check /tmp/world-3d-check.js",
     "python3 -m json.tool data/visual-state/sample-scene.json >/tmp/scene.json",

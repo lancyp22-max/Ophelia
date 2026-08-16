@@ -1887,6 +1887,21 @@ if (threeBasecampFrame) {
   threeBasecampFrame.addEventListener("load", () => syncWorldTimeMode(currentWorldTimeMode));
 }
 
+window.addEventListener("message", (event) => {
+  const payload = event.data;
+  if (!payload || payload.type !== "lumaria-world-health" || event.source !== threeBasecampFrame?.contentWindow) return;
+  const renderState = document.getElementById("camp-status-render");
+  const fpsState = document.getElementById("camp-status-fps");
+  if (renderState) {
+    renderState.textContent = payload.ready ? `${payload.quality === "eco" ? "Eco" : "High"} · ${worldTimeLabel(payload.mode || currentWorldTimeMode)}` : "Starting…";
+  }
+  if (fpsState) {
+    fpsState.textContent = payload.fps > 0 ? `${payload.fps} FPS` : "First frame ready";
+    fpsState.classList.toggle("text-amber-200", payload.fps > 0 && payload.fps < 42);
+    fpsState.classList.toggle("text-emerald-200", !(payload.fps > 0 && payload.fps < 42));
+  }
+});
+
 if (mapOpenChatButton) {
   mapOpenChatButton.addEventListener("click", () => {
     setScreen("chat");
@@ -1964,7 +1979,7 @@ if (screenExitButton) {
 modeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const target = button.dataset.screen ?? "home";
-    if (target === "system" || target === "nav" || target === "chat" || target === "home") {
+    if (target === "system" || target === "nav" || target === "chat" || target === "map" || target === "home") {
       setScreen(target);
       return;
     }

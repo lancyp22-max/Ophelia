@@ -481,7 +481,13 @@
       "label": "Market entry identity and offerings",
       "state": "visible",
       "description": "Adds a woven mat, small sign rune, offering bowls, and glowing wares at the campfire-to-market transition."
+    },
+    {
+      "id": "world_runtime_health_01",
+      "label": "Adaptive world render health and atmospheric motes",
+      "state": "visible",
+      "description": "Reports first-frame readiness, FPS, active render quality, and time mode to the Flight Deck while adapting pixel ratio/shadows and preserving a low-cost atmospheric depth layer."
     }
   ],
-  "latest_visual_pass": "Base Camp polish wave: luminous ground/backdrop, firepit reference details, woven textures, and market entry offerings."
+  "latest_visual_pass": "Return pass: runtime health telemetry, adaptive render quality, WebGL recovery, responsive resizing, and atmospheric depth motes."
 }

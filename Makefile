@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet backend-build backend-run ci-check repo-link-check public-leak-guard install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet world-module-check decision-boundary-check backend-build backend-run ci-check repo-link-check public-leak-guard install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -16,6 +16,12 @@ context-brief:
 
 world-model-packet:
 	python3 scripts/world_model_packet.py
+
+world-module-check:
+	python3 scripts/check_world_module.py
+
+decision-boundary-check:
+	python3 scripts/check_decision_boundaries.py
 
 backend-build:
 	mvn -B -ntp verify
@@ -40,5 +46,7 @@ public-shell-audit: public-shell
 
 ci-check: repo-link-check public-leak-guard
 	node --check script.js
+	python3 scripts/check_world_module.py
+	python3 scripts/check_decision_boundaries.py
 	python3 scripts/capture_preview.py --dry-run
 	mvn -B -ntp verify

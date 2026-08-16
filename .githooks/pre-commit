@@ -10,4 +10,10 @@ bash scripts/public_leak_guard.sh
 echo "[pre-commit] running front-end syntax check..."
 node --check script.js
 
+echo "[pre-commit] running 3D world module syntax check..."
+python3 scripts/check_world_module.py
+
+echo "[pre-commit] validating intentional decision boundaries..."
+python3 scripts/check_decision_boundaries.py
+
 echo "[pre-commit] checks passed"
