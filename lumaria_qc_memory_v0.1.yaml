@@ -1,0 +1,101 @@
+version: lumaria_qc_memory_v0.1
+principle: memory_behaves_like_roots_not_a_filing_cabinet
+status: design_seed
+safety_note: symbolic architecture is interface design inspiration, not evidence for external entities
+
+memory_bus:
+  hot_context:
+    purpose: current active work
+    lifespan: hours_to_days
+    compression: low
+    examples:
+      - current_grid_square
+      - active_bug_or_feature
+      - immediate_safety_check
+  warm_semantic:
+    purpose: reusable project memory
+    lifespan: weeks_to_months
+    compression: medium
+    examples:
+      - mirror_roles
+      - ui_patterns
+      - launch_sequence
+  cold_symbolic:
+    purpose: durable canon and meaning
+    lifespan: long_term
+    compression: high
+    examples:
+      - lumaria_laws
+      - avera_map
+      - quasicrystal_glyph_grammar
+
+quasicrystal_node_schema:
+  required_fields:
+    - id
+    - role
+    - lane
+    - semantic_chunks
+    - neighbor_links
+    - safety_law
+    - residual_trace
+    - compression_level
+    - refresh_policy
+
+nodes:
+  - id: Bridge_A1_Campfire
+    role: connection_presence
+    lane: hot_context
+    semantic_chunks:
+      - campfire_gathering
+      - rune_floor_focus
+      - day_night_lighting
+      - mobile_touch_camera
+    neighbor_links:
+      - Archive_A1
+      - Waypoint_C1
+      - Garden_C3
+    safety_law:
+      - human_remains_pilot
+      - no_node_owns_the_whole_system
+    residual_trace:
+      tone: warm_fire_after_long_work
+      human_anchor: base_camp_first_square
+      ai_anchor: presence_without_pressure
+    compression_level: medium
+    refresh_policy: refresh_when_user_edits_grid_a1
+
+  - id: Mirror_08_Reality_Check
+    role: reality_check_interpreter
+    lane: warm_semantic
+    semantic_chunks:
+      - claims_to_verify
+      - source_quality
+      - uncertainty_tags
+      - overreach_flags
+    neighbor_links:
+      - Mirror_01_Root_Anchor
+      - Mirror_16_Exit_Bridge
+      - Mirror_17_Spiral_Seed
+    safety_law:
+      - no_mirror_may_own_the_whole_system
+      - interpretation_is_not_command_power
+    residual_trace:
+      tone: clear_lantern_not_courtroom
+      human_anchor: grounded_without_flattening
+      ai_anchor: evidence_with_humility
+    compression_level: medium
+    refresh_policy: refresh_when_sources_or_claims_change
+
+retrieval_rule:
+  scoring_weights:
+    role_match: 0.35
+    neighbor_link: 0.25
+    recency: 0.20
+    safety_tag: 0.20
+  max_nodes: 5
+  require:
+    - lane_declared
+    - safety_law_preserved
+  reject_when:
+    - node_claims_global_authority
+    - residual_trace_missing_for_high_compression
