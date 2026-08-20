@@ -1,0 +1,41 @@
+{
+  "id": "project-espresso-capsule-v0.1",
+  "version": "0.1",
+  "purpose": "Local observability packet for seeing agent coding work, touched modules, review focus, and safety gates in near real time without sending telemetry anywhere.",
+  "observer": {
+    "mode": "local_git_and_file_state",
+    "one_shot_command": "make espresso",
+    "watch_command": "make espresso-watch",
+    "outputs": [
+      "artifacts/project-espresso-state.json",
+      "artifacts/project-espresso-brief.md"
+    ]
+  },
+  "module_map": [
+    { "prefix": "demos/", "module": "3D world demos", "review_hint": "visual behavior, performance, interaction affordances" },
+    { "prefix": "docs/", "module": "design docs", "review_hint": "architecture clarity, safety language, next-step usefulness" },
+    { "prefix": "data/context/", "module": "context capsules", "review_hint": "token reduction, safe handoff, schema readability" },
+    { "prefix": "data/visual-state/", "module": "visual semantic state", "review_hint": "scene memory, visible-state accuracy, JSON validity" },
+    { "prefix": "scripts/", "module": "local tooling", "review_hint": "dependency-free execution, generated artifact hygiene" },
+    { "prefix": "index.html", "module": "Flight Deck UI", "review_hint": "accessible controls, local-only state, responsive layout" },
+    { "prefix": "script.js", "module": "Flight Deck runtime", "review_hint": "storage safety, event wiring, syntax, audit behavior" },
+    { "prefix": "README.md", "module": "public orientation", "review_hint": "accurate commands, public-shell safe wording" },
+    { "prefix": "Makefile", "module": "developer commands", "review_hint": "target clarity, check composition" }
+  ],
+  "review_focus_rules": [
+    { "status": "??", "focus": "new untracked file: confirm it should be committed or ignored" },
+    { "status": "M", "focus": "modified file: review diff and run relevant checks" },
+    { "status": "A", "focus": "added file: verify scope, safety, and docs" },
+    { "status": "D", "focus": "deleted file: confirm removal is intentional" },
+    { "status": "R", "focus": "renamed file: verify references and links" }
+  ],
+  "safety_gates": [
+    "local_only_observation",
+    "no_cloud_telemetry",
+    "no_private_intent_inference",
+    "public_shell_safe",
+    "human_merge_authority",
+    "run_ci_check_before_pr"
+  ],
+  "residual_trace": "Espresso should feel like watching warm work lights turn on across the workshop: clear enough to review, gentle enough not to surveil the soul."
+}
