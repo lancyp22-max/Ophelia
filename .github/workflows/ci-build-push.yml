@@ -35,11 +35,20 @@ jobs:
       - name: Validate intentional decision boundaries
         run: python3 scripts/check_decision_boundaries.py
 
+      - name: Validate evidence-backed correction ledger
+        run: python3 scripts/check_correction_ledger.py
+
+      - name: Validate task guidepost registry
+        run: python3 scripts/task_guidepost_scan.py --check
+
       - name: Verify repository link hygiene
         run: bash scripts/verify_repo_links.sh
 
       - name: Run public leak guard
         run: bash scripts/public_leak_guard.sh
+
+      - name: Test public leak guard denial paths
+        run: bash scripts/test_public_leak_guard.sh
 
       - name: Setup Java
         uses: actions/setup-java@v4

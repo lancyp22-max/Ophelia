@@ -19,8 +19,11 @@ jobs:
       - run: node --check script.js
       - run: python3 scripts/check_world_module.py
       - run: python3 scripts/check_decision_boundaries.py
+      - run: python3 scripts/check_correction_ledger.py
+      - run: python3 scripts/task_guidepost_scan.py --check
       - run: bash scripts/verify_repo_links.sh
       - run: bash scripts/public_leak_guard.sh
+      - run: bash scripts/test_public_leak_guard.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

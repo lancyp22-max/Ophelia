@@ -359,3 +359,15 @@ The embedded A1 world now waits for a successful first render before reporting r
 ### Intentional undefined
 
 Lumaria does not treat every unresolved pathway as a TODO. Classify gaps first: encode invariants, enforce safety boundaries, implement known mechanics, preserve contextual judgment, and record unknown-future decisions as `intentionally_not_decided_yet` with a rationale and reconsideration trigger. See `AGENTS.md`, `docs/intentional-undefined.md`, and `data/decision-boundaries/lumaria-decision-register.v0.1.json`. Run `make decision-boundary-check` to validate the register.
+
+### Correction as information
+
+Lumaria records only evidence-backed supported findings, verified corrections, and surfaced assumptions. The tally is an audit signal rather than points: uncertainty and disagreement do not count as errors, synthetic mistakes are forbidden, and no status, reward, permission, or action may depend on the totals. The correction opportunity index rises with supported findings since the last verified correction, making a later contradiction more informative without incentivizing anyone to manufacture one. See `docs/correction-as-information.md` and run `make correction-ledger-check`.
+
+### Task guidepost scanner
+
+Run `make task-guideposts TASK="describe the current task"` to match current work against curated operational failures, hard boundaries, and required checks before implementation narrows into tunnel vision. Matches are prompts for review rather than proof. Named external cases require primary-source provenance and claim-level verification; the registry intentionally contains no unverified coffee-shop story. Validate it with `make task-guidepost-check`.
+
+### Provider credential boundary
+
+Provider credentials may never be placed in the browser or committed to the repository. The leak guard blocks common token formats, private credential files, and browser-public secret assignments; `make public-leak-guard-test` verifies its denial paths. This scanning is defense in depth, not proof of secret absence. The current authority endpoint is not authentication, authorization, rate limiting, a credential vault, or a provider proxy. Provider integration remains `blocked_by_missing_safety_boundary` until the server controls in `docs/provider-credential-boundary.md` are implemented and tested.

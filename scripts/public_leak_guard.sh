@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="${PUBLIC_LEAK_GUARD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$ROOT_DIR"
 
 echo "[public-leak-guard] scanning tracked files for high-risk exposure patterns..."
@@ -42,14 +42,23 @@ if echo "$tracked_files" | rg -n '\.map$' >/dev/null; then
 fi
 
 # 1b) Block known private material extensions from being tracked.
-if echo "$tracked_files" | rg -n '(^|/)(\.env(\..*)?|.*\.(pem|p12|pfx|key|kdbx))$' >/tmp/public_leak_guard_private_files.txt; then
+if echo "$tracked_files" \
+  | rg -n '(^|/)(\.env(\..*)?|.*\.(pem|p12|pfx|key|kdbx))$' \
+  | rg -v '\.env\.(example|sample|template)$' \
+  >/tmp/public_leak_guard_private_files.txt; then
   fail_with_reason "critical" "GLG-002" "tracked private material file type detected" /tmp/public_leak_guard_private_files.txt
 fi
 
 # 2) Block obvious private key / token leaks.
-secret_regex='(BEGIN (RSA|EC|OPENSSH|PRIVATE) KEY|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36,}|xox[baprs]-[A-Za-z0-9-]{20,}|AIza[0-9A-Za-z\\-_]{35})'
-if rg -n --hidden --glob '!target/**' --glob '!.git/**' -e "$secret_regex" >/tmp/public_leak_guard_hits.txt; then
+secret_regex='(BEGIN (RSA|EC|OPENSSH|PRIVATE) KEY|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|xox[baprs]-[A-Za-z0-9-]{20,}|AIza[0-9A-Za-z_-]{35}|sk-ant-[A-Za-z0-9_-]{20,}|sk-proj-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{32,})'
+if git grep --cached -n -I -E -e "$secret_regex" -- . >/tmp/public_leak_guard_hits.txt 2>/dev/null; then
   fail_with_reason "critical" "GLG-003" "possible secret/token material detected" /tmp/public_leak_guard_hits.txt
+fi
+
+# 2b) Block secret-looking values assigned to browser-public environment names.
+public_secret_regex="(VITE|NEXT_PUBLIC|REACT_APP|PUBLIC)_[A-Z0-9_]*(API_KEY|SECRET|TOKEN)[[:space:]]*=[[:space:]]*['\"]?[A-Za-z0-9_./+=-]{12,}"
+if git grep --cached -n -I -E -e "$public_secret_regex" -- . >/tmp/public_leak_guard_client_secret_hits.txt 2>/dev/null; then
+  fail_with_reason "critical" "GLG-005" "secret-like value assigned to browser-public configuration" /tmp/public_leak_guard_client_secret_hits.txt
 fi
 
 # 3) Block direct mention of unreleased/internal secret artifacts in public docs/policies.

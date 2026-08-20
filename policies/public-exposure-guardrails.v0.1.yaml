@@ -8,6 +8,8 @@ threat_map:
     - accidental_secret_commit_to_public_repo
     - debug_artifact_leak_via_source_maps
     - over-sharing_internal_system_prompts_or_control_text
+    - browser_public_provider_credentials
+    - unauthenticated_provider_proxy_cost_abuse
   posture: "Assume public artifacts are adversarially inspected."
 
 do_not_publish:
@@ -26,6 +28,7 @@ do_not_publish:
 required_controls:
   preflight_checks:
     - scripts/public_leak_guard.sh
+    - scripts/test_public_leak_guard.sh
     - scripts/verify_repo_links.sh
     - scripts/install_git_hooks.sh
   ci_enforcement:
@@ -38,6 +41,15 @@ required_controls:
   consent_first:
     - relational_guard_enabled
     - change_requires_approved_gate_path
+  provider_boundary_before_public_enablement:
+    - authenticated_caller
+    - scoped_authorization
+    - server_only_secret_storage
+    - request_and_response_limits
+    - rate_and_concurrency_limits
+    - monetary_budget_circuit_breaker
+    - redacted_logs
+    - emergency_disable_switch
 
 severity_classes:
   critical:

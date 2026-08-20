@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REGISTER = ROOT / "data" / "decision-boundaries" / "lumaria-decision-register.v0.1.json"
 EXPECTED_STATUS = {
     "invariant": "encoded",
-    "safety_boundary": "enforced",
     "known_mechanical_behavior": "implemented",
 }
+SAFETY_STATUSES = {"enforced", "blocked_by_missing_safety_boundary"}
 DELIBERATIVE_CLASSES = {"contextual_judgment", "unknown_future"}
 ALLOWED_STATUSES = {
     "encoded",
@@ -47,7 +47,15 @@ def validate(register: dict[str, Any]) -> list[str]:
             errors.append(f"{label}: statement is required")
 
         expected = EXPECTED_STATUS.get(decision_class)
-        if expected and status != expected:
+        if decision_class == "safety_boundary":
+            if status not in SAFETY_STATUSES:
+                errors.append(f"{label}: safety_boundary must be enforced or explicitly blocked")
+            if status == "blocked_by_missing_safety_boundary":
+                if not decision.get("rationale"):
+                    errors.append(f"{label}: blocked safety boundary requires rationale")
+                if not decision.get("reconsider_when"):
+                    errors.append(f"{label}: blocked safety boundary requires reconsider_when")
+        elif expected and status != expected:
             errors.append(f"{label}: {decision_class} must be {expected}, not {status}")
         elif decision_class in DELIBERATIVE_CLASSES:
             if status != "intentionally_not_decided_yet":

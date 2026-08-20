@@ -7,6 +7,9 @@ cd "$ROOT_DIR"
 echo "[pre-commit] running public leak guard..."
 bash scripts/public_leak_guard.sh
 
+echo "[pre-commit] testing public leak guard denial paths..."
+bash scripts/test_public_leak_guard.sh
+
 echo "[pre-commit] running front-end syntax check..."
 node --check script.js
 
@@ -15,5 +18,11 @@ python3 scripts/check_world_module.py
 
 echo "[pre-commit] validating intentional decision boundaries..."
 python3 scripts/check_decision_boundaries.py
+
+echo "[pre-commit] validating evidence-backed correction ledger..."
+python3 scripts/check_correction_ledger.py
+
+echo "[pre-commit] validating task guideposts..."
+python3 scripts/task_guidepost_scan.py --check
 
 echo "[pre-commit] checks passed"

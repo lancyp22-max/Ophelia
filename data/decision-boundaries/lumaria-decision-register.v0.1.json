@@ -17,6 +17,14 @@
       "evidence": "scripts/public_leak_guard.sh"
     },
     {
+      "id": "provider_credentials_and_backend_auth",
+      "class": "safety_boundary",
+      "status": "blocked_by_missing_safety_boundary",
+      "statement": "Provider credentials must remain server-side and provider calls must not be exposed until authentication, authorization, rate limits, budget limits, and secret handling are implemented.",
+      "rationale": "The current authority confirmation endpoint is not an authentication system or a provider proxy, and the repository has no production credential vault or provider-call path.",
+      "reconsider_when": "A concrete provider integration includes an authenticated server boundary, scoped authorization, secret storage, redacted logging, rate limits, and a tested budget circuit breaker."
+    },
+    {
       "id": "world_module_syntax",
       "class": "known_mechanical_behavior",
       "status": "implemented",
