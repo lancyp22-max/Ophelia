@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lumaria.visual-elements.schema.v0.1",
+  "title": "Lumaria Visual Element State",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "location",
+    "visible_state",
+    "functional_role",
+    "mood_tags",
+    "causal_links",
+    "allowed_transitions",
+    "safety_notes",
+    "residual_trace"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "type": { "type": "string" },
+    "location": { "type": "string" },
+    "visible_state": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean", "array", "object", "null"] }
+    },
+    "functional_role": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "mood_tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "causal_links": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_transitions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "safety_notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "residual_trace": { "type": "string" }
+  },
+  "additionalProperties": false
+}
