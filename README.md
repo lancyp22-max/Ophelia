@@ -371,3 +371,7 @@ Run `make task-guideposts TASK="describe the current task"` to match current wor
 ### Provider credential boundary
 
 Provider credentials may never be placed in the browser or committed to the repository. The leak guard blocks common token formats, private credential files, and browser-public secret assignments; `make public-leak-guard-test` verifies its denial paths. This scanning is defense in depth, not proof of secret absence. The current authority endpoint is not authentication, authorization, rate limiting, a credential vault, or a provider proxy. Provider integration remains `blocked_by_missing_safety_boundary` until the server controls in `docs/provider-credential-boundary.md` are implemented and tested.
+
+### Radiant Crown focus contract
+
+`data/focus/radiant-crown-focus.v0.1.yaml` expresses the existing Crown pilot as an experimental symbolic UI contract. It separates observed, interpreted, and canonized information; distinguishes entry consent from persistence consent; defaults persistence to return; treats missing telemetry as unavailable rather than zero; disables background looping; and explicitly makes no claim of external entities, cosmic telemetry, consciousness measurement, or quasicrystal physics. `mvn verify` parses and checks the contract against its safety and visual-state invariants.
