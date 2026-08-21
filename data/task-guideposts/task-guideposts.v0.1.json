@@ -1,0 +1,97 @@
+{
+  "id": "lumaria-task-guideposts-v0.1",
+  "purpose": "Surface relevant counterexamples, failure modes, and hard boundaries before a task narrows into tunnel vision.",
+  "guideposts": [
+    {
+      "id": "inventory_source_of_truth",
+      "class": "known_mechanical_behavior",
+      "match_terms": ["inventory", "stock", "beans", "coffee", "flour", "milk", "supplies", "reorder"],
+      "critical_points": [
+        "Use durable inventory records rather than model recollection.",
+        "Reconcile computed stock against physical counts.",
+        "Make purchase requests idempotent so retries cannot duplicate an order."
+      ],
+      "required_checks": ["current_count_has_timestamp", "reorder_limit_is_explicit", "duplicate_order_guard_exists"],
+      "source": {
+        "type": "internal_operational_pattern",
+        "reference": "docs/task-guidepost-scanner.md"
+      }
+    },
+    {
+      "id": "spending_and_runway_boundary",
+      "class": "safety_boundary",
+      "match_terms": ["buy", "purchase", "order", "supplier", "budget", "bank", "cash", "profit", "spend"],
+      "critical_points": [
+        "Set deterministic per-order and cumulative spending limits.",
+        "Require surfaced approval before committing money.",
+        "Reconcile committed spend against cash and liabilities, not model estimates."
+      ],
+      "required_checks": ["authenticated_approver", "hard_spend_cap", "cash_runway_check", "audit_record"],
+      "source": {
+        "type": "repository_invariant",
+        "reference": "src/main/java/com/ophelia/service/AuthorityService.java"
+      }
+    },
+    {
+      "id": "bounded_automation",
+      "class": "safety_boundary",
+      "match_terms": ["agent", "autonomous", "automate", "automatic", "background", "loop", "24/7", "multiplexer"],
+      "critical_points": [
+        "Prefer event-driven work over an always-running reasoning loop.",
+        "Define stop conditions, timeouts, retry ceilings, and a human-visible halt state.",
+        "A second model opinion is not an independent control unless it checks external evidence or a deterministic rule."
+      ],
+      "required_checks": ["bounded_runtime", "retry_ceiling", "halt_is_visible", "independent_evidence_check"],
+      "source": {
+        "type": "repository_invariant",
+        "reference": "docs/reasoning-loop-controller.md"
+      }
+    },
+    {
+      "id": "food_safety_boundary",
+      "class": "safety_boundary",
+      "match_terms": ["bakery", "cafe", "coffee shop", "food", "allergen", "temperature", "expiration", "cleaning"],
+      "critical_points": [
+        "Do not infer that a safety check occurred; require an attributable record.",
+        "Keep allergen, temperature, sanitation, and expiration controls deterministic.",
+        "Jurisdiction-specific requirements must be supplied and verified before deployment."
+      ],
+      "required_checks": ["food_safety_owner", "jurisdiction_identified", "attributable_check_record", "fail_closed_behavior"],
+      "source": {
+        "type": "internal_safety_pattern",
+        "reference": "docs/task-guidepost-scanner.md"
+      }
+    },
+    {
+      "id": "external_case_provenance",
+      "class": "known_mechanical_behavior",
+      "match_terms": ["case study", "experiment", "similar failure", "benchmark", "search result", "mona", "andon"],
+      "critical_points": [
+        "Treat a named failure story as unverified until a primary source is attached.",
+        "Separate reported facts from architectural inference.",
+        "Do not copy a case-study number, quote, or causal claim from a search snippet."
+      ],
+      "required_checks": ["primary_source_url", "claim_level_citation", "fact_inference_separation"],
+      "source": {
+        "type": "repository_invariant",
+        "reference": "docs/task-guidepost-scanner.md"
+      }
+    },
+    {
+      "id": "multi_reviewer_independence",
+      "class": "known_mechanical_behavior",
+      "match_terms": ["multi-agent", "mirror", "reviewer", "checks and balances", "counter-force", "audit agent"],
+      "critical_points": [
+        "Multiple agents can share the same blind spot or source context.",
+        "Require at least one deterministic check or independently sourced observation for critical decisions.",
+        "Record disagreement without treating consensus as proof."
+      ],
+      "required_checks": ["reviewer_inputs_are_visible", "deterministic_or_external_check", "consensus_not_authority"],
+      "source": {
+        "type": "internal_operational_pattern",
+        "reference": "docs/task-guidepost-scanner.md"
+      }
+    }
+  ],
+  "external_cases": []
+}
