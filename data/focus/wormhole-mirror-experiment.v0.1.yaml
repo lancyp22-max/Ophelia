@@ -1,0 +1,118 @@
+version: "0.1"
+id: wormhole_mirror_experiment
+status: experimental_symbolic_routing
+
+scope:
+  purpose: "Test a reversible paired-mirror tunnel between two declared Lumaria context anchors."
+  implementation_surface: "Scene navigation, context preview, and paired portal visualization"
+  non_claims:
+    - no_physical_wormhole
+    - no_spacetime_manipulation
+    - no_external_entity_contact
+    - no_quantum_or_quasicrystal_evidence
+
+topology:
+  kind: reciprocal_bounded_link
+  arrangement_rule: "Two independently identified anchors, two directed edges, one explicit return path."
+  entry_anchor:
+    id: mirror_tunnel_entry
+    required:
+      - scene_id
+      - region_id
+      - provenance
+  exit_anchor:
+    id: mirror_tunnel_exit
+    required:
+      - scene_id
+      - region_id
+      - provenance
+  edges:
+    - from: mirror_tunnel_entry
+      to: mirror_tunnel_exit
+      direction: outward
+    - from: mirror_tunnel_exit
+      to: mirror_tunnel_entry
+      direction: return
+
+invariants:
+  - anchors_remain_distinct
+  - traversal_does_not_merge_identity
+  - authority_does_not_transfer_across_link
+  - provenance_survives_traversal
+  - entry_consent_does_not_imply_persistence
+  - return_path_remains_visible
+
+capabilities:
+  allowed:
+    - preview_destination
+    - request_traversal
+    - traverse_view_context
+    - return_to_entry
+    - close_link
+  forbidden:
+    - execute_remote_code
+    - transfer_credentials
+    - infer_destination_consent
+    - persist_destination_context_without_approval
+    - bypass_scene_action_gate
+
+consent:
+  entry_required: true
+  destination_required_when_participant_space_is_affected: true
+  persistence_separate: true
+  default_persistence: return
+
+lease:
+  required: true
+  maximum_ttl_seconds: 900
+  expires_to: closed
+  heartbeat_extends_lease: false
+
+epistemic_state:
+  link_status_values:
+    - proposed
+    - previewable
+    - open
+    - stale
+    - unavailable
+    - conflicting
+    - closed
+  missing_destination_status: unavailable
+  rules:
+    - unavailable_is_not_open
+    - visual_alignment_is_not_transport_proof
+    - repeated_retrieval_is_not_canonization
+
+visual_contract:
+  effect: paired_phase_rings
+  entry_palette: cyan_violet
+  exit_palette: amber_teal
+  synchronization: shared_pulse_with_distinct_phase
+  preview_only_until_approved: true
+  degraded_state: desynchronized_rings
+  closed_state: unlit_outline
+
+traversal_receipt:
+  required_fields:
+    - traversal_id
+    - entry_anchor_id
+    - exit_anchor_id
+    - initiated_by
+    - approved_by
+    - opened_at
+    - expires_at
+    - return_status
+
+fail_soft:
+  triggers:
+    - anchor_missing
+    - lease_expired
+    - consent_unknown
+    - destination_unavailable
+    - provenance_missing
+    - return_path_invalid
+  actions:
+    - do_not_open
+    - surface_status
+    - preserve_entry_context
+    - return_to_rest

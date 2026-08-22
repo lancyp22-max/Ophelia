@@ -375,3 +375,11 @@ Provider credentials may never be placed in the browser or committed to the repo
 ### Radiant Crown focus contract
 
 `data/focus/radiant-crown-focus.v0.1.yaml` expresses the existing Crown pilot as an experimental symbolic UI contract. It separates observed, interpreted, and canonized information; distinguishes entry consent from persistence consent; defaults persistence to return; treats missing telemetry as unavailable rather than zero; disables background looping; and explicitly makes no claim of external entities, cosmic telemetry, consciousness measurement, or quasicrystal physics. `mvn verify` parses and checks the contract against its safety and visual-state invariants.
+
+### Scene Action Bus
+
+`data/scene-actions/scene-action-bus.v0.1.schema.json` defines eight bounded, reversible proposal types for future human/model interaction with the Three.js world. It carries actor provenance, region leases, surfaced consent, session-first persistence, resource budgets, and rollback strategy while excluding raw JavaScript, modules, URLs, and HTML. The included lantern proposal is a non-executing fixture—not a live agent or approved mutation. Run `make scene-action-bus-check` to validate the contract.
+
+### Wormhole Mirror experiment
+
+`data/focus/wormhole-mirror-experiment.v0.1.yaml` models a wormhole mirror as a reversible paired-context link: two distinct anchors, reciprocal directed edges, bounded leases, destination preview, explicit consent, traversal receipts, and a visible return path. It is an experimental UI/routing metaphor—not a claim of physical wormholes, spacetime manipulation, external contact, or quantum/quasicrystal evidence. `mvn verify` parses and checks its non-claims, authority separation, default return posture, expiry, unavailable-state handling, and fail-soft closure.

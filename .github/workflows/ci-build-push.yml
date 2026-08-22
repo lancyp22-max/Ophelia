@@ -44,6 +44,9 @@ jobs:
       - name: Validate task guidepost registry
         run: python3 scripts/task_guidepost_scan.py --check
 
+      - name: Validate bounded scene action contract
+        run: python3 scripts/check_scene_action_bus.py
+
       - name: Verify repository link hygiene
         run: bash scripts/verify_repo_links.sh
 
