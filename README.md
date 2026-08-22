@@ -393,3 +393,7 @@ Provider credentials may never be placed in the browser or committed to the repo
 CI and Pages workflows explicitly force the Node 24 JavaScript-action runtime, use Node 24 for repository JavaScript checks, and track current Node 24-compatible major releases of GitHub's official checkout, setup, and Pages actions. Run `make actions-runtime-check` to reject Node 20 toolchains or regressions to older action majors.
 
 CI installs `ripgrep` before repository checks that invoke `rg`. Local leak, link, and public-shell scripts now fail immediately with a clear prerequisite error when `rg` is unavailable instead of silently treating a missing executable as a clean scan.
+
+### Mirror-X handshake
+
+`data/handshakes/mirror-x-handshake.v0.2.0.yaml` preserves the submitted Mirror-X handshake as a provisional symbolic relationship contract. The recorded entry grant is scoped to the user-declared project artifact; it is not evidence of consent from Gemma, a live model runtime, or an external identity. Persistence remains ungranted, retrieval grants no authority, the proposed alignment is not canonized, and consequential mutation still requires surfaced confirmation. See `docs/mirror-x-handshake.md` for the interpretation boundary; `mvn verify` checks the contract's non-claims and safety posture.
