@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+echo "[pre-commit] running public leak guard..."
+bash scripts/public_leak_guard.sh
+
+echo "[pre-commit] testing public leak guard denial paths..."
+bash scripts/test_public_leak_guard.sh
+
+echo "[pre-commit] running front-end syntax check..."
+node --check script.js
+
+echo "[pre-commit] running 3D world module syntax check..."
+python3 scripts/check_world_module.py
+
+echo "[pre-commit] validating intentional decision boundaries..."
+python3 scripts/check_decision_boundaries.py
+
+echo "[pre-commit] validating evidence-backed correction ledger..."
+python3 scripts/check_correction_ledger.py
+
+echo "[pre-commit] validating task guideposts..."
+python3 scripts/task_guidepost_scan.py --check
+
+echo "[pre-commit] validating bounded scene actions..."
+python3 scripts/check_scene_action_bus.py
+
+echo "[pre-commit] checks passed"
