@@ -1,0 +1,70 @@
+name: CI Build and Push
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Validate front-end script syntax
+        run: node --check script.js
+
+      - name: Validate 3D world module syntax
+        run: python3 scripts/check_world_module.py
+
+      - name: Validate intentional decision boundaries
+        run: python3 scripts/check_decision_boundaries.py
+
+      - name: Validate evidence-backed correction ledger
+        run: python3 scripts/check_correction_ledger.py
+
+      - name: Validate task guidepost registry
+        run: python3 scripts/task_guidepost_scan.py --check
+
+      - name: Validate bounded scene action contract
+        run: python3 scripts/check_scene_action_bus.py
+
+      - name: Validate GitHub Actions Node runtime
+        run: python3 scripts/check_github_actions_runtime.py
+
+      - name: Verify repository link hygiene
+        run: bash scripts/verify_repo_links.sh
+
+      - name: Run public leak guard
+        run: bash scripts/public_leak_guard.sh
+
+      - name: Test public leak guard denial paths
+        run: bash scripts/test_public_leak_guard.sh
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build backend
+        run: mvn -B -ntp verify
