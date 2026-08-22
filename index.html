@@ -2301,13 +2301,25 @@
           </div>
           <div class="rounded-2xl border border-slate-500/20 bg-slate-900/40 p-4">
             <h2 class="mb-2 text-[0.6rem] tracking-[0.35em] text-cyan-300/80">AUDIT CONTROLS</h2>
-            <div class="mb-2 flex gap-2">
+            <div class="mb-2 flex flex-wrap gap-2">
               <button id="audit-export" type="button" class="rounded-full border border-cyan-400/40 px-3 py-1 text-[0.55rem] hover:bg-cyan-400/20">Export Logs</button>
               <button id="audit-clear" type="button" class="rounded-full border border-red-400/40 px-3 py-1 text-[0.55rem] hover:bg-red-400/20">Clear Logs</button>
             </div>
             <div id="audit-log-list" class="custom-scrollbar h-32 overflow-y-auto rounded-xl border border-slate-600/40 bg-slate-950/50 p-2 text-[0.55rem] normal-case tracking-normal">
               <p class="text-slate-400">No audit entries yet.</p>
             </div>
+          </div>
+          <div class="rounded-2xl border border-emerald-400/25 bg-emerald-950/20 p-4 md:col-span-2">
+            <h2 class="mb-2 text-[0.6rem] tracking-[0.35em] text-emerald-200/80">CONTINUITY CAPSULE</h2>
+            <p class="mb-3 text-[0.56rem] normal-case tracking-normal text-slate-300">
+              Freeze the current tab into a portable local-only recovery packet when a session stalls, then restore it in a fresh tab without shipping private state to a server.
+            </p>
+            <div class="mb-3 flex flex-wrap gap-2">
+              <button id="continuity-export" type="button" class="rounded-full border border-emerald-300/50 px-3 py-1 text-[0.55rem] text-emerald-100 hover:bg-emerald-500/20">Export Capsule</button>
+              <button id="continuity-import" type="button" class="rounded-full border border-violet-300/50 px-3 py-1 text-[0.55rem] text-violet-100 hover:bg-violet-500/20">Restore Pasted Capsule</button>
+            </div>
+            <textarea id="continuity-import-input" class="h-28 w-full rounded-xl border border-slate-600/40 bg-slate-950/70 p-3 font-mono text-[0.55rem] normal-case tracking-normal text-slate-200 outline-none focus:border-emerald-300/60" placeholder="Paste a continuity capsule JSON here to restore mirror, resonance, vessel, channel, probe, and recent local context."></textarea>
+            <p id="continuity-status" class="mt-2 text-[0.55rem] normal-case tracking-normal text-slate-400">No continuity capsule exported this session.</p>
           </div>
         </div>
       </section>
