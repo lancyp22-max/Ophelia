@@ -33,6 +33,8 @@ def validate(path: Path) -> list[str]:
         errors.append(f"{path}: Node 20 toolchain is not allowed")
     if "setup-node" in text and not re.search(r"node-version:\s*['\"]?24(?:['\"]|\s|$)", text):
         errors.append(f"{path}: setup-node workflow must select Node 24")
+    if "setup-node" in text and "apt-get install -y ripgrep" not in text:
+        errors.append(f"{path}: validation workflow must install ripgrep")
 
     for action, major_text in ACTION_PATTERN.findall(text):
         minimum = MINIMUM_MAJOR.get(action)

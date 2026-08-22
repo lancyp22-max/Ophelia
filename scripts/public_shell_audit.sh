@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo "[public-shell-audit] ERROR: ripgrep (rg) is required but not installed." >&2
+  exit 127
+fi
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SHELL_DIR="$ROOT_DIR/artifacts/public-shell"
 

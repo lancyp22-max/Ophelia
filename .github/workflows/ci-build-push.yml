@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       - name: Validate front-end script syntax
         run: node --check script.js
 

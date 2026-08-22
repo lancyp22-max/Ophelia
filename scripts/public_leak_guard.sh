@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT_DIR="${PUBLIC_LEAK_GUARD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$ROOT_DIR"
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo "[public-leak-guard] ERROR: ripgrep (rg) is required but not installed." >&2
+  exit 127
+fi
+
 echo "[public-leak-guard] scanning tracked files for high-risk exposure patterns..."
 
 tracked_files="$(git ls-files)"

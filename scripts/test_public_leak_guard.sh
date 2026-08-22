@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo "[public-leak-guard-test] ERROR: ripgrep (rg) is required but not installed." >&2
+  exit 127
+fi
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GUARD="$ROOT_DIR/scripts/public_leak_guard.sh"
 TMP_DIR="$(mktemp -d)"
