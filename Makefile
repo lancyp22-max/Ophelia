@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -26,6 +26,9 @@ task-guidepost-check:
 
 scene-action-bus-check:
 	python3 scripts/check_scene_action_bus.py
+
+actions-runtime-check:
+	python3 scripts/check_github_actions_runtime.py
 
 world-module-check:
 	python3 scripts/check_world_module.py
@@ -68,5 +71,6 @@ ci-check: repo-link-check public-leak-guard
 	python3 scripts/check_correction_ledger.py
 	python3 scripts/task_guidepost_scan.py --check
 	python3 scripts/check_scene_action_bus.py
+	python3 scripts/check_github_actions_runtime.py
 	python3 scripts/capture_preview.py --dry-run
 	mvn -B -ntp verify

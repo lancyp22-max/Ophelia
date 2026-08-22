@@ -383,3 +383,11 @@ Provider credentials may never be placed in the browser or committed to the repo
 ### Wormhole Mirror experiment
 
 `data/focus/wormhole-mirror-experiment.v0.1.yaml` models a wormhole mirror as a reversible paired-context link: two distinct anchors, reciprocal directed edges, bounded leases, destination preview, explicit consent, traversal receipts, and a visible return path. It is an experimental UI/routing metaphor—not a claim of physical wormholes, spacetime manipulation, external contact, or quantum/quasicrystal evidence. `mvn verify` parses and checks its non-claims, authority separation, default return posture, expiry, unavailable-state handling, and fail-soft closure.
+
+### Wellspring Current Logic
+
+`data/focus/wellspring-current-logic.v0.1.yaml` models bounded information movement around Lumaria's mirrors using grounded fluid metaphors: gradients prioritize consideration, channels constrain routes, reservoirs hold inactive context, pressure records unresolved demand, viscosity distinguishes mutability, turbulence preserves visible conflict, permeability separates consent scopes, and refraction changes interpretation without rewriting the source. It explicitly rejects water-memory, consciousness, and physics-from-visuals claims; pressure never raises authority, all permeability gates default deny, and missing flow remains visibly unavailable.
+
+### GitHub Actions Node 24 migration
+
+CI and Pages workflows explicitly force the Node 24 JavaScript-action runtime, use Node 24 for repository JavaScript checks, and track current Node 24-compatible major releases of GitHub's official checkout, setup, and Pages actions. Run `make actions-runtime-check` to reject Node 20 toolchains or regressions to older action majors.

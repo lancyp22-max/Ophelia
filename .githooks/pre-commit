@@ -28,4 +28,7 @@ python3 scripts/task_guidepost_scan.py --check
 echo "[pre-commit] validating bounded scene actions..."
 python3 scripts/check_scene_action_bus.py
 
+echo "[pre-commit] validating GitHub Actions Node runtime..."
+python3 scripts/check_github_actions_runtime.py
+
 echo "[pre-commit] checks passed"
