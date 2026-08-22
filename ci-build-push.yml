@@ -1,0 +1,39 @@
+name: Local CI Definition
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+      - run: node --check script.js
+      - run: python3 scripts/check_world_module.py
+      - run: python3 scripts/check_decision_boundaries.py
+      - run: python3 scripts/check_correction_ledger.py
+      - run: python3 scripts/task_guidepost_scan.py --check
+      - run: python3 scripts/check_scene_action_bus.py
+      - run: python3 scripts/check_github_actions_runtime.py
+      - run: bash scripts/verify_repo_links.sh
+      - run: bash scripts/public_leak_guard.sh
+      - run: bash scripts/test_public_leak_guard.sh
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: mvn -B -ntp verify
