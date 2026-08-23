@@ -1,0 +1,10 @@
+name: Ophelia Lumaria Substrate
+mission: "Render the Ophelia SVG module."
+primary_task: OPHELIA
+legacy_migrations:
+  - from: "Create visual SVG for Sigil Ring"
+    to: "OPHELIA"
+  - from: "Create visual Svg for Sigil ring"
+    to: "OPHELIA"
+  - from: "Render the Sigil Ring SVG module."
+    to: "Render the Ophelia SVG module."
