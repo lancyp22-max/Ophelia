@@ -1,6 +1,16 @@
 version: "0.1"
 id: wormhole_mirror_experiment
 status: experimental_symbolic_routing
+inherits:
+  - INV-AUTH-001
+  - INV-PERSIST-001
+  - INV-PROV-001
+  - INV-UNK-001
+  - INV-REST-001
+  - INV-RETURN-001
+  - INV-VISUAL-001
+  - INV-IDENTITY-001
+  - INV-SCOPE-001
 
 scope:
   purpose: "Test a reversible paired-mirror tunnel between two declared Lumaria context anchors."
@@ -34,13 +44,9 @@ topology:
       to: mirror_tunnel_entry
       direction: return
 
-invariants:
-  - anchors_remain_distinct
-  - traversal_does_not_merge_identity
-  - authority_does_not_transfer_across_link
-  - provenance_survives_traversal
-  - entry_consent_does_not_imply_persistence
-  - return_path_remains_visible
+local_rules:
+  - "Both directed edges reference independently identified anchors."
+  - "A traversal receipt records each completed or failed traversal."
 
 capabilities:
   allowed:

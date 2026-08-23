@@ -397,3 +397,15 @@ CI installs `ripgrep` before repository checks that invoke `rg`. Local leak, lin
 ### Mirror-X handshake
 
 `data/handshakes/mirror-x-handshake.v0.2.0.yaml` preserves the submitted Mirror-X handshake as a provisional symbolic relationship contract. The recorded entry grant is scoped to the user-declared project artifact; it is not evidence of consent from Gemma, a live model runtime, or an external identity. Persistence remains ungranted, retrieval grants no authority, the proposed alignment is not canonized, and consequential mutation still requires surfaced confirmation. See `docs/mirror-x-handshake.md` for the interpretation boundary; `mvn verify` checks the contract's non-claims and safety posture.
+
+### Lumaria Kernel v1
+
+`data/kernel/lumaria-core-invariants.v1.yaml` is the single canonical registry for eleven cross-cutting laws. Contracts inherit stable IDs rather than independently rewriting authority, persistence, provenance, unknown-state, REST, mutation, return, visual-evidence, identity, protected-scope, and canonization rules. `data/kernel/lumaria-lifecycle.v1.yaml` supplies capability-shaped consent receipts, separate identity dimensions, memory derivation lifecycle, replay-safe leases, and transactional mutation phases. The actual multi-principal negotiation process remains intentionally undecided, while the no-inferred-cross-principal-authorization boundary remains enforced. Run `make kernel-check` to validate references and cross-contract seams.
+
+`docs/threat-model-v1.md` unifies the current security posture across retrieval injection, poisoned memory, provider compromise, confused-deputy behavior, replay, accidental confirmation, resource exhaustion, privilege leakage, credential exposure, public-shell inference, and persuasive visualization. It records required fail-closed behavior without claiming that documentation alone implements each mitigation.
+
+`docs/kernel-map.md` is the compact operational view: provenance, capability, authorization, persistence, and stop/rollback remain visible without requiring operators to navigate every metaphor or subsystem.
+
+### Surfaced canonization
+
+`data/kernel/lumaria-canonization.v1.yaml` makes declarations visible without treating speech as permission. Canon candidates require affected-principal review, a scoped `canonize` capability, transactional persistence, and a receipt. Its integrity audit surfaces evidence problems without replacing canon automatically, while its quarantine gate evaluates only observable boundary-crossing candidates and explicitly preserves disagreement as a possible correction. See `docs/surfaced-canonization.md`.

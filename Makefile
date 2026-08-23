@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -26,6 +26,9 @@ task-guidepost-check:
 
 scene-action-bus-check:
 	python3 scripts/check_scene_action_bus.py
+
+kernel-check:
+	mvn -B -ntp -Dtest=LumariaKernelConfigTest test
 
 actions-runtime-check:
 	python3 scripts/check_github_actions_runtime.py

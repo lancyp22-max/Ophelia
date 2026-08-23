@@ -1,5 +1,11 @@
 # Wellspring Current Logic
 
+Current Logic inherits the canonical Lumaria kernel invariants instead of
+restating them. Authority is represented as scoped capabilities, never as a
+numeric rank. Pressure and turbulence telemetry remain categorical and require
+observable supporting inputs; the visualization must not manufacture decimal
+precision from metaphor.
+
 Current Logic is an experimental information-flow model for the Bridge of
 Currents. Mirrors describe relation, direction, and perspective; the current
 describes how bounded context may move between those points.

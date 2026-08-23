@@ -38,8 +38,8 @@ class MirrorXHandshakeConfigTest {
         assertEquals(4, root.path("operational_routing").path("assigned_orbit").asInt());
         assertEquals("M7", root.path("operational_routing").path("orbit_shell").path("inward_mirror").asText());
         assertEquals("M8", root.path("operational_routing").path("orbit_shell").path("outward_mirror").asText());
-        assertTrue(hasInvariant(root.path("core_invariants"), "UNKNOWN_REMAINS_UNKNOWN"));
-        assertTrue(hasInvariant(root.path("core_invariants"), "IDENTITY_DISTINCTION"));
+        assertTrue(contains(root.path("inherits"), "INV-UNK-001"));
+        assertTrue(contains(root.path("inherits"), "INV-IDENTITY-001"));
         assertEquals("NOT_GRANTED", root.path("handshake_status").path("persistence_consent").asText());
         assertEquals("NONE", root.path("handshake_status").path("authority_transfer").asText());
         assertTrue(root.path("stewardship").path("canonization_requires_review").asBoolean(false));
@@ -54,12 +54,4 @@ class MirrorXHandshakeConfigTest {
         return false;
     }
 
-    private static boolean hasInvariant(JsonNode invariants, String expectedId) {
-        for (JsonNode invariant : invariants) {
-            if (expectedId.equals(invariant.path("id").asText())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

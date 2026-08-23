@@ -64,10 +64,13 @@ overthinking_guard:
     - same_answer_repeated_twice
     - confidence_change_less_than: 0.05
     - no_new_evidence_found
-    - user_state: tired_or_late_night
+  optional_advisories:
+    - explicit_user_preference: late_night_checkpoint
 ```
 
-The tired/late-night condition is a human-care guard, not a judgment. It prevents unnecessary loops when the better move is to preserve energy and make one clear next step.
+A late-night checkpoint is available only when the person explicitly enables it.
+Clock time does not prove fatigue and never denies authority. The advisory may
+offer a reversible checkpoint; it may not infer a user state or block a change.
 
 ## Reasoning loop schema
 

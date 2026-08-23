@@ -1,6 +1,12 @@
 version: "0.1"
 id: wellspring_current_logic
 status: experimental_information_flow_model
+inherits:
+  - INV-AUTH-001
+  - INV-PROV-001
+  - INV-UNK-001
+  - INV-REST-001
+  - INV-VISUAL-001
 
 scope:
   purpose: "Describe bounded movement of context, attention, and authority signals between Lumaria anchors."
@@ -24,7 +30,7 @@ transfer_packet:
     - viscosity
     - medium
     - current_interpretation
-    - authority_level
+    - authority_capabilities
   rule: "Every transfer preserves the source record and records contextual interpretation separately."
 
 hydrodynamic_mapping:
@@ -40,6 +46,13 @@ hydrodynamic_mapping:
   pressure:
     architectural_meaning: queued_unresolved_demand
     rule: "Pressure never increases authority or weakens consent."
+    telemetry:
+      representation: categorical
+      values: [settled, normal, elevated, saturated, unavailable]
+      evidence_required:
+        - queue_length
+        - oldest_pending_age_seconds
+        - capacity_utilization
   viscosity:
     architectural_meaning: resistance_to_change
     levels:
@@ -49,6 +62,12 @@ hydrodynamic_mapping:
   turbulence:
     architectural_meaning: overload_conflict_or_uncertain_direction
     rule: "Turbulence is surfaced as state, not converted into false coherence."
+    telemetry:
+      representation: categorical
+      values: [laminar, branching, turbulent, unavailable]
+      evidence_required:
+        - unresolved_conflict_count
+        - provenance_gap_count
   surface_tension:
     architectural_meaning: relational_boundary_cohesion
     rule: "Boundaries may deform only through an allowed and visible process."
@@ -67,6 +86,9 @@ flow_controls:
   default_flow_rate_items_per_tick: 1
   maximum_flow_rate_items_per_tick: 8
   pressure_does_not_override_limits: true
+  authority_model:
+    representation: scoped_capability_set
+    rule: "Flow variables cannot add, widen, or transfer capabilities."
   backpressure_actions:
     - slow_flow
     - widen_only_with_approval

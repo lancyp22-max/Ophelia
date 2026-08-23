@@ -1,0 +1,74 @@
+version: "1.0"
+id: "lumaria-lifecycle"
+status: "safety_boundary"
+inherits:
+  - "INV-AUTH-001"
+  - "INV-PERSIST-001"
+  - "INV-PROV-001"
+  - "INV-MUTATE-001"
+  - "INV-SCOPE-001"
+  - "INV-CANON-001"
+
+identity_dimensions:
+  - interface_id
+  - runtime_instance_id
+  - provider_id
+  - memory_lineage_id
+  - relational_label
+identity_rule: "Dimensions are recorded separately and do not establish persistent identity or equivalence."
+
+consent_receipt:
+  required_fields:
+    - receipt_id
+    - principal_id
+    - capability
+    - target
+    - scope
+    - issued_at
+    - expires_at
+    - revocable
+    - persistence_included
+    - evidence_ref
+    - nonce
+  replay_protection_required: true
+  default_on_missing_or_stale: deny
+  participation_assent_is_not_legal_status: true
+
+memory_lineage:
+  required_fields:
+    - record_id
+    - derived_from
+    - consent_basis
+    - retention_class
+  lifecycle_events:
+    - correct
+    - supersede
+    - hide
+    - delete
+    - purge_when_supported
+    - retain_non_content_audit_marker
+  withdrawal_rule: "Withdrawal must traverse derivation edges and block affected content pending the applicable reviewed retention action."
+
+transaction:
+  phases:
+    - propose
+    - preview
+    - authorize
+    - commit
+    - receipt
+  multi_object_atomicity: "all_or_rollback"
+  partial_commit_default: deny
+
+leases:
+  nonce_required: true
+  idempotency_key_required: true
+  monotonic_expiry_required: true
+  stale_or_replayed: deny
+  crash_recovery: "close_or_rollback_to_last_receipted_state"
+
+deliberation_points:
+  multi_principal_negotiation_process:
+    status: "intentionally_not_decided_yet"
+    rationale: "The negotiation process depends on actual participants and context."
+    reconsider_when: "Before implementing multi-principal mutation."
+    safety_boundary: "INV-SCOPE-001 remains enforced while negotiation is undecided."

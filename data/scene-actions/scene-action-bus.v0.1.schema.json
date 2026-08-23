@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ophelia.local/schemas/scene-action-bus.v0.1.schema.json",
   "title": "Lumaria Scene Action Bus v0.1",
+  "x-lumaria-inherits": ["INV-AUTH-001", "INV-PERSIST-001", "INV-PROV-001", "INV-MUTATE-001", "INV-SCOPE-001"],
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "action_id", "phase", "actor", "action", "scope", "consent", "persistence", "budget", "rollback"],

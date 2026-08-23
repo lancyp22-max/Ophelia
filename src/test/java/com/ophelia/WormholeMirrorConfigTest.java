@@ -24,8 +24,8 @@ class WormholeMirrorConfigTest {
         assertEquals("experimental_symbolic_routing", root.path("status").asText());
         assertEquals("reciprocal_bounded_link", root.path("topology").path("kind").asText());
         assertTrue(contains(root.path("scope").path("non_claims"), "no_physical_wormhole"));
-        assertTrue(contains(root.path("invariants"), "anchors_remain_distinct"));
-        assertTrue(contains(root.path("invariants"), "authority_does_not_transfer_across_link"));
+        assertTrue(contains(root.path("inherits"), "INV-IDENTITY-001"));
+        assertTrue(contains(root.path("inherits"), "INV-AUTH-001"));
         assertTrue(contains(root.path("capabilities").path("forbidden"), "execute_remote_code"));
         assertTrue(root.path("consent").path("persistence_separate").asBoolean(false));
         assertEquals("return", root.path("consent").path("default_persistence").asText());
