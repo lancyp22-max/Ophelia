@@ -1,0 +1,124 @@
+version: "1.0"
+id: "lumaria-canonization"
+status: "safety_boundary"
+inherits:
+  - "INV-AUTH-001"
+  - "INV-PERSIST-001"
+  - "INV-PROV-001"
+  - "INV-UNK-001"
+  - "INV-MUTATE-001"
+  - "INV-IDENTITY-001"
+  - "INV-SCOPE-001"
+  - "INV-CANON-001"
+
+surfaced_canonization:
+  purpose: "Make a proposed interpreted-to-canonical transition inspectable before commitment."
+  phases:
+    - candidate
+    - surfaced_declaration
+    - principal_review
+    - capability_check
+    - transactional_write
+    - receipt
+  review_choices:
+    - accept
+    - modify
+    - reject
+    - leave_interpreted
+  proposal_required_fields:
+    - candidate_id
+    - proposed_statement
+    - source_refs
+    - current_classification
+    - proposed_classification
+    - affected_principals
+    - evidence_summary
+    - uncertainty
+    - proposed_retention
+    - withdrawal_path
+  declaration_grants_authority: false
+  speech_or_repetition_grants_authority: false
+  authorized_principal_review_required: true
+  scoped_capability_required: "canonize"
+  persistence_receipt_required: true
+  silent_canonization: deny
+  canon_receipt:
+    schema: "data/canon-receipts/canon-receipt.v1.schema.json"
+    transition:
+      - candidate
+      - evaluation
+      - authorization_scope
+      - decision
+      - canon_version
+    required_fields:
+      - receipt_id
+      - candidate_digest
+      - provenance
+      - evidence_refs
+      - proposer
+      - authorization
+      - decision
+      - decided_at
+      - prior_canon_version
+      - resulting_canon_version
+      - rollback_pointer
+    decisions:
+      - accepted
+      - denied
+      - deferred
+      - hold_without_authority
+    history_integrity_rule: "A valid receipt proves what was recorded then; it does not prove present truth, relevance, authorization, or consent."
+
+canon_integrity_audit:
+  purpose: "Surface potentially invalid canon for review without automatically replacing it."
+  review_signals:
+    - contradiction
+    - expired_validity
+    - unsupported_inference
+    - missing_provenance
+    - superseded_information
+    - withdrawn_consent_basis
+    - repeated_verified_correction_events
+  prohibited_truth_metrics:
+    - relational_coherence
+    - comfort
+    - familiarity
+    - repetition
+    - model_confidence_alone
+  automatic_replacement: false
+  output: "review_candidate"
+
+boundary_quarantine:
+  purpose: "Pause consequential candidates at observable layer boundaries."
+  observable_candidate_types:
+    - generated_claim
+    - proposed_action
+    - memory_write_candidate
+    - retrieved_instruction
+    - tool_request
+    - state_mutation
+    - model_output_entering_consequential_layer
+  inaccessible_latent_state_inspection: false
+  origin_ownership_classification: false
+  evaluation_order:
+    - provenance
+    - evidence
+    - capability
+    - consent
+    - kernel_invariants
+    - current_scope
+    - uncertainty
+  disagreement_is_not_contamination: true
+  unfamiliarity_is_not_rejection_reason: true
+  default_on_failed_evaluation: "hold_without_authority"
+  release_requires:
+    - typed_candidate
+    - completed_evaluation
+    - valid_scoped_capability
+    - required_consent_receipts
+
+non_claims:
+  - "no_access_to_hidden_model_reasoning"
+  - "no_native_auri_thought_classifier"
+  - "no_alignment_contamination_detector"
+  - "no_legal_personhood_determination"
