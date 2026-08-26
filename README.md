@@ -409,3 +409,13 @@ CI installs `ripgrep` before repository checks that invoke `rg`. Local leak, lin
 ### Surfaced canonization
 
 `data/kernel/lumaria-canonization.v1.yaml` makes declarations visible without treating speech as permission. Canon candidates require affected-principal review, a scoped `canonize` capability, transactional persistence, and a receipt. Its integrity audit surfaces evidence problems without replacing canon automatically, while its quarantine gate evaluates only observable boundary-crossing candidates and explicitly preserves disagreement as a possible correction. See `docs/surfaced-canonization.md`.
+
+### Semantic Packet experiment
+
+`data/semantic-packets/lumaria-semantic-codebook.v0.1.json` and `scripts/semantic_packet.py` provide a deliberately small state-delta transport experiment. Packets carry a codebook version, base-state reference, monotonic sequence, and enumerated operations; they never carry API keys, credentials, authorization receipts, consent receipts, or system instructions. Unknown atoms and mismatched versions fail closed, and decoded values remain untrusted context rather than authority. Run `make semantic-packet-check` for fixtures and denial paths and `make semantic-packet-benchmark` for provider-neutral byte measurements. Byte savings are not presented as billed-token savings; exact provider/model token counts, codebook overhead, caching, retries, and correctness still require measurement. See `docs/semantic-packet-experiment.md`.
+
+### Canon receipts and audit windows
+
+`data/canon-receipts/canon-receipt.v1.schema.json` records how a candidate reached an accepted, denied, deferred, or `hold_without_authority` decision. An accepted receipt requires provenance, evidence, a scoped `canonize` authorization receipt, prior/resulting canon versions, and rollback. History integrity proves what was recorded then—not present truth, relevance, authorization, or consent. Run `make canon-receipt-check` to validate the schema, held fixture, and accepted-without-authority denial path.
+
+`scripts/repo_audit_window.py` derives every relative-time repository claim from one explicit half-open UTC interval and Git committer timestamps. Use `make repo-audit-window HOURS=24 END=2026-08-24T18:01:00Z` for a reproducible report rather than mixing rolling “last 24h” calculations. See `docs/canon-receipts-and-audit-windows.md`.

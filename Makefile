@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check canon-receipt-check repo-audit-window semantic-packet-check semantic-packet-benchmark kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -26,6 +26,18 @@ task-guidepost-check:
 
 scene-action-bus-check:
 	python3 scripts/check_scene_action_bus.py
+
+canon-receipt-check:
+	python3 scripts/check_canon_receipt.py
+
+repo-audit-window:
+	python3 scripts/repo_audit_window.py --hours "$(or $(HOURS),24)" $(if $(END),--end "$(END)",)
+
+semantic-packet-check:
+	python3 scripts/semantic_packet.py --check
+
+semantic-packet-benchmark:
+	python3 scripts/semantic_packet.py --benchmark
 
 kernel-check:
 	mvn -B -ntp -Dtest=LumariaKernelConfigTest test
@@ -74,6 +86,9 @@ ci-check: repo-link-check public-leak-guard
 	python3 scripts/check_correction_ledger.py
 	python3 scripts/task_guidepost_scan.py --check
 	python3 scripts/check_scene_action_bus.py
+	python3 scripts/check_canon_receipt.py
+	python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
+	python3 scripts/semantic_packet.py --check
 	python3 scripts/check_github_actions_runtime.py
 	python3 scripts/capture_preview.py --dry-run
 	mvn -B -ntp verify

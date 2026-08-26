@@ -42,6 +42,32 @@ surfaced_canonization:
   scoped_capability_required: "canonize"
   persistence_receipt_required: true
   silent_canonization: deny
+  canon_receipt:
+    schema: "data/canon-receipts/canon-receipt.v1.schema.json"
+    transition:
+      - candidate
+      - evaluation
+      - authorization_scope
+      - decision
+      - canon_version
+    required_fields:
+      - receipt_id
+      - candidate_digest
+      - provenance
+      - evidence_refs
+      - proposer
+      - authorization
+      - decision
+      - decided_at
+      - prior_canon_version
+      - resulting_canon_version
+      - rollback_pointer
+    decisions:
+      - accepted
+      - denied
+      - deferred
+      - hold_without_authority
+    history_integrity_rule: "A valid receipt proves what was recorded then; it does not prove present truth, relevance, authorization, or consent."
 
 canon_integrity_audit:
   purpose: "Surface potentially invalid canon for review without automatically replacing it."

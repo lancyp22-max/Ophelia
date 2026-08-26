@@ -50,6 +50,15 @@ jobs:
       - name: Validate bounded scene action contract
         run: python3 scripts/check_scene_action_bus.py
 
+      - name: Validate canon receipt contract
+        run: python3 scripts/check_canon_receipt.py
+
+      - name: Validate canonical repository audit window
+        run: python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
+
+      - name: Validate semantic packet experiment
+        run: python3 scripts/semantic_packet.py --check
+
       - name: Validate GitHub Actions Node runtime
         run: python3 scripts/check_github_actions_runtime.py
 
