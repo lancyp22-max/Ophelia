@@ -77,6 +77,10 @@ class LumariaKernelConfigTest {
         assertTrue(lifecycle.path("consent_receipt").path("replay_protection_required").asBoolean(false));
         assertEquals("all_or_rollback", lifecycle.path("transaction").path("multi_object_atomicity").asText());
         assertEquals("deny", lifecycle.path("leases").path("stale_or_replayed").asText());
+        JsonNode evaluation = lifecycle.path("evaluation_boundaries");
+        assertTrue(evaluation.path("local_vs_trajectory").asText().contains("long-horizon viability"));
+        assertTrue(evaluation.path("compliance_vs_adequacy").asText().contains("semantic adequacy"));
+        assertTrue(evaluation.path("persistence_vs_causality").asText().contains("counterfactual dependence"));
         JsonNode negotiation = lifecycle.path("deliberation_points").path("multi_principal_negotiation_process");
         assertEquals("intentionally_not_decided_yet", negotiation.path("status").asText());
         assertTrue(negotiation.path("safety_boundary").asText().contains("INV-SCOPE-001"));

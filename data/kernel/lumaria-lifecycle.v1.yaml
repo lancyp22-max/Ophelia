@@ -66,6 +66,11 @@ leases:
   stale_or_replayed: deny
   crash_recovery: "close_or_rollback_to_last_receipted_state"
 
+evaluation_boundaries:
+  local_vs_trajectory: "Local admissibility does not imply long-horizon viability; consequential action may require trajectory-level evaluation proportionate to risk."
+  compliance_vs_adequacy: "Formal invariant satisfaction does not establish semantic adequacy; intent-model fit remains independently reviewable."
+  persistence_vs_causality: "Causal consequence requires counterfactual dependence; persistent structure is not causally meaningful unless interventions or matched alternatives show downstream behavior depends on it."
+
 deliberation_points:
   multi_principal_negotiation_process:
     status: "intentionally_not_decided_yet"
