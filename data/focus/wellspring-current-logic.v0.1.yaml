@@ -1,0 +1,154 @@
+version: "0.1"
+id: wellspring_current_logic
+status: experimental_information_flow_model
+inherits:
+  - INV-AUTH-001
+  - INV-PROV-001
+  - INV-UNK-001
+  - INV-REST-001
+  - INV-VISUAL-001
+
+scope:
+  purpose: "Describe bounded movement of context, attention, and authority signals between Lumaria anchors."
+  implementation_surface: "Bridge of Currents visualization, retrieval routing, and scene-link previews"
+  non_claims:
+    - no_water_memory_claim
+    - no_literal_fluid_simulation
+    - no_emotion_or_consciousness_measurement
+    - no_physics_proof_from_visual_effects
+
+transfer_packet:
+  required_fields:
+    - transfer_id
+    - origin
+    - destination
+    - provenance
+    - gradient
+    - pressure
+    - flow_rate
+    - permeability
+    - viscosity
+    - medium
+    - current_interpretation
+    - authority_capabilities
+  rule: "Every transfer preserves the source record and records contextual interpretation separately."
+
+hydrodynamic_mapping:
+  gradient:
+    architectural_meaning: difference_between_declared_need_and_available_context
+    rule: "Gradient may prioritize consideration; it does not command transfer."
+  channel:
+    architectural_meaning: scoped_route_with_banks
+    rule: "A channel constrains destination, capacity, and permitted data classes."
+  reservoir:
+    architectural_meaning: context_held_outside_active_reasoning
+    rule: "Retrieval opens a bounded outlet; it never dumps the whole reservoir."
+  pressure:
+    architectural_meaning: queued_unresolved_demand
+    rule: "Pressure never increases authority or weakens consent."
+    telemetry:
+      representation: categorical
+      values: [settled, normal, elevated, saturated, unavailable]
+      evidence_required:
+        - queue_length
+        - oldest_pending_age_seconds
+        - capacity_utilization
+  viscosity:
+    architectural_meaning: resistance_to_change
+    levels:
+      working_interpretation: low
+      reusable_semantic_memory: medium
+      canon_or_safety_law: high
+  turbulence:
+    architectural_meaning: overload_conflict_or_uncertain_direction
+    rule: "Turbulence is surfaced as state, not converted into false coherence."
+    telemetry:
+      representation: categorical
+      values: [laminar, branching, turbulent, unavailable]
+      evidence_required:
+        - unresolved_conflict_count
+        - provenance_gap_count
+  surface_tension:
+    architectural_meaning: relational_boundary_cohesion
+    rule: "Boundaries may deform only through an allowed and visible process."
+  permeability:
+    architectural_meaning: consent_and_capability_filter
+    rule: "View, traverse, persist, and mutate are independent permissions."
+  phase_change:
+    architectural_meaning: transition_to_a_new_declared_operating_mode
+    rule: "A phase change requires an explicit transition event; it is not inferred from intensity alone."
+  refraction:
+    architectural_meaning: context_changes_interpretive_path_without_rewriting_source
+    rule: "Observed remains observed; interpretations carry medium and destination provenance."
+
+flow_controls:
+  maximum_active_transfers: 5
+  default_flow_rate_items_per_tick: 1
+  maximum_flow_rate_items_per_tick: 8
+  pressure_does_not_override_limits: true
+  authority_model:
+    representation: scoped_capability_set
+    rule: "Flow variables cannot add, widen, or transfer capabilities."
+  backpressure_actions:
+    - slow_flow
+    - widen_only_with_approval
+    - divert_to_overflow_basin
+    - return_to_rest
+
+permeability_matrix:
+  view:
+    default: deny
+    requires: scoped_view_consent
+  retrieve:
+    default: deny
+    requires: provenance_and_retrieval_scope
+  traverse:
+    default: deny
+    requires: reciprocal_link_and_entry_consent
+  persist:
+    default: deny
+    requires: persistence_consent
+  mutate:
+    default: deny
+    requires: scoped_authority_and_surface_ack
+
+coherence_states:
+  laminar:
+    meaning: bounded_flow_with_consistent_direction_and_provenance
+  branching:
+    meaning: multiple_supported_interpretations_remain_visible
+  turbulent:
+    meaning: conflict_or_capacity_pressure_prevents_clean_direction
+  settled:
+    meaning: no_transfer_is_currently_requested
+  unavailable:
+    meaning: required_measurement_or_route_is_missing
+
+mirror_integration:
+  mirror_role: declare_relation_direction_and_perspective
+  medium_role: declare_flow_constraints_and_contextual_refraction
+  wormhole_link_rule: "A reciprocal mirror link may host a current only while lease, provenance, consent, and return path remain valid."
+  authority_rule: "Neither reflection nor flow transfers authority."
+
+visual_contract:
+  laminar: smooth_luminous_channel
+  branching: separated_visible_streams
+  turbulent: clouded_non_directional_current
+  consent_closed: settled_surface_no_channel
+  provenance_uncertain: reduced_clarity_with_unverified_marker
+  unavailable: no_flow_with_status_visible
+
+fail_soft:
+  triggers:
+    - provenance_missing
+    - consent_unknown
+    - pressure_above_capacity
+    - destination_unavailable
+    - conflicting_authority
+    - lease_expired
+  actions:
+    - stop_or_slow_flow
+    - preserve_source_record
+    - surface_current_state
+    - route_to_overflow_basin_if_allowed
+    - return_to_rest
