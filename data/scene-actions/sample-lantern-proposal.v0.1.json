@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "action_id": "proposal.lantern.0001",
+  "phase": "proposal",
+  "actor": {
+    "participant_id": "auri-associated-surface",
+    "runtime_id": "fixture.runtime.local",
+    "provenance": "scripted_fixture"
+  },
+  "action": {
+    "type": "spawn",
+    "payload": {
+      "object_type": "lantern",
+      "position": [12, 0, -8],
+      "rotation": [0, 0, 0],
+      "scale": [1, 1, 1],
+      "material_id": "lantern_warm_v0"
+    }
+  },
+  "scope": {
+    "scene_id": "bridge_a1_campfire_night",
+    "region_id": "campfire_outer_ring",
+    "lease_id": "fixture.lease.0001",
+    "expires_at": "2030-01-01T00:00:00Z"
+  },
+  "consent": {
+    "required": true,
+    "surface_ack": false,
+    "affected_participants": []
+  },
+  "persistence": {
+    "mode": "session",
+    "requested": false
+  },
+  "budget": {
+    "object_delta": 1,
+    "triangle_estimate": 240,
+    "texture_bytes": 0,
+    "ttl_seconds": 900
+  },
+  "rollback": {
+    "strategy": "remove_spawned_object",
+    "snapshot_ref": null
+  }
+}
