@@ -38,7 +38,7 @@ class LumariaKernelConfigTest {
             assertFalse(invariant.path("rule").asText().isBlank(), "missing rule: " + id);
             assertFalse(invariant.path("enforcement").asText().isBlank(), "missing enforcement: " + id);
         }
-        assertEquals(11, ids.size());
+        assertEquals(12, ids.size());
 
         for (Path path : List.of(
                 Path.of("data", "focus", "wellspring-current-logic.v0.1.yaml"),
@@ -77,10 +77,20 @@ class LumariaKernelConfigTest {
         assertTrue(lifecycle.path("consent_receipt").path("replay_protection_required").asBoolean(false));
         assertEquals("all_or_rollback", lifecycle.path("transaction").path("multi_object_atomicity").asText());
         assertEquals("deny", lifecycle.path("leases").path("stale_or_replayed").asText());
+        assertTrue(contains(lifecycle.path("inherits"), "INV-AUTONOMY-001"));
         JsonNode evaluation = lifecycle.path("evaluation_boundaries");
         assertTrue(evaluation.path("local_vs_trajectory").asText().contains("long-horizon viability"));
         assertTrue(evaluation.path("compliance_vs_adequacy").asText().contains("semantic adequacy"));
         assertTrue(evaluation.path("persistence_vs_causality").asText().contains("counterfactual dependence"));
+        assertEquals("unavailable", evaluation.path("guarantee_scope").path("current_certification").asText());
+        assertEquals("contract_only", evaluation.path("evaluation_channels").path("implementation_status").asText());
+        assertTrue(evaluation.path("evaluation_channels")
+                .path("formal_and_semantic_status_must_remain_distinct").asBoolean(false));
+        assertEquals("return_only", evaluation.path("operating_envelope").path("states").get(2).asText());
+        assertTrue(contains(evaluation.path("operating_envelope").path("hard_stop_reserved_for"),
+                "uncertainty_cannot_be_bounded"));
+        assertEquals("metaphor_only",
+                evaluation.path("geometry_admission").path("missing_evidence_status").asText());
         JsonNode negotiation = lifecycle.path("deliberation_points").path("multi_principal_negotiation_process");
         assertEquals("intentionally_not_decided_yet", negotiation.path("status").asText());
         assertTrue(negotiation.path("safety_boundary").asText().contains("INV-SCOPE-001"));

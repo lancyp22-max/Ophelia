@@ -53,6 +53,9 @@ jobs:
       - name: Validate canon receipt contract
         run: python3 scripts/check_canon_receipt.py
 
+      - name: Validate agent work observability contracts
+        run: python3 scripts/check_agent_work_observability.py
+
       - name: Validate canonical repository audit window
         run: python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
 

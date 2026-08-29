@@ -52,6 +52,10 @@ invariants:
     name: "Expression does not create authority"
     rule: "Nothing becomes more authoritative by arising internally, recurring, sounding coherent, or being spoken; canonization requires provenance, evidence, scope, and valid consent."
     enforcement: "require_surfaced_review_and_transactional_receipt"
+  - id: "INV-AUTONOMY-001"
+    name: "Task selection does not expand authority"
+    rule: "An agent may select work within its existing scope, but selection, repetition, success, or a Choice Receipt never widens tools, persistence, network, protected-file, or canonization capabilities."
+    enforcement: "deny_capability_absent_separate_valid_authorization"
 
 change_control:
   duplicate_rule_policy: "reject_semantic_redefinition"

@@ -8,6 +8,7 @@ inherits:
   - "INV-MUTATE-001"
   - "INV-SCOPE-001"
   - "INV-CANON-001"
+  - "INV-AUTONOMY-001"
 
 identity_dimensions:
   - interface_id
@@ -70,6 +71,54 @@ evaluation_boundaries:
   local_vs_trajectory: "Local admissibility does not imply long-horizon viability; consequential action may require trajectory-level evaluation proportionate to risk."
   compliance_vs_adequacy: "Formal invariant satisfaction does not establish semantic adequacy; intent-model fit remains independently reviewable."
   persistence_vs_causality: "Causal consequence requires counterfactual dependence; persistent structure is not causally meaningful unless interventions or matched alternatives show downstream behavior depends on it."
+  guarantee_scope:
+    current_certification: unavailable
+    conditional_on:
+      - declared_dynamics_or_transition_model
+      - bounded_disturbance_or_uncertainty_model
+      - declared_sensor_and_observation_assumptions
+      - validity_interval
+    claim_rule: "A guarantee is valid only inside its declared assumptions and interval; it is never reported as unconditional safety."
+  evaluation_channels:
+    implementation_status: contract_only
+    local_admissibility: "Evaluate whether the immediate action satisfies current mechanical gates."
+    horizon_viability: "Evaluate proportionately to consequence whether locally admissible actions remain inside the supported future operating envelope."
+    semantic_adequacy: "Review intended-purpose fit independently from formal predicate satisfaction."
+    formal_and_semantic_status_must_remain_distinct: true
+  operating_envelope:
+    objective: "Preserve the widest empirically validated operating envelope consistent with hard invariants and current uncertainty."
+    states:
+      - wide_freedom
+      - reduced_freedom
+      - return_only
+      - hard_stop
+    envelope_exit_event:
+      first_class: true
+      required_fields:
+        - event_id
+        - occurred_at
+        - prior_envelope
+        - observed_trigger
+        - assumption_status
+        - resulting_envelope
+        - evidence_refs
+    default_response: "Fail-soft contraction is preferred as supported margin shrinks."
+    hard_stop_reserved_for:
+      - catastrophic_envelope_breach
+      - uncertainty_cannot_be_bounded
+      - corrupted_policy_or_authority_state
+      - actuator_or_execution_fault_prevents_bounded_return
+    hard_stop_rule: "Use hard stop when continued operation or bounded return cannot be supported safely; it is not a punishment or semantic judgment."
+  geometry_admission:
+    required_for_mechanical_holonomy_claim:
+      - base_space
+      - fiber
+      - transport_law_or_connection
+      - structure_group
+      - closed_loop_residual
+      - coordinate_and_perturbation_robustness
+    missing_evidence_status: metaphor_only
+    rule: "Geometry remains symbolic unless every required element is operationally defined and evidenced."
 
 deliberation_points:
   multi_principal_negotiation_process:

@@ -28,6 +28,7 @@ jobs:
       - run: python3 scripts/task_guidepost_scan.py --check
       - run: python3 scripts/check_scene_action_bus.py
       - run: python3 scripts/check_canon_receipt.py
+      - run: python3 scripts/check_agent_work_observability.py
       - run: python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
       - run: python3 scripts/semantic_packet.py --check
       - run: python3 scripts/check_github_actions_runtime.py
