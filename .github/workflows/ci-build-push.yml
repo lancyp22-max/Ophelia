@@ -56,6 +56,9 @@ jobs:
       - name: Validate agent work observability contracts
         run: python3 scripts/check_agent_work_observability.py
 
+      - name: Validate append-only friction evidence
+        run: python3 scripts/friction_ledger.py --check
+
       - name: Validate canonical repository audit window
         run: python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
 

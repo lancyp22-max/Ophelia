@@ -1,6 +1,7 @@
 # Node / web artifacts
 node_modules/
 artifacts/
+/var/
 *.log
 
 # Python

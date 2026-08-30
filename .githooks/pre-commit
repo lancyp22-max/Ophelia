@@ -34,6 +34,9 @@ python3 scripts/check_canon_receipt.py
 echo "[pre-commit] validating agent work observability..."
 python3 scripts/check_agent_work_observability.py
 
+echo "[pre-commit] validating append-only friction evidence..."
+python3 scripts/friction_ledger.py --check
+
 echo "[pre-commit] validating canonical repository audit windows..."
 python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
 
