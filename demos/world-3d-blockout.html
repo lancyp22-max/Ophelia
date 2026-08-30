@@ -6,10 +6,10 @@
   <title>Lumaria World v0 · Campfire Night</title>
   <style>
     html, body { margin:0; height:100%; overflow:hidden; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
-    #wrap { display:grid; grid-template-rows:auto 1fr; height:100%; }
-    header { padding:10px 14px; border-bottom:1px solid #243455; background:linear-gradient(90deg,#0c1730,#102246); }
+    #wrap { display:block; height:100%; }
+    header { position:absolute; z-index:8; top:14px; left:50%; transform:translateX(-50%); width:min(980px,calc(100% - 28px)); box-sizing:border-box; padding:10px 14px; border:1px solid rgba(125,211,252,.25); border-radius:18px; background:linear-gradient(90deg,rgba(7,16,32,.78),rgba(23,18,48,.72)); box-shadow:0 18px 54px rgba(0,0,0,.3); backdrop-filter:blur(14px); }
     canvas { display:block; width:100%; height:100%; }
-    #scene { position:relative; min-height:0; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
+    #scene { position:relative; width:100%; height:100%; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
     .world-status { position:absolute; inset:auto 14px 14px auto; z-index:6; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.34); border-radius:16px; padding:10px 12px; background:rgba(5,10,22,.78); color:#d9e8ff; box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); font-size:12px; line-height:1.45; }
     .world-status strong { color:#a7f3ff; letter-spacing:.12em; text-transform:uppercase; font-size:10px; display:block; margin-bottom:4px; }
     .world-ready .world-status { display:none; }
@@ -20,7 +20,7 @@
     .pass-log summary::-webkit-details-marker { display:none; }
     .pass-log[open] { flex-basis:100%; padding:6px 0 0; }
     .pass-log[open] .pill { margin-top:4px; }
-    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
+    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.3); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.68),rgba(20,15,42,.58)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(12px); }
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
     .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
@@ -107,16 +107,16 @@
 })();
 </script>
 <script type="module">
-import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+import * as THREE from './vendor/three.module.min.js';
 
 const host = document.getElementById('scene');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050913);
 scene.fog = new THREE.Fog(0x050913, 15, 80);
 
-const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
-let cameraDistance = 9.2;
-camera.position.set(0, 2.05, cameraDistance);
+const camera = new THREE.PerspectiveCamera(58, host.clientWidth / host.clientHeight, 0.1, 300);
+let cameraDistance = 6.9;
+camera.position.set(0.15, 2.28, cameraDistance);
 
 let renderer;
 try {
@@ -737,11 +737,11 @@ function applyTimeMode(mode) {
   scene.fog.far = isRain ? 82 : isDay || isSunset ? 145 : 92;
   moon.color.set(isSunset ? 0xffbf7d : isDay ? 0xfff8df : 0xaecbff);
   moon.intensity = isRain ? 0.82 : isSunset ? 1.1 : isDay ? 1.35 : 0.82;
-  ambient.intensity = isRain ? 0.56 : isSunset ? 0.58 : isDay ? 0.66 : 0.36;
-  hemi.intensity = isRain ? 0.46 : isSunset ? 0.48 : isDay ? 0.52 : 0.32;
-  naturalFill.intensity = isRain ? 0.36 : isSunset ? 0.42 : isDay ? 0.36 : 0.18;
-  renderer.toneMappingExposure = isRain ? 1.16 : isSunset ? 1.14 : isDay ? 1.22 : 1.18;
-  flame.color.set(isRain ? 0xff8f42 : isDay ? 0xff9a4a : 0xffa85c);
+  ambient.intensity = isRain ? 0.62 : isSunset ? 0.64 : isDay ? 0.7 : 0.52;
+  hemi.intensity = isRain ? 0.54 : isSunset ? 0.56 : isDay ? 0.6 : 0.46;
+  naturalFill.intensity = isRain ? 0.4 : isSunset ? 0.46 : isDay ? 0.4 : 0.3;
+  renderer.toneMappingExposure = isRain ? 1.28 : isSunset ? 1.26 : isDay ? 1.3 : 1.36;
+  flame.color.set(isRain ? 0x9ff6ff : isDay ? 0xffb05e : isSunset ? 0x8eeaff : 0x58e7ff);
   runeRing.material.color.set(isRain ? 0x9bdcff : isDay ? 0xffcf7a : 0xffb366);
   const moonVisible = mode === "night";
   moonOrb.visible = moonVisible;
@@ -816,7 +816,7 @@ function applyTimeMode(mode) {
     avatarYou.hairMat.emissiveIntensity = isDay ? 0.06 : 0.14;
   }
   pathMaterial.color.set(isRain ? 0x41516d : isDay ? 0x806a4a : isSunset ? 0x5c4150 : 0x3c314f);
-  groundMaterial.color.set(isRain ? 0x275b69 : isDay ? 0x3f7a51 : isSunset ? 0x355c48 : 0x16365a);
+  groundMaterial.color.set(isRain ? 0x275b69 : isDay ? 0x3f7a51 : isSunset ? 0x355c48 : 0x24527a);
   groundMaterial.emissive.set(isRain ? 0x0e3a35 : isDay ? 0x123a22 : isSunset ? 0x2a2434 : 0x0b2d4a);
   groundMaterial.emissiveIntensity = isRain ? 0.18 : isDay ? 0.08 : isSunset ? 0.12 : 0.2;
   if (typeof groundLumenVeil !== "undefined") {
@@ -2187,6 +2187,121 @@ function makeMoonVine(id, x, z) {
   return g;
 }
 
+function makeCrystalCluster(id, x, z, scale = 1, palette = [0x61e8ff, 0xf28cff, 0x9d8cff]) {
+  const g = new THREE.Group();
+  const shards = [];
+  const layout = [
+    [0, 0, 0.95, 0], [-0.34, 0.06, 0.62, -0.18], [0.34, 0.08, 0.72, 0.2],
+    [-0.16, 0.28, 0.5, -0.36], [0.18, -0.25, 0.46, 0.4]
+  ];
+  layout.forEach(([lx, lz, height, lean], idx) => {
+    const color = palette[idx % palette.length];
+    const material = new THREE.MeshStandardMaterial({
+      color, emissive: color, emissiveIntensity: 0.72, roughness: 0.24,
+      metalness: 0.08, transparent: true, opacity: 0.9
+    });
+    const shard = new THREE.Mesh(new THREE.ConeGeometry(0.19 * scale, height * scale, 5), material);
+    shard.position.set(lx * scale, height * scale * 0.5, lz * scale);
+    shard.rotation.z = lean;
+    shard.userData.phase = idx * 0.8;
+    shards.push(shard);
+    g.add(shard);
+  });
+  const base = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.48 * scale, 0),
+    surfaceMaterial({ color:0x233344, map:textureSet.stone, roughness:0.9, bumpScale:0.04 })
+  );
+  base.scale.y = 0.28;
+  base.position.y = 0.08;
+  g.add(base);
+  const glow = warmGlowBillboard(`${id}_glow`, x, 0.56 * scale, z, 1.65 * scale, palette[0], 0.24);
+  g.position.set(x, 0.05, z);
+  g.userData.visualId = id;
+  g.userData.shards = shards;
+  g.userData.glow = glow;
+  markShadows(g, true, false);
+  scene.add(g);
+  return g;
+}
+
+function makeSanctuaryLodge(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color:0x6b4329, map:textureSet.wood, roughness:0.9, bumpScale:0.06, emissive:0x24120a, emissiveIntensity:0.1 });
+  const darkWood = surfaceMaterial({ color:0x2c1b18, map:textureSet.wood, roughness:0.95, bumpScale:0.05 });
+  const interior = new THREE.Mesh(new THREE.PlaneGeometry(5.7, 3.9), new THREE.MeshStandardMaterial({ color:0x34231f, emissive:0x5d2814, emissiveIntensity:0.2, roughness:0.92 }));
+  interior.position.set(0, 2.05, -0.48);
+  g.add(interior);
+  [-2.65, -1.55, 0, 1.55, 2.65].forEach((lx, idx) => {
+    const rib = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.13, 8, 36, Math.PI), wood);
+    rib.position.set(lx, 1.55, 0);
+    rib.rotation.z = Math.PI;
+    rib.scale.x = 0.72;
+    rib.scale.y = 1.05 + (idx === 2 ? 0.08 : 0);
+    g.add(rib);
+  });
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.18, 3.5), darkWood);
+  roof.position.set(0, 3.25, -0.15);
+  roof.rotation.x = -0.12;
+  g.add(roof);
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.18, 0.72), wood);
+  counter.position.set(0, 0.82, 0.05);
+  g.add(counter);
+  [-1.8, -0.6, 0.7, 1.75].forEach((lx, idx) => {
+    const bottle = new THREE.Mesh(new THREE.OctahedronGeometry(0.17 + (idx % 2) * 0.04), new THREE.MeshBasicMaterial({ color:idx % 2 ? 0xf28cff : 0x61e8ff, transparent:true, opacity:0.9 }));
+    bottle.position.set(lx, 1.12 + (idx % 2) * 0.12, 0.05);
+    g.add(bottle);
+  });
+  const lanterns = [];
+  [-2.15, 0, 2.15].forEach((lx, idx) => {
+    const core = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.34, 0.22), new THREE.MeshBasicMaterial({ color:0xffc56e }));
+    core.position.set(lx, 2.34 + (idx % 2) * 0.22, 0.35);
+    const light = new THREE.PointLight(0xffa85c, 0.72, 6, 2.1);
+    light.position.copy(core.position);
+    lanterns.push({ core, light, phase:idx });
+    g.add(core, light);
+  });
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.lanterns = lanterns;
+  markShadows(g);
+  scene.add(g);
+  softShadow(`${id}_shadow`, x, z, 4.0, 2.4, 0.34);
+  makeZoneLabel("LUMARIA BASE", "SANCTUARY LODGE", x, 4.2, z + 0.2, "#ffd58a");
+  return g;
+}
+
+function makeForestPortal(id, x, z, rot = 0) {
+  const g = new THREE.Group();
+  const stone = surfaceMaterial({ color:0x29324b, map:textureSet.stone, roughness:0.88, emissive:0x29134b, emissiveIntensity:0.28, bumpScale:0.05 });
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.24, 10, 56, Math.PI), stone);
+  arch.position.y = 1.05;
+  arch.rotation.z = Math.PI;
+  const legs = [-0.98, 0.98].map((lx) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.9, 0.6), stone);
+    leg.position.set(lx, 0.92, 0);
+    return leg;
+  });
+  const vortex = new THREE.Mesh(new THREE.CircleGeometry(0.82, 48), new THREE.MeshBasicMaterial({ color:0xa855f7, transparent:true, opacity:0.48, side:THREE.DoubleSide, blending:THREE.AdditiveBlending }));
+  vortex.position.set(0, 1.05, 0.03);
+  const rings = [];
+  [0.32, 0.55, 0.78].forEach((radius, idx) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.025, 6, 40), new THREE.MeshBasicMaterial({ color:idx % 2 ? 0x7dd3fc : 0xe879f9, transparent:true, opacity:0.72 }));
+    ring.position.set(0, 1.05, 0.08 + idx * 0.01);
+    rings.push(ring);
+    g.add(ring);
+  });
+  g.add(arch, vortex, ...legs);
+  g.position.set(x, 0, z);
+  g.rotation.y = rot;
+  g.userData.visualId = id;
+  g.userData.vortex = vortex;
+  g.userData.rings = rings;
+  scene.add(g);
+  warmGlowBillboard(`${id}_glow`, x, 1.15, z, 3.8, 0xa855f7, 0.28);
+  return g;
+}
+
 const benches = [
   makeBench("bench_01", -2.6, 2.9, -0.55),
   makeBench("bench_02", 3.3, -2.7, 2.55)
@@ -2217,6 +2332,16 @@ const runeShards = [
 const campSign = makeCampSign("lumaria_bridge_sign", -3.3, 6.35, 0.36);
 const teaTable = makeTeaTable("tea_table_book_cup", 4.6, 3.15, -0.48);
 const moonVine = makeMoonVine("moon_vine_waterfall", 7.05, -4.95);
+const sanctuaryLodge = makeSanctuaryLodge("sanctuary_lodge", -6.7, -1.65, 0.08);
+const forestPortal = makeForestPortal("forest_portal", 7.3, -1.7, -0.08);
+const crystalGarden = [
+  makeCrystalCluster("crystal_fire_west", -2.05, 0.55, 0.95, [0x5ee7f7, 0xf28cff, 0x7dd3fc]),
+  makeCrystalCluster("crystal_fire_east", 2.0, -0.5, 0.82, [0xf28cff, 0x67e8f9, 0xc084fc]),
+  makeCrystalCluster("crystal_lodge_step", -4.75, 1.2, 0.72, [0x67e8f9, 0xa7f3d0, 0xf0abfc]),
+  makeCrystalCluster("crystal_portal_edge", 5.72, -1.05, 0.78, [0xf0abfc, 0x7dd3fc, 0xc084fc]),
+  makeCrystalCluster("crystal_foreground_west", -5.1, 4.8, 1.18, [0x67e8f9, 0x5eead4, 0xa7f3d0]),
+  makeCrystalCluster("crystal_foreground_east", 5.3, 4.55, 1.2, [0xf472b6, 0xf0abfc, 0xc084fc])
+];
 const floorCushions = [
   makeFloorCushion("cushion_front", -0.9, 4.0, 0.15, 0x8a5f3d),
   makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
@@ -2386,6 +2511,15 @@ for (let i = 0; i < 10; i++) {
 scene.add(campfireStone);
 softShadow("campfire_shadow", 0, 0, 2.2, 1.35, 0.42);
 
+const campfireTerrace = new THREE.Mesh(
+  new THREE.CylinderGeometry(2.25, 2.55, 0.2, 32),
+  surfaceMaterial({ color:0x3d414c, map:textureSet.stone, roughness:0.95, bumpScale:0.05 })
+);
+campfireTerrace.position.y = 0.1;
+campfireTerrace.receiveShadow = true;
+scene.add(campfireTerrace);
+campfireTerrace.renderOrder = -1;
+
 const fireGlowDisc = new THREE.Mesh(
   new THREE.CircleGeometry(2.3, 64),
   new THREE.MeshBasicMaterial({ color:0xff8a36, transparent:true, opacity:0.16, depthWrite:false })
@@ -2403,9 +2537,9 @@ const firepitReferenceDetails = makeFirepitReferenceDetails("firepit_crystal_lan
 
 const flameMeshes = [];
 [
-  { color:0xffd08a, scale:[0.32,0.78,0.32], y:0.72 },
-  { color:0xff7a2d, scale:[0.46,0.58,0.46], y:0.62 },
-  { color:0x8a3ffc, scale:[0.18,0.38,0.18], y:0.78 }
+  { color:0xb9f5ff, scale:[0.28,1.18,0.28], y:0.94 },
+  { color:0x22d3ee, scale:[0.52,0.88,0.52], y:0.78 },
+  { color:0x6366f1, scale:[0.22,0.58,0.22], y:0.92 }
 ].forEach((f) => {
   const flameMesh = new THREE.Mesh(
     new THREE.ConeGeometry(0.5, 1, 18),
@@ -2433,7 +2567,7 @@ for (let i = 0; i < 4; i++) {
   scene.add(log);
 }
 
-const flame = new THREE.PointLight(0xffa85c, 2.7, 18, 2);
+const flame = new THREE.PointLight(0x58e7ff, 3.2, 20, 2);
 flame.position.set(0, 1.5, 0);
 scene.add(flame);
 const ember = new THREE.PointLight(0xff6a00, 1.4, 10, 2);
@@ -2490,6 +2624,29 @@ const waterfallGlow = new THREE.Mesh(
 waterfallGlow.position.set(8.6, 3.2, -6.8);
 waterfallGlow.rotation.y = -0.32;
 scene.add(waterfallGlow);
+
+const waterfallStreams = [];
+[-1.25, -0.42, 0.42, 1.18].forEach((offset, idx) => {
+  const stream = new THREE.Mesh(
+    new THREE.PlaneGeometry(idx % 2 ? 0.62 : 0.82, 4.3 - idx * 0.18),
+    new THREE.MeshBasicMaterial({ color:idx % 2 ? 0xc4b5fd : 0x8be9ff, transparent:true, opacity:0.3, side:THREE.DoubleSide, blending:THREE.AdditiveBlending, depthWrite:false })
+  );
+  stream.position.set(8.6 + offset, 3.3 - idx * 0.08, -6.7 + offset * 0.22);
+  stream.rotation.y = -0.32;
+  stream.userData.phase = idx * 0.8;
+  waterfallStreams.push(stream);
+  scene.add(stream);
+});
+const waterfallRocks = [];
+[[7.1,0.8,-6.15,1.2],[9.8,0.7,-7.1,1.15],[8.25,1.4,-7.25,1.4],[9.35,1.65,-6.9,1.05]].forEach(([x,y,z,s], idx) => {
+  const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), surfaceMaterial({ color:idx % 2 ? 0x243347 : 0x303d4f, map:textureSet.mountainRock, roughness:0.96, bumpScale:0.06 }));
+  rock.position.set(x,y,z);
+  rock.scale.y = 0.7;
+  rock.rotation.set(idx * 0.2, idx * 0.7, 0);
+  rock.castShadow = true;
+  waterfallRocks.push(rock);
+  scene.add(rock);
+});
 
 
 const moonOrb = new THREE.Mesh(
@@ -2574,7 +2731,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 let yaw = Math.PI;
-let pitch = -0.16;
+let pitch = -0.12;
 const PITCH_MIN = -0.36;
 const PITCH_MAX = 0.18;
 
@@ -2583,11 +2740,11 @@ function clampPitch(value) {
 }
 
 function resetCameraView() {
-  camera.position.set(0.55, 2.32, 11.4);
-  cameraDistance = 10.8;
+  camera.position.set(0.15, 2.28, 6.9);
+  cameraDistance = 6.9;
   yaw = Math.PI;
-  pitch = -0.16;
-  if (hudCause) hudCause.textContent = "camera reset: stable bridge camp view";
+  pitch = -0.12;
+  if (hudCause) hudCause.textContent = "camera reset: intimate sanctuary view";
 }
 
 function focusMarketTransition() {
@@ -2742,6 +2899,27 @@ function animate(t = 0) {
   moonVine.userData.leaves.forEach((leaf) => {
     leaf.rotation.y = Math.sin(t * 0.002 + leaf.userData.phase) * 0.28;
     leaf.material.opacity = 0.56 + Math.sin(t * 0.004 + leaf.userData.phase) * 0.18;
+  });
+  crystalGarden.forEach((cluster, clusterIdx) => {
+    cluster.userData.shards.forEach((shard, shardIdx) => {
+      shard.material.emissiveIntensity = 0.58 + Math.sin(t * 0.0035 + shard.userData.phase) * 0.22;
+      shard.rotation.y += 0.002 + shardIdx * 0.0004;
+    });
+    cluster.userData.glow.material.opacity = 0.18 + Math.sin(t * 0.003 + clusterIdx) * 0.07;
+  });
+  forestPortal.userData.vortex.material.opacity = 0.36 + Math.sin(t * 0.003) * 0.12;
+  forestPortal.userData.rings.forEach((ring, idx) => {
+    ring.rotation.z += (idx % 2 ? -1 : 1) * (0.004 + idx * 0.0015);
+    ring.scale.setScalar(0.96 + Math.sin(t * 0.0025 + idx) * 0.05);
+  });
+  sanctuaryLodge.userData.lanterns.forEach((lantern, idx) => {
+    const pulse = 0.82 + Math.sin(t * 0.007 + idx) * 0.16;
+    lantern.core.scale.setScalar(pulse);
+    lantern.light.intensity = (timeMode === "day" ? 0.25 : 0.72) * pulse;
+  });
+  waterfallStreams.forEach((stream, idx) => {
+    stream.material.opacity = (timeMode === "day" ? 0.22 : 0.3) + Math.sin(t * 0.004 + stream.userData.phase) * 0.08;
+    stream.material.map && (stream.material.map.offset.y -= 0.004 + idx * 0.001);
   });
 
   campDistricts.forEach((district, idx) => {
