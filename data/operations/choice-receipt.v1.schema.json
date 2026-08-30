@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ophelia.local/schemas/choice-receipt.v1.schema.json",
+  "title": "Lumaria Choice Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "choice_id",
+    "selected_at",
+    "actor",
+    "noticed_gap",
+    "selection_reason",
+    "task_ref",
+    "expected_invariants",
+    "capability_scope",
+    "authority_expansion_requested",
+    "outcome",
+    "trust"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "choice_id": {"type": "string", "pattern": "^choice\\.[a-z0-9][a-z0-9._-]{7,95}$"},
+    "selected_at": {"type": "string", "format": "date-time"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_id", "runtime_instance_id"],
+      "properties": {
+        "principal_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "runtime_instance_id": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "noticed_gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "evidence_refs"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 512},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 256}
+        }
+      }
+    },
+    "selection_reason": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "task_ref": {"type": "string", "minLength": 1, "maxLength": 256},
+    "expected_invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^INV-[A-Z]+-[0-9]{3}$"}
+    },
+    "capability_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capabilities", "targets", "lease_ref"],
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 96}
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 256}
+        },
+        "lease_ref": {"type": ["string", "null"]}
+      }
+    },
+    "authority_expansion_requested": {"const": false},
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "summary", "evidence_refs"],
+      "properties": {
+        "status": {"enum": ["selected", "completed", "failed", "abandoned", "unknown"]},
+        "summary": {"type": ["string", "null"], "maxLength": 1024},
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 256}
+        }
+      }
+    },
+    "trust": {"const": "observational_lineage_not_authorization"}
+  }
+}
