@@ -1,0 +1,36 @@
+version: "0.1"
+name: "Public Publish Allowlist"
+intent: "Define what is explicitly safe to publish, not only what to block."
+
+allowed_public_patterns:
+  - "README.md"
+  - "docs/**"
+  - "policies/**"
+  - "index.html"
+  - "script.js"
+  - "manifest.json"
+  - "sw.js"
+  - ".github/workflows/**"
+  - "Makefile"
+  - "Dockerfile"
+  - ".gitignore"
+  - ".nojekyll"
+  - "scripts/**"
+  - "tools/**"
+  - "src/**"
+  - "seeds/**"
+  - "*.yaml"
+  - "*.yml"
+
+restricted_publish_patterns:
+  - ".env*"
+  - "*.pem"
+  - "*.p12"
+  - "*.pfx"
+  - "*.key"
+  - "*.kdbx"
+  - "*.map"
+
+policy_notes:
+  - "Restricted patterns are always denied unless reclassified by steward process."
+  - "Allowlist entries are public-safe by default but still pass leak guard checks."
