@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DualChannelWorkspaceTest {
@@ -71,19 +69,24 @@ class DualChannelWorkspaceTest {
     }
 
     @Test
-    void exposesNoPublicAuthorityOrExecutionMethod() {
-        Set<String> forbidden = Set.of("commit", "apply", "promote", "execute", "mutate", "persist");
+    void publicApiIsExactRatherThanProtectedByMethodNameBlacklist() {
         Set<String> publicMethods = Arrays.stream(DualChannelWorkspace.class.getDeclaredMethods())
                 .filter(method -> Modifier.isPublic(method.getModifiers()))
                 .map(Method::getName)
-                .map(String::toLowerCase)
                 .collect(Collectors.toSet());
 
-        assertFalse(publicMethods.stream().anyMatch(forbidden::contains));
-        assertNull(workspaceMethod(publicMethods, "commit"));
-    }
-
-    private static String workspaceMethod(Set<String> methods, String name) {
-        return methods.contains(name) ? name : null;
+        assertEquals(
+                Set.of(
+                        "baseSnapshot",
+                        "stage",
+                        "read",
+                        "delta",
+                        "compareChangedKeys",
+                        "clear",
+                        "clearAll"
+                ),
+                publicMethods,
+                "Any new public method requires an explicit review and test update"
+        );
     }
 }
