@@ -52,6 +52,8 @@ def yaml_scalar(text: str, key: str) -> str | None:
 def yaml_list(text: str, key: str) -> list[str] | None:
     lines = text.splitlines()
     for index, line in enumerate(lines):
+        if re.fullmatch(rf"{re.escape(key)}:\s*\[\]\s*", line):
+            return []
         if re.fullmatch(rf"{re.escape(key)}:\s*", line):
             values: list[str] = []
             for nested in lines[index + 1 :]:
