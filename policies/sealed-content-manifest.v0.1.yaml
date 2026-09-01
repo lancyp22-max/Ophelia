@@ -1,5 +1,11 @@
 version: "0.1"
 name: "Sealed Content Manifest"
+design_status: specified
+enforcement_status: partially_implemented
+enforcement_scope: "The public-shell builder follows a curated split, but this manifest is not yet mechanically authoritative over every publication path."
+enforcement_evidence:
+  - scripts/build_public_shell.sh
+  - scripts/public_shell_audit.sh
 intent: "Classify repository surface by exposure tier for stewardship routing."
 
 tiers:
