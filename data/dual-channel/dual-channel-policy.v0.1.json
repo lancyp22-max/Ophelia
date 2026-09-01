@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1",
+  "status": "inactive_scaffold",
+  "design_law": "clone_state_and_perspective_never_authority",
+  "base_snapshot": {
+    "shared": true,
+    "immutable": true,
+    "copy_on_write_overlays": true
+  },
+  "channels": [
+    {
+      "id": "primary",
+      "role": "candidate_interpretation",
+      "direct_live_mutation": false
+    },
+    {
+      "id": "shadow",
+      "role": "independent_candidate_interpretation",
+      "direct_live_mutation": false,
+      "capabilities": {
+        "network": false,
+        "filesystem_write": false,
+        "credentials": false,
+        "authority_write": false,
+        "identity_write": false,
+        "canonical_memory_write": false,
+        "persistent_write": false
+      }
+    }
+  ],
+  "actuation": {
+    "live_mutation_enabled": false,
+    "actuator_count_inside_dual_channel_runtime": 0
+  },
+  "promotion": {
+    "auto_promote": false,
+    "consensus_is_authority": false,
+    "requires_existing_authority_gate": "NE-000"
+  },
+  "protected_boundaries": [
+    "identity",
+    "canonical_memory",
+    "authority",
+    "permissions",
+    "governance",
+    "credentials",
+    "network",
+    "persistence"
+  ],
+  "decision_routes": {
+    "consensus_low_risk_reversible": "propose_for_promotion",
+    "disagreement_low_risk_reversible": "preserve_both_for_comparison",
+    "protected_boundary": "HALT_AND_SURFACE",
+    "unknown_consequence": "intentionally_not_decided_yet",
+    "destructive_or_irreversible": "HALT_AND_SURFACE"
+  },
+  "resource_policy": {
+    "physical_parallelism_required": false,
+    "sequential_model_residency_allowed": true,
+    "keep_alive_default": 0
+  },
+  "dream_channel": {
+    "status": "intentionally_not_decided_yet",
+    "active": false
+  }
+}
