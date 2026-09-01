@@ -1,4 +1,4 @@
-.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check dual-channel-check canon-receipt-check agent-work-observability-check friction-ledger-check friction-ledger-summary repo-audit-window semantic-packet-check semantic-packet-benchmark kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
+.PHONY: preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check dual-channel-check shadow-sandbox-probe canon-receipt-check agent-work-observability-check friction-ledger-check friction-ledger-summary repo-audit-window semantic-packet-check semantic-packet-benchmark kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -29,6 +29,9 @@ scene-action-bus-check:
 
 dual-channel-check:
 	python3 scripts/check_dual_channel.py
+
+shadow-sandbox-probe:
+	bash scripts/probe_shadow_sandbox.sh
 
 canon-receipt-check:
 	python3 scripts/check_canon_receipt.py
