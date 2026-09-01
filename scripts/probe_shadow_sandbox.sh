@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 RUNNER="$ROOT_DIR/scripts/run_shadow_sandbox.sh"
 IMAGE="alpine:3.22"
-if [[ -n "$SHADOW_SANDBOX_IMAGE" ]]; then
+if [[ -n "${SHADOW_SANDBOX_IMAGE:-}" ]]; then
   IMAGE="$SHADOW_SANDBOX_IMAGE"
 fi
 
