@@ -46,15 +46,21 @@ They do **not yet** mean:
 Agent wiring remains blocked until the isolated principal exists and the
 negative capability probe is green for the actual launch path.
 
-### 3. Candidate infrastructure envelope — negative probe supplied
+### 3. Candidate infrastructure envelope — verified per supported launch
 
-`scripts/probe_shadow_sandbox.sh` deliberately creates a disposable process
-container with no network route, no mounts, no inherited credentials, read-only
-root, dropped capabilities, and no-new-privileges, then attempts prohibited
-operations.
+`scripts/run_shadow_sandbox.sh` is the only supported Shadow launcher in this
+experiment. Every invocation creates the candidate container, inspects that
+specific container **before it starts**, and refuses launch unless the expected
+network, mount, privilege, user, credential, and read-only-root properties are
+present.
 
-A green probe proves that launch envelope. It does not magically transfer that
-guarantee to some other process that does not use the envelope.
+`scripts/probe_shadow_sandbox.sh` then routes through that launcher and
+deliberately attempts prohibited behavior.
+
+The CI probe is therefore a regression test for the launch contract; it is not
+the source of the runtime guarantee. The runtime claim belongs only to a Shadow
+process that was actually started through the per-launch verifier. Bypassing the
+launcher means the isolation claim does not apply.
 
 ## Memory shape
 
@@ -119,6 +125,10 @@ Unlisted effects park as `intentionally_not_decided_yet`.
 7. Agent wiring is disabled until infrastructure isolation is actually proven.
 8. A code-level "no privileged API" check is never described as equivalent to
    principal/OS isolation.
+9. A prior green sandbox probe never substitutes for verifying the actual
+   container being launched now.
+10. Synthetic experiment time and authority/security time are separate clock
+    domains and may not satisfy each other's checks.
 
 ## Existing repository authority surface
 
@@ -204,7 +214,44 @@ Before the first actual read-only Shadow snapshot:
 4. use no host mount for the snapshot itself (stdin/stdout preferred);
 5. review any required model-file mount as read-only;
 6. record the reproducibility/variance run manifest;
-7. keep all output proposal-only behind the existing NE-000 path.
+7. launch Shadow only through `scripts/run_shadow_sandbox.sh`;
+8. keep synthetic experiment time out of all authority/receipt decisions;
+9. keep all output proposal-only behind the existing NE-000 path.
 
 The experiment is ready to observe only after those claims are true in the
 runtime, not just true in this document.
+
+
+## Authority trust root is a separate subsystem
+
+The future receipt mechanism is specified in
+`policies/authority-receipt-trust-root.v0.1.yaml`.
+
+Its root is intended to be:
+
+```text
+human action on trusted approval surface
+        +
+separate host approval broker
+        +
+OS/TPM protected non-exportable signing key
+        |
+        v
+scoped one-time receipt
+        |
+        v
+verifier with no signing key
+```
+
+This is currently **design only**. The existing requester-supplied
+`surfaceAck` boolean remains non-authoritative proof and must not be mistaken
+for the future receipt system.
+
+The receipt policy also defines two incompatible-by-design clocks:
+
+- **experiment clock** — may be synthetic and model-visible for reproducibility;
+- **authority clock** — host-controlled, model-invisible, and used for receipt
+  issue/expiry/replay decisions.
+
+No adapter is allowed to treat experiment-clock values as authority-clock
+evidence.
