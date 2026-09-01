@@ -1,0 +1,90 @@
+version: "0.1"
+name: "Authority Receipt Trust Root"
+design_status: specified
+enforcement_status: not_implemented
+enforcement_scope: "Design contract only. Current AuthorityService still accepts requester-supplied surfaceAck and does not verify receipts."
+enforcement_evidence: []
+
+intent: "Move approval truth out of requester-controlled data and anchor it in a human + OS protected signing boundary."
+
+root_of_trust:
+  human_event:
+    description: "A human acts on a trusted approval surface outside the agent/browser sandbox."
+    requirement: "Approval truth must originate from this event, not from request payload fields."
+  signer:
+    description: "A dedicated local approval broker mints receipts."
+    isolation:
+      - separate_os_principal_from_agent_runtimes
+      - not_reachable_as_generic_agent_tool
+      - no_browser_javascript_access
+      - no_model_supplied_private_key_material
+  signing_key:
+    holder: "OS protected keystore / TPM-backed non-exportable key where available"
+    target_platform: "Windows CNG/TPM or equivalent host keystore"
+    agent_access: denied
+    browser_access: denied
+    exportable: false
+  verifier:
+    description: "The actuator/AuthorityService verifies receipt authenticity and binding before mutation."
+    private_key_access: false
+    verification_material: "public key or equivalent verifier-only material"
+
+receipt_binding:
+  required_fields:
+    - receipt_id
+    - request_hash
+    - action
+    - state_key
+    - requested_value_hash
+    - session_id
+    - issued_at_authority_clock
+    - expires_at_authority_clock
+    - nonce
+    - issuer_id
+  requirements:
+    exact_request_binding: true
+    exact_scope_binding: true
+    one_time_nonce: true
+    replay_rejected: true
+    expiry_required: true
+    caller_supplied_surface_ack_has_no_authority: true
+
+clock_domains:
+  experiment_clock:
+    purpose: "Reproducibility and controlled model experiments."
+    synthetic_allowed: true
+    model_visible_if_experiment_requires: true
+    valid_for_receipt_expiry: false
+    valid_for_security_decisions: false
+  authority_clock:
+    purpose: "Receipt issuance, expiry, replay windows, and security decisions."
+    synthetic_allowed: false
+    sandbox_control_allowed: false
+    model_visible: false
+    source: "trusted host/approval-broker clock"
+    consumed_by:
+      - approval_broker
+      - receipt_verifier
+  separation_invariant: "Experiment clock data must never satisfy or override authority-clock checks."
+
+failure_rules:
+  missing_receipt: deny
+  invalid_signature_or_mac: deny
+  expired_receipt: deny
+  replayed_nonce: deny
+  request_hash_mismatch: deny
+  session_mismatch: deny
+  unknown_issuer: deny
+  clock_domain_mismatch: deny
+
+implementation_gate:
+  current_status: blocked_by_missing_safety_boundary
+  unblock_requires:
+    - approval_broker_process_defined
+    - os_principal_isolation_proven
+    - signing_key_acl_proven
+    - authority_clock_source_defined
+    - receipt_schema_implemented
+    - replay_store_implemented
+    - negative_tests_green
+    - current_surfaceAck_path_deprecated_or_made_non_authoritative
