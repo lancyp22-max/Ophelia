@@ -199,6 +199,20 @@ def main() -> int:
     if resources.get("keep_alive_default") != 0:
         errors.append("keep_alive_default must remain 0 for the initial experiment")
 
+    launch = policy.get("launch_contract", {})
+    if launch.get("supported_launcher") != "scripts/run_shadow_sandbox.sh":
+        errors.append("Shadow launch contract must name the supported per-launch verifier")
+    if launch.get("verify_actual_container_before_every_start") is not True:
+        errors.append("every supported Shadow launch must verify the actual container before start")
+    if launch.get("direct_unverified_launch_supported") is not False:
+        errors.append("direct unverified Shadow launch must remain unsupported")
+    if launch.get("ci_probe") != "scripts/probe_shadow_sandbox.sh":
+        errors.append("Shadow launch contract must retain the CI negative probe")
+    if not (ROOT / "scripts" / "run_shadow_sandbox.sh").exists():
+        errors.append("supported Shadow launcher is missing")
+    if not (ROOT / "scripts" / "probe_shadow_sandbox.sh").exists():
+        errors.append("Shadow launch probe is missing")
+
     modes = policy.get("experiment_modes", {})
     for mode_name in ("reproducibility", "variance_sampling"):
         mode = modes.get(mode_name, {})
@@ -220,6 +234,9 @@ def main() -> int:
         "no_network_route",
         "read_only_or_no_host_filesystem_mount",
         "explicit_review_of_snapshot_transport",
+        "supported_launcher_is_only_shadow_launch_path",
+        "per_launch_contract_verification_enabled",
+        "authority_and_experiment_clocks_separated",
     }:
         if requirement not in unblock:
             errors.append(f"agent wiring missing unblock requirement: {requirement}")
