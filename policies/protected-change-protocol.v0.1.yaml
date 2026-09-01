@@ -1,5 +1,9 @@
 version: "0.1"
 name: "Protected Change Protocol"
+design_status: specified
+enforcement_status: not_implemented
+enforcement_scope: "Policy contract only; the six-gate workflow is not implemented in src/."
+enforcement_evidence: []
 intent: "Make meaningful change slow enough to be true, but possible enough to stay alive."
 
 scope:
@@ -101,4 +105,3 @@ enforcement:
     - decision
     - provisional_expiry_utc
     - revert_status
-
