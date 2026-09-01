@@ -8,7 +8,7 @@ if [[ -n "${SHADOW_SANDBOX_IMAGE:-}" ]]; then
   IMAGE="$SHADOW_SANDBOX_IMAGE"
 fi
 
-"$RUNNER" "$IMAGE" -- sh -eu -c '
+bash "$RUNNER" "$IMAGE" -- sh -eu -c '
   interfaces="$(ls -1 /sys/class/net | sort | tr "\n" " " | sed "s/ $//")"
   if [ "$interfaces" != "lo" ]; then
     echo "[shadow-sandbox-probe] ERROR: unexpected network interface(s): $interfaces" >&2
