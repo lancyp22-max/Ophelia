@@ -53,6 +53,9 @@ jobs:
       - name: Validate dual-channel policy and application purity
         run: python3 scripts/check_dual_channel.py
 
+      - name: Require design/enforcement maturity on policies
+        run: python3 scripts/check_policy_maturity.py
+
       - name: Prove candidate Shadow infrastructure denials
         run: bash scripts/probe_shadow_sandbox.sh
 
