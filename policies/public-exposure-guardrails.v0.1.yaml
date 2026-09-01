@@ -1,5 +1,13 @@
 version: "0.1"
 name: "Public Exposure Guardrails"
+design_status: specified
+enforcement_status: partially_implemented
+enforcement_scope: "Leak guards, link hygiene, and public-shell checks are implemented; provider/authentication boundaries remain incomplete."
+enforcement_evidence:
+  - scripts/public_leak_guard.sh
+  - scripts/test_public_leak_guard.sh
+  - scripts/verify_repo_links.sh
+  - .github/workflows/ci-build-push.yml
 intent: "Prevent accidental publication of sensitive operating context, credentials, and exploitable internals."
 
 threat_map:
