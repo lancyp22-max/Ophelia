@@ -1,5 +1,16 @@
 {
   "schema_version": "0.2",
+  "design_status": "specified",
+  "enforcement_status": "partially_implemented",
+  "enforcement_scope": "Workspace purity, hard effect floor, CI checks, and candidate sandbox launch contract are implemented; live Shadow agent wiring and production principal isolation remain disabled.",
+  "enforcement_evidence": [
+    "src/main/java/com/ophelia/runtime/DualChannelWorkspace.java",
+    "src/main/java/com/ophelia/runtime/ShadowEffectGate.java",
+    "scripts/check_dual_channel.py",
+    "scripts/run_shadow_sandbox.sh",
+    "scripts/probe_shadow_sandbox.sh",
+    ".github/workflows/ci-build-push.yml"
+  ],
   "status": "inactive_scaffold",
   "design_law": "clone_state_and_perspective_never_authority",
   "guarantee_levels": {
