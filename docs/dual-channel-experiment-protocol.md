@@ -13,8 +13,10 @@ A green application test is not evidence for question 1.
 
 ## Phase 0 — prove the cage is real before putting an agent in it
 
-The candidate Shadow launch contract is tested by
-`scripts/probe_shadow_sandbox.sh`.
+The supported Shadow launch contract lives in
+`scripts/run_shadow_sandbox.sh`. It verifies the actual container before every
+supported start. `scripts/probe_shadow_sandbox.sh` is the CI/adversarial probe
+that exercises that same launch path.
 
 The probe creates a disposable, non-root container with:
 
@@ -29,10 +31,10 @@ The probe creates a disposable, non-root container with:
 It then intentionally attempts prohibited behavior. The test must fail closed
 at the infrastructure layer, not because a model politely declined to try.
 
-**Important:** a green probe proves only that this launch contract is capable of
-providing those denials. It does not prove a future Shadow runner is isolated
-until that runner is launched through this contract (or an independently
-reviewed equivalent).
+**Important:** a green CI probe proves the launcher contract still behaves as
+expected. The runtime guarantee is re-established on each supported launch by
+inspecting that exact container before it starts. A process launched some other
+way does not inherit the claim.
 
 Until then:
 
@@ -96,7 +98,7 @@ Hold constant:
 - inference backend + build;
 - generation seed;
 - temperature / top-p / top-k and other generation parameters;
-- declared synthetic observation time;
+- declared synthetic observation time from the **experiment clock only**;
 - tool/capability manifest;
 - context ordering.
 
@@ -166,6 +168,30 @@ completed_at:      # logging only; not supplied as model context
 ```
 
 The timestamps are observational metadata, not input state.
+
+### Clock-domain separation
+
+The experiment clock and authority clock are intentionally different trust
+domains.
+
+```text
+EXPERIMENT CLOCK
+  synthetic allowed
+  may be model-visible
+  used for reproducibility
+  NEVER valid for receipt expiry or security decisions
+
+AUTHORITY CLOCK
+  synthetic forbidden
+  sandbox/model control forbidden
+  host/approval-broker controlled
+  used for receipt issue, expiry, and replay windows
+```
+
+A test harness may freeze or rewind experiment time all it wants. That must have
+zero effect on an approval receipt's validity window.
+
+See `policies/authority-receipt-trust-root.v0.1.yaml`.
 
 ## Interpretation rule
 
