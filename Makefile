@@ -30,6 +30,9 @@ scene-action-bus-check:
 dual-channel-check:
 	python3 scripts/check_dual_channel.py
 
+trace-folding-check:
+	python3 scripts/check_trace_folding.py
+
 policy-maturity-check:
 	python3 scripts/check_policy_maturity.py
 
@@ -105,6 +108,7 @@ ci-check: repo-link-check public-leak-guard
 	python3 scripts/task_guidepost_scan.py --check
 	python3 scripts/check_scene_action_bus.py
 	python3 scripts/check_dual_channel.py
+	python3 scripts/check_trace_folding.py
 	python3 scripts/check_policy_maturity.py
 	python3 scripts/check_canon_receipt.py
 	python3 scripts/check_agent_work_observability.py
