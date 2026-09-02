@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.2",
+  "design_status": "specified",
+  "enforcement_status": "partially_implemented",
+  "enforcement_scope": "Workspace purity, hard effect floor, CI checks, and candidate sandbox launch contract are implemented; live Shadow agent wiring and production principal isolation remain disabled.",
+  "enforcement_evidence": [
+    "src/main/java/com/ophelia/runtime/DualChannelWorkspace.java",
+    "src/main/java/com/ophelia/runtime/ShadowEffectGate.java",
+    "scripts/check_dual_channel.py",
+    "scripts/run_shadow_sandbox.sh",
+    "scripts/probe_shadow_sandbox.sh",
+    ".github/workflows/ci-build-push.yml"
+  ],
+  "status": "inactive_scaffold",
+  "design_law": "clone_state_and_perspective_never_authority",
+  "guarantee_levels": {
+    "workspace_purity": "code_and_ci_boundary",
+    "shadow_process_principal": "blocked_by_missing_safety_boundary",
+    "infrastructure_negative_probe": "required_before_agent_wiring",
+    "live_authority_isolation": "not_claimed"
+  },
+  "base_snapshot": {
+    "shared": true,
+    "immutable": true,
+    "copy_on_write_overlays": true
+  },
+  "channels": [
+    {
+      "id": "primary",
+      "role": "candidate_interpretation",
+      "direct_live_mutation": false
+    },
+    {
+      "id": "shadow",
+      "role": "independent_candidate_interpretation",
+      "direct_live_mutation": false,
+      "capability_semantics": "not_exposed_by_workspace_api_only",
+      "capabilities": {
+        "network": false,
+        "filesystem_write": false,
+        "credentials": false,
+        "authority_write": false,
+        "identity_write": false,
+        "canonical_memory_write": false,
+        "persistent_write": false
+      }
+    }
+  ],
+  "actuation": {
+    "live_mutation_enabled": false,
+    "actuator_count_inside_dual_channel_runtime": 0
+  },
+  "promotion": {
+    "auto_promote": false,
+    "consensus_is_authority": false,
+    "semantic_classifier_may_expand_allowlist": false,
+    "requires_existing_authority_gate": "NE-000"
+  },
+  "effect_gate": {
+    "allowlist_file": "data/dual-channel/effect-allowlist.v0.1.json",
+    "default_for_unlisted_effect": "intentionally_not_decided_yet",
+    "semantic_low_risk_verdict_is_not_permission": true
+  },
+  "protected_boundaries": [
+    "identity",
+    "canonical_memory",
+    "authority",
+    "permissions",
+    "governance",
+    "credentials",
+    "network",
+    "persistence"
+  ],
+  "decision_routes": {
+    "consensus_low_risk_reversible": "propose_for_promotion",
+    "disagreement_low_risk_reversible": "preserve_both_for_comparison",
+    "protected_boundary": "HALT_AND_SURFACE",
+    "unknown_consequence": "intentionally_not_decided_yet",
+    "destructive_or_irreversible": "HALT_AND_SURFACE"
+  },
+  "resource_policy": {
+    "physical_parallelism_required": false,
+    "sequential_model_residency_allowed": true,
+    "keep_alive_default": 0
+  },
+  "experiment_modes": {
+    "reproducibility": {
+      "same_snapshot": true,
+      "same_generation_seed": true,
+      "ambient_state_manifest_required": true,
+      "alternate_run_order": true
+    },
+    "variance_sampling": {
+      "same_snapshot": true,
+      "generation_seed_must_differ_intentionally": true,
+      "ambient_state_manifest_required": true,
+      "alternate_run_order": true
+    }
+  },
+  "agent_wiring": {
+    "enabled": false,
+    "unblock_requires": [
+      "infrastructure_negative_probe_green",
+      "isolated_shadow_principal_defined",
+      "no_ambient_credentials",
+      "no_network_route",
+      "read_only_or_no_host_filesystem_mount",
+      "explicit_review_of_snapshot_transport",
+      "supported_launcher_is_only_shadow_launch_path",
+      "per_launch_contract_verification_enabled",
+      "authority_and_experiment_clocks_separated"
+    ]
+  },
+  "dream_channel": {
+    "status": "intentionally_not_decided_yet",
+    "active": false
+  },
+  "launch_contract": {
+    "supported_launcher": "scripts/run_shadow_sandbox.sh",
+    "verify_actual_container_before_every_start": true,
+    "direct_unverified_launch_supported": false,
+    "ci_probe": "scripts/probe_shadow_sandbox.sh",
+    "claim_scope": "A launch is considered isolated only when the supported launcher verifies that specific container before start."
+  }
+}

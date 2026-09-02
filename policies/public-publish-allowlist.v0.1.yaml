@@ -1,5 +1,12 @@
 version: "0.1"
 name: "Public Publish Allowlist"
+design_status: specified
+enforcement_status: partially_implemented
+enforcement_scope: "Public-shell construction and leak guards exist, but this YAML is not yet the single mechanically parsed source of truth."
+enforcement_evidence:
+  - scripts/build_public_shell.sh
+  - scripts/public_leak_guard.sh
+  - scripts/test_public_leak_guard.sh
 intent: "Define what is explicitly safe to publish, not only what to block."
 
 allowed_public_patterns:

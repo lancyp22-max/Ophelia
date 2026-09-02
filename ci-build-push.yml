@@ -27,6 +27,9 @@ jobs:
       - run: python3 scripts/check_correction_ledger.py
       - run: python3 scripts/task_guidepost_scan.py --check
       - run: python3 scripts/check_scene_action_bus.py
+      - run: python3 scripts/check_dual_channel.py
+      - run: python3 scripts/check_policy_maturity.py
+      - run: bash scripts/probe_shadow_sandbox.sh
       - run: python3 scripts/check_canon_receipt.py
       - run: python3 scripts/check_agent_work_observability.py
       - run: python3 scripts/friction_ledger.py --check

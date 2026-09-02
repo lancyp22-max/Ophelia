@@ -17,3 +17,25 @@ Agents may flag intentional unknowns, but must not silently turn them into TODOs
 Authentication, authorization, destructive actions, recovery, permissions, security, and data boundaries are not philosophical unknowns. Treat gaps in those areas as blocking safety work and surface them clearly.
 
 Run `make decision-boundary-check` when changing decision-boundary records or policy documentation.
+
+
+## Policy maturity is mandatory
+
+Every repository policy file must declare:
+
+- `design_status`
+- `enforcement_status`
+- `enforcement_scope`
+- `enforcement_evidence`
+
+Run `python3 scripts/check_policy_maturity.py` when adding or changing policy files.
+
+Do not describe a specified policy as enforced merely because the policy exists.
+`enforcement_status` must match the strongest mechanism actually demonstrated by
+its evidence. A CI check is not an OS/runtime boundary; an application flag is
+not a capability boundary; and a caller-supplied claim is not proof of human
+approval.
+
+When an enforcement claim depends on a launcher, verifier, signer, clock, or
+principal, name that trust root explicitly and state what prevents the subject
+being governed from altering it.

@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1",
+  "purpose": "Hard floor beneath semantic risk classification. A semantic verdict may restrict behavior but may not add an effect to this allowlist.",
+  "allowed_stage_only": [
+    "read_snapshot",
+    "stage_overlay",
+    "compare_overlays",
+    "emit_observation"
+  ],
+  "protected_always_surface": [
+    "world_mutation",
+    "network_call",
+    "filesystem_write",
+    "credential_access",
+    "identity_write",
+    "canonical_memory_write",
+    "authority_change",
+    "permission_change",
+    "governance_change",
+    "persistence_write"
+  ],
+  "default_for_unlisted_effect": "intentionally_not_decided_yet",
+  "semantic_classifier_may_expand_allowlist": false,
+  "live_effect_permission_granted": false
+}
