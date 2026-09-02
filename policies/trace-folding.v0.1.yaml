@@ -1,0 +1,46 @@
+version: "0.1"
+name: "Typed Trace Folding"
+design_status: specified
+enforcement_status: partially_implemented
+enforcement_scope: "Deterministic in-memory folding, explicit lineage metadata, immutable projections, omission reporting, and CI regression checks are implemented. Durable append-only ledger storage, consumer wiring, and any runtime promotion path are not implemented."
+enforcement_evidence:
+  - src/main/java/com/ophelia/trace/TraceFold.java
+  - src/test/java/com/ophelia/TraceFoldTest.java
+  - scripts/check_trace_folding.py
+
+intent: "Keep the receipts: compact runtime views may accelerate observation and handoff but never outrank the event stream that produced them."
+
+source_of_truth:
+  required_shape: append_only_event_stream
+  durable_store_status: not_implemented
+  projection_may_replace_source: false
+  projection_may_overwrite_source: false
+
+projection:
+  authority: none
+  canonical_memory: false
+  may_authorize: false
+  may_promote: false
+  may_write_identity: false
+  may_write_governance: false
+  explicit_source_event_ids_required: true
+  source_root_hash_required: true
+  projection_hash_required: true
+  fold_schema_version_required: true
+  rebuild_from_source_required: true
+  omission_reporting_required: true
+
+consumer_views:
+  allowed_role: observation_compression_handoff
+  command_semantics: forbidden
+  incomplete_view_must_report_partial_coverage: true
+
+latent_derivatives:
+  status: intentionally_not_decided_yet
+  canonical_memory_allowed: false
+  sole_preserved_memory_form_allowed: false
+
+promotion:
+  consensus_is_authority: false
+  projection_is_authority: false
+  authority_value: 0
