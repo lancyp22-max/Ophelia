@@ -53,6 +53,9 @@ jobs:
       - name: Validate dual-channel policy and application purity
         run: python3 scripts/check_dual_channel.py
 
+      - name: Validate typed trace folding contract
+        run: python3 scripts/check_trace_folding.py
+
       - name: Require design/enforcement maturity on policies
         run: python3 scripts/check_policy_maturity.py
 

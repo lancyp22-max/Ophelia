@@ -39,3 +39,15 @@ approval.
 When an enforcement claim depends on a launcher, verifier, signer, clock, or
 principal, name that trust root explicitly and state what prevents the subject
 being governed from altering it.
+
+
+## Derived trace views never outrank source
+
+When adding trace folding, summaries, semantic packets, or compression caches,
+keep the causal source authoritative. A derived projection must identify its
+source lineage and transform/schema version, remain rebuildable, and report
+known omissions.
+
+A projection may improve observation or handoff. It does not gain authority,
+canonical-memory status, identity-writing power, persistence permission, or
+governance power. Agreement between projections remains evidence only.
