@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1",
+  "status": "measurement_contract",
+  "purpose": "Measure compression as a system tradeoff, not a token-count beauty contest.",
+  "required_metrics": [
+    "stored_units",
+    "delivered_context_units",
+    "management_work_units",
+    "task_outcome",
+    "provenance_recovery_rate",
+    "reconstruction_fidelity",
+    "abstention_rate",
+    "error_rate"
+  ],
+  "rules": {
+    "token_reduction_alone_is_success": false,
+    "provenance_loss_may_be_hidden": false,
+    "task_outcome_required": true,
+    "reconstruction_fidelity_required": true
+  }
+}
