@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/lumaria/model-capability-manifest.v0.1.schema.json",
+  "title": "Lumaria model capability manifest v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "provider",
+    "model",
+    "observed_at",
+    "evidence",
+    "capabilities",
+    "authority_notes"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "manifest_id": { "type": "string", "minLength": 1 },
+    "provider": { "type": "string", "minLength": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "observed_at": { "type": "string", "format": "date" },
+    "api_family": { "type": "string" },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "retrieved_at"],
+        "properties": {
+          "source": { "type": "string", "format": "uri" },
+          "retrieved_at": { "type": "string", "format": "date" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "enum": ["supported", "unsupported", "conditional", "unknown"]
+          },
+          "notes": { "type": "string" },
+          "conditions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "migration_hints": {
+      "type": "object",
+      "additionalProperties": { "type": ["string", "number", "boolean"] }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "authority_notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["does_not_grant_authority", "canonical_state_owner"],
+      "properties": {
+        "does_not_grant_authority": { "const": true },
+        "canonical_state_owner": { "const": "lumaria_existing_authority_paths" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
