@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,6 +49,31 @@ class ModelBridgeContractTest {
         bridge.register(adapter);
 
         assertThrows(IllegalStateException.class, () -> bridge.register(adapter));
+    }
+
+    @Test
+    void adapterIdentityMustMatchManifestIdentity() {
+        ModelBridge bridge = new ModelBridge();
+        ModelCapabilityManifest manifest = manifestWithCapabilities(Map.of());
+
+        ModelAdapter mismatched = new ModelAdapter() {
+            @Override
+            public String provider() {
+                return "spoofed-provider";
+            }
+
+            @Override
+            public String model() {
+                return "fixture-model";
+            }
+
+            @Override
+            public ModelCapabilityManifest capabilityManifest() {
+                return manifest;
+            }
+        };
+
+        assertThrows(IllegalArgumentException.class, () -> bridge.register(mismatched));
     }
 
     @Test
@@ -89,19 +115,11 @@ class ModelBridgeContractTest {
         );
 
         assertEquals(ModelTurnEventType.STEERING, event.type());
-        assertEquals(null, event.callId());
+        assertNull(event.callId());
     }
 
     private static ModelAdapter adapterWithCapabilities(Map<String, ModelCapability> capabilities) {
-        ModelCapabilityManifest manifest = new ModelCapabilityManifest(
-                "fixture-manifest",
-                "fixture-provider",
-                "fixture-model",
-                LocalDate.of(2026, 9, 4),
-                "fixture-api",
-                capabilities,
-                List.of("fixture-evidence")
-        );
+        ModelCapabilityManifest manifest = manifestWithCapabilities(capabilities);
 
         return new ModelAdapter() {
             @Override
@@ -119,5 +137,19 @@ class ModelBridgeContractTest {
                 return manifest;
             }
         };
+    }
+
+    private static ModelCapabilityManifest manifestWithCapabilities(
+            Map<String, ModelCapability> capabilities
+    ) {
+        return new ModelCapabilityManifest(
+                "fixture-manifest",
+                "fixture-provider",
+                "fixture-model",
+                LocalDate.of(2026, 9, 4),
+                "fixture-api",
+                capabilities,
+                List.of("fixture-evidence")
+        );
     }
 }

@@ -11,9 +11,23 @@ public final class ModelBridge {
         if (adapter == null) {
             throw new IllegalArgumentException("adapter must not be null");
         }
-        ModelAdapter previous = adapters.putIfAbsent(adapter.adapterKey(), adapter);
+
+        String provider = requireIdentityPart(adapter.provider(), "provider");
+        String model = requireIdentityPart(adapter.model(), "model");
+        ModelCapabilityManifest manifest = adapter.capabilityManifest();
+        if (manifest == null) {
+            throw new IllegalArgumentException("capability manifest must not be null");
+        }
+        if (!provider.equals(manifest.provider()) || !model.equals(manifest.model())) {
+            throw new IllegalArgumentException(
+                    "adapter identity must match capability manifest identity"
+            );
+        }
+
+        String key = key(provider, model);
+        ModelAdapter previous = adapters.putIfAbsent(key, adapter);
         if (previous != null) {
-            throw new IllegalStateException("adapter already registered: " + adapter.adapterKey());
+            throw new IllegalStateException("adapter already registered: " + key);
         }
     }
 
@@ -21,7 +35,7 @@ public final class ModelBridge {
         if (provider == null || model == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(adapters.get(provider + ":" + model));
+        return Optional.ofNullable(adapters.get(key(provider, model)));
     }
 
     public CapabilityState capabilityState(String provider, String model, String capabilityId) {
@@ -33,5 +47,16 @@ public final class ModelBridge {
 
     public boolean supports(String provider, String model, String capabilityId) {
         return capabilityState(provider, model, capabilityId) == CapabilityState.SUPPORTED;
+    }
+
+    private static String requireIdentityPart(String value, String label) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(label + " must not be blank");
+        }
+        return value;
+    }
+
+    private static String key(String provider, String model) {
+        return provider + ":" + model;
     }
 }
