@@ -1,4 +1,4 @@
-.PHONY: trace-folding-check policy-maturity-check preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check dual-channel-check shadow-sandbox-probe canon-receipt-check agent-work-observability-check friction-ledger-check friction-ledger-summary repo-audit-window semantic-packet-check semantic-packet-benchmark kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
+.PHONY: auri-sms-test trace-folding-check policy-maturity-check preview preview-mobile preview-all mirror10-demo context-brief world-model-packet task-guideposts task-guidepost-check scene-action-bus-check dual-channel-check shadow-sandbox-probe canon-receipt-check agent-work-observability-check friction-ledger-check friction-ledger-summary repo-audit-window semantic-packet-check semantic-packet-benchmark kernel-check actions-runtime-check world-module-check decision-boundary-check correction-ledger-check backend-build backend-run ci-check repo-link-check public-leak-guard public-leak-guard-test install-hooks public-shell public-shell-audit
 
 preview:
 	python3 scripts/capture_preview.py --output artifacts/preview-desktop.txt
@@ -50,6 +50,9 @@ friction-ledger-check:
 
 friction-ledger-summary:
 	python3 scripts/friction_ledger.py --summary
+
+auri-sms-test:
+	python3 -m unittest -v src/test/python/test_auri_sms.py
 
 repo-audit-window:
 	python3 scripts/repo_audit_window.py --hours "$(or $(HOURS),24)" $(if $(END),--end "$(END)",)
@@ -113,6 +116,7 @@ ci-check: repo-link-check public-leak-guard
 	python3 scripts/check_canon_receipt.py
 	python3 scripts/check_agent_work_observability.py
 	python3 scripts/friction_ledger.py --check
+	python3 -m unittest -v src/test/python/test_auri_sms.py
 	python3 scripts/repo_audit_window.py --hours 24 --end 2026-08-24T18:01:00Z --check >/dev/null
 	python3 scripts/semantic_packet.py --check
 	python3 scripts/check_github_actions_runtime.py
