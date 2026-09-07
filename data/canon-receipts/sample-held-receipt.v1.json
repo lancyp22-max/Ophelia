@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "canon.sample.held.0001",
+  "candidate_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "provenance": ["conversation:sample-review:turn-17"],
+  "evidence_refs": ["evidence:sample-review:statement-3"],
+  "proposer": {
+    "principal_id": "fixture.model.local",
+    "kind": "model_proposal"
+  },
+  "authorization": {
+    "principal_id": null,
+    "capability": "none",
+    "scope": null,
+    "receipt_ref": null
+  },
+  "decision": "hold_without_authority",
+  "decided_at": "2026-08-24T00:00:00Z",
+  "prior_canon_version": "canon.main@17",
+  "resulting_canon_version": null,
+  "rollback_pointer": null,
+  "history_integrity": {
+    "event_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "assertion": "record_integrity_not_current_truth"
+  }
+}

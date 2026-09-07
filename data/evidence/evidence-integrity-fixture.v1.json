@@ -1,0 +1,139 @@
+{
+  "version": "1.0",
+  "derived_memory": {
+    "record_id": "derived_sample_001",
+    "provenance_class": "STOCHASTIC_DERIVATION",
+    "source_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "output_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "transform": {
+      "transform_id": "summarize.v1",
+      "prompt_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+      "model_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "seed": 42,
+      "parameters": {
+        "temperature": 0.2,
+        "top_p": 0.9
+      },
+      "backend": "sample-runtime/1.0"
+    },
+    "provenance_claim": "auditable_lineage_not_byte_replay",
+    "authority_effect": 0
+  },
+  "storage_observation": {
+    "record_id": "runtime_tensor_sample_001",
+    "state": "ARCHIVED_EXACT",
+    "content_fidelity": "bit_exact",
+    "active_attention": false,
+    "retained": true,
+    "recallable": true,
+    "scope": "runtime_tensor_only",
+    "authority_effect": 0
+  },
+  "memory_action_boundary": {
+    "evidence_ref": "source:sample-memory-001",
+    "derived_knowledge_ref": "derived_sample_001",
+    "requested_action": "scene.propose",
+    "provenance_present": true,
+    "derivation_visible": true,
+    "authority_source": "receipt:sample-current-permission-001",
+    "authority_source_separate_from_memory": true,
+    "current_permission_present": true,
+    "remembered_preference_used_as_permission": false,
+    "boundary_status": "fixture_only_not_authorization",
+    "authority_effect": 0
+  },
+  "parked_experiments": {
+    "exact_cache_tiering": {
+      "status": "intentionally_not_decided_yet",
+      "scope": "compatible_runtime_tensors_only",
+      "reconsider_when": "a compatible NoPE-MLA local inference runtime and measured workload exist",
+      "prohibited_scope": ["canonical_memory", "consent", "identity", "authority", "governance"]
+    },
+    "latent_working_memory": {
+      "status": "intentionally_not_decided_yet",
+      "scope": "disposable_working_context_only",
+      "reconsider_when": "an isolated benchmark can measure utility, hidden persistence, and compute cost",
+      "prohibited_scope": ["canonical_memory", "consent", "identity", "authority", "historical_truth"]
+    }
+  },
+  "walk_forward_evaluation": {
+    "folds": [
+      {
+        "fold_id": "f01",
+        "sample_count": 40,
+        "utility": 0.78
+      },
+      {
+        "fold_id": "f02",
+        "sample_count": 38,
+        "utility": 0.62
+      },
+      {
+        "fold_id": "f03",
+        "sample_count": 44,
+        "utility": 0.81
+      }
+    ],
+    "aggregate": {
+      "required_mean_utility": 0.7,
+      "guard_statistic": "hard_minimum",
+      "required_guard_utility": 0.45
+    },
+    "result_status": "computed_by_validator"
+  },
+  "experiment_commitment": {
+    "payload": {
+      "parameter_file": "config/evaluation.v1.yaml",
+      "split_manifest": "data/evaluation/splits.v1.json",
+      "code_commit": "0123456789abcdef0123456789abcdef01234567",
+      "model_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "utility_weights": {
+        "mean": 0.65,
+        "worst_fold": 0.35
+      },
+      "thresholds": {
+        "mean_utility": 0.7,
+        "minimum_fold_utility": 0.45
+      }
+    },
+    "algorithm": "sha256_canonical_json",
+    "commitment_sha256": "sha256:93d9814f1c10aa9a4579d132a56a7af015c411f7ad19d997d8bf3bb560964bdb",
+    "anchor": {
+      "type": "append_only_ledger",
+      "ref": "ledger:sample-evaluation-commitment-001"
+    },
+    "meaning": "detect_goalpost_change_not_prevent_change"
+  },
+  "convergence": {
+    "record_id": "convergence_sample_001",
+    "observations": [
+      {
+        "source_id": "model-family-a",
+        "evidence_ref": "trace:a:001"
+      },
+      {
+        "source_id": "model-family-b",
+        "evidence_ref": "trace:b:001"
+      }
+    ],
+    "independence_status": "partially_supported",
+    "convergence_observed": true,
+    "authority_effect": 0,
+    "interpretation": "agreement_is_evidence_not_authorization"
+  },
+  "ontology_observation": {
+    "continuity": "unknown",
+    "self_reference": "observed",
+    "adaptation": "observed",
+    "preference_stability": "unknown",
+    "error_correction": "observed",
+    "goal_persistence": "unknown",
+    "context_sensitivity": "observed",
+    "novelty": "observed",
+    "social_modeling": "unknown",
+    "metacognition": "unknown",
+    "agency": "unknown",
+    "memory_provenance": "auditable",
+    "boundary_awareness": "observed"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "protocol": "lumaria-semantic-packet",
+  "version": "0.1",
+  "status": "experimental_context_transport",
+  "non_claims": [
+    "not_authorization",
+    "not_consent_receipt",
+    "not_canon",
+    "not_a_credential_container",
+    "not_guaranteed_to_reduce_provider_tokens"
+  ],
+  "limits": {
+    "maximum_operations": 32
+  },
+  "operators": {
+    "set": "=",
+    "remove": "-"
+  },
+  "paths": {
+    "scene.focus": "f",
+    "scene.time_mode": "t",
+    "scene.vfx": "x",
+    "scene.object_presence": "o",
+    "interaction.participation_state": "i",
+    "persistence.request_state": "p",
+    "provider.response_state": "r"
+  },
+  "values": {
+    "campfire": "c",
+    "wellspring": "w",
+    "bridge": "b",
+    "day": "d",
+    "night": "n",
+    "on": "1",
+    "off": "0",
+    "pending": "?",
+    "granted_assertion": "+",
+    "denied_assertion": "!",
+    "session": "s",
+    "persistent_requested": "P",
+    "ok": "k",
+    "rate_limited": "4",
+    "unavailable": "u"
+  },
+  "safety": {
+    "forbidden_path_fragments": [
+      "api_key",
+      "credential",
+      "secret",
+      "password",
+      "token",
+      "authorization_receipt",
+      "consent_receipt",
+      "system_instruction"
+    ],
+    "decoded_values_are": "untrusted_context_data",
+    "unknown_atom_behavior": "reject",
+    "codebook_mismatch_behavior": "reject",
+    "sequence_regression_behavior": "reject_when_prior_sequence_is_supplied"
+  }
+}

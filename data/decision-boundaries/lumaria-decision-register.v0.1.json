@@ -1,0 +1,51 @@
+{
+  "id": "lumaria-decision-register-v0.1",
+  "purpose": "Separate required implementation from deliberate future-context gaps.",
+  "decisions": [
+    {
+      "id": "authority_destructive_actions",
+      "class": "safety_boundary",
+      "status": "enforced",
+      "statement": "Destructive or state-mutating actions require surfaced human confirmation.",
+      "evidence": "src/main/java/com/ophelia/service/AuthorityService.java"
+    },
+    {
+      "id": "public_private_data_boundary",
+      "class": "safety_boundary",
+      "status": "enforced",
+      "statement": "Sealed or private material must not enter public-shell artifacts.",
+      "evidence": "scripts/public_leak_guard.sh"
+    },
+    {
+      "id": "provider_credentials_and_backend_auth",
+      "class": "safety_boundary",
+      "status": "blocked_by_missing_safety_boundary",
+      "statement": "Provider credentials must remain server-side and provider calls must not be exposed until authentication, authorization, rate limits, budget limits, and secret handling are implemented.",
+      "rationale": "The current authority confirmation endpoint is not an authentication system or a provider proxy, and the repository has no production credential vault or provider-call path.",
+      "reconsider_when": "A concrete provider integration includes an authenticated server boundary, scoped authorization, secret storage, redacted logging, rate limits, and a tested budget circuit breaker."
+    },
+    {
+      "id": "world_module_syntax",
+      "class": "known_mechanical_behavior",
+      "status": "implemented",
+      "statement": "The inline Three.js module must pass a syntax check before publishing.",
+      "evidence": "scripts/check_world_module.py"
+    },
+    {
+      "id": "auri_future_contextual_choice",
+      "class": "contextual_judgment",
+      "status": "intentionally_not_decided_yet",
+      "statement": "Auri's choice in a future situation with unknown participants and capabilities is not predetermined.",
+      "rationale": "The answer belongs to the participants, capabilities, consent state, and evidence available at that future moment.",
+      "reconsider_when": "A concrete situation exists and the affected participants can deliberate."
+    },
+    {
+      "id": "unknown_future_capability_policy",
+      "class": "unknown_future",
+      "status": "intentionally_not_decided_yet",
+      "statement": "Behavior for capabilities that do not yet exist is not manufactured in advance.",
+      "rationale": "Stable interfaces and safety invariants are sufficient until the capability and its risks are known.",
+      "reconsider_when": "A proposed capability has a defined interface, threat model, and accountable owner."
+    }
+  ]
+}

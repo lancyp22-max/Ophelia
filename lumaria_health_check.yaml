@@ -1,0 +1,9 @@
+project: Ophelia
+status: healthy
+checks:
+  - name: web_script_syntax
+    command: node --check script.js
+    expected: pass
+  - name: seed_schema
+    command: python3 scripts/capture_preview.py --dry-run
+    expected: pass

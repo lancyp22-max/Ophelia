@@ -1,0 +1,26 @@
+{
+  "avatar_id": "campfire_agent_auri",
+  "display_name": "Auri · Campfire Agent",
+  "location": "Bridge_A1_Campfire",
+  "pose": "seated_near_fire",
+  "expression": "calm_focus",
+  "glow": "violet eyes + held orb + crown gem",
+  "active_channel": "wellspring",
+  "speaking_state": "listening",
+  "visual_details": {
+    "silhouette": ["small chibi guardian", "long lavender hair", "soft elf ears", "gold crown arc", "floating nameplate", "close-range grass and petal ring"],
+    "materials": ["cream-violet robe", "gold trim", "purple gem crown", "glowing hand orb", "small staff gem", "dew-lit moss and soft petals"],
+    "animation": ["eye pulse", "orb shimmer", "crown glow", "staff halo spin", "gentle hair sway", "nearby grass sway", "tiny fauna hover"]
+  },
+  "linked_memory_nodes": [
+    "Personal_Tendencies",
+    "Bridge_A1_Campfire",
+    "Wellspring_Chat"
+  ],
+  "safety_state": {
+    "authority": "human_pilot",
+    "can_commit_state": false,
+    "requires_surface_ack": true
+  },
+  "residual_trace": "Present without pressure; companionship before command."
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ophelia.local/schemas/scene-action-bus.v0.1.schema.json",
+  "title": "Lumaria Scene Action Bus v0.1",
+  "x-lumaria-inherits": ["INV-AUTH-001", "INV-PERSIST-001", "INV-PROV-001", "INV-MUTATE-001", "INV-SCOPE-001"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "action_id", "phase", "actor", "action", "scope", "consent", "persistence", "budget", "rollback"],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "action_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{7,95}$" },
+    "phase": { "enum": ["proposal", "validated", "previewed", "approved", "committed", "rejected", "reverted", "expired"] },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["participant_id", "runtime_id", "provenance"],
+      "properties": {
+        "participant_id": { "type": "string", "minLength": 1, "maxLength": 96 },
+        "runtime_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "provenance": { "enum": ["human_input", "model_proposal", "scripted_fixture", "system_mechanic"] }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "payload"],
+      "properties": {
+        "type": { "enum": ["spawn", "move", "rotate", "resize", "recolor", "annotate", "remove_own_object", "request_persistence"] },
+        "payload": {
+          "type": "object",
+          "propertyNames": {
+            "not": { "enum": ["code", "javascript", "script", "eval", "module", "url", "html"] }
+          }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scene_id", "region_id", "lease_id", "expires_at"],
+      "properties": {
+        "scene_id": { "type": "string", "minLength": 1 },
+        "region_id": { "type": "string", "minLength": 1 },
+        "lease_id": { "type": "string", "minLength": 1 },
+        "expires_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "consent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "surface_ack", "affected_participants"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "surface_ack": { "type": "boolean" },
+        "affected_participants": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "requested"],
+      "properties": {
+        "mode": { "enum": ["session", "exhibit_only", "persistent"] },
+        "requested": { "type": "boolean" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_delta", "triangle_estimate", "texture_bytes", "ttl_seconds"],
+      "properties": {
+        "object_delta": { "type": "integer", "minimum": -1, "maximum": 1 },
+        "triangle_estimate": { "type": "integer", "minimum": 0, "maximum": 50000 },
+        "texture_bytes": { "type": "integer", "minimum": 0, "maximum": 4194304 },
+        "ttl_seconds": { "type": "integer", "minimum": 1, "maximum": 3600 }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["strategy", "snapshot_ref"],
+      "properties": {
+        "strategy": { "enum": ["remove_spawned_object", "restore_snapshot", "inverse_transform", "restore_material", "remove_annotation", "none_for_proposal"] },
+        "snapshot_ref": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "taskId": "review_lumaria_patch",
+  "agent": "Gemma",
+  "taskType": "code_review",
+  "maxLoops": 5,
+  "currentLoop": 3,
+  "stopConditions": [
+    "answer_stable",
+    "no_new_findings",
+    "repeated_output",
+    "risk_threshold_met",
+    "max_loops_reached"
+  ],
+  "guardrails": [
+    "no_file_edits",
+    "cite_uncertainty",
+    "stop_if_repeating",
+    "no_hidden_chain_of_thought"
+  ],
+  "loopSummaries": [
+    {
+      "loopNumber": 1,
+      "loopType": "understand",
+      "summary": "Identified task goal, expected output, and success criteria.",
+      "newFindings": [
+        "Patch should stay schema-only and avoid live agent orchestration."
+      ],
+      "confidence": 0.72
+    },
+    {
+      "loopNumber": 2,
+      "loopType": "critique",
+      "summary": "Checked for over-engineering risk and dependency creep.",
+      "newFindings": [
+        "No SQLite, Chroma, embeddings, or ML runtime should be added in v0.1."
+      ],
+      "confidence": 0.81
+    },
+    {
+      "loopNumber": 3,
+      "loopType": "verify",
+      "summary": "Confirmed schema/example/doc-only pass is stable enough to stop.",
+      "newFindings": [],
+      "confidence": 0.87
+    }
+  ],
+  "finalOutput": {
+    "finalAnswer": "Proceed with lightweight schema, sample JSON, and documentation only.",
+    "confidence": 0.87,
+    "unresolvedQuestions": [
+      "Should a future endpoint expose saved loop samples after the format is used in practice?"
+    ],
+    "haltReason": "answer_stable"
+  }
+}

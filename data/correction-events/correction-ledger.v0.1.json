@@ -1,0 +1,19 @@
+{
+  "id": "lumaria-correction-ledger-v0.1",
+  "purpose": "Count evidence-backed findings, corrections, and surfaced assumptions without turning them into status or reward points.",
+  "events": [],
+  "tally": {
+    "supported_findings": 0,
+    "verified_corrections": 0,
+    "surfaced_assumptions": 0,
+    "supported_since_last_correction": 0,
+    "correction_opportunity_index": 1
+  },
+  "guardrails": [
+    "no_synthetic_events",
+    "evidence_required",
+    "no_status_or_reward_effect",
+    "uncertainty_is_not_error",
+    "disagreement_alone_is_not_correction"
+  ]
+}

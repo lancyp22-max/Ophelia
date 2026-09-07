@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumaria.local/schemas/friction-event.v1.schema.json",
+  "title": "Lumaria Friction Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "event_id", "route_id", "task_family",
+    "context_fingerprint", "attempt_n", "outcome", "evidence_quality",
+    "constraint_class", "uncertainty", "changed_since_last_attempt",
+    "timestamp", "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "event_id": { "type": "string", "pattern": "^fr_[a-z0-9][a-z0-9._-]{2,63}$" },
+    "route_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "task_family": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "context_fingerprint": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "attempt_n": { "type": "integer", "minimum": 1 },
+    "outcome": {
+      "enum": ["resolved", "partial", "timeout", "constraint_hit", "degraded", "unknown"]
+    },
+    "evidence_quality": { "enum": ["none", "weak", "moderate", "strong"] },
+    "constraint_class": {
+      "enum": ["none", "capability", "authorization", "policy", "resource", "dependency", "environment", "unknown"]
+    },
+    "uncertainty": { "enum": ["low", "medium", "high", "unknown"] },
+    "changed_since_last_attempt": { "enum": ["yes", "no", "unknown"] },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "notes": { "type": "string", "maxLength": 2000 },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "evidence_refs"],
+      "properties": {
+        "source_type": { "enum": ["runtime_observation", "operator_report", "test_result", "imported_record"] },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 512 },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "taskName": "Ophelia",
+  "taskCode": "OPHELIA",
+  "legacyAliases": [
+    "Create visual SVG for Sigil Ring",
+    "Create visual Svg for Sigil ring"
+  ],
+  "mission": "Render the Ophelia SVG module.",
+  "state": "calm"
+}

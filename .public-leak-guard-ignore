@@ -1,0 +1,2 @@
+# Regex patterns ignored by scripts/public_leak_guard.sh.
+# Keep this file small; every entry should be justified in review.

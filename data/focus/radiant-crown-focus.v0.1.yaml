@@ -1,0 +1,122 @@
+version: "0.1"
+id: radiant_crown_focus
+status: experimental_symbolic_interface
+
+scope:
+  purpose: "Coordinate attention pacing, visual focus, and bounded UI routing."
+  implementation_surface: "Lumaria Flight Deck and Radiant Crown pilot glyph"
+  non_claims:
+    - no_external_entity_contact
+    - no_cosmic_telemetry
+    - no_consciousness_measurement
+    - no_quasicrystal_physics_claim
+
+authority:
+  mode: advisory_only
+  may:
+    - suggest_focus_mode
+    - visualize_declared_state
+    - surface_missing_information
+    - request_a_consent_check
+  may_not:
+    - mutate_protected_state
+    - infer_consent
+    - canonize_interpretation
+    - represent_symbolic_output_as_external_signal
+
+epistemic_lanes:
+  observed:
+    definition: "A value supplied by an attributable interface or person."
+    requires:
+      - source
+      - observed_at
+  interpreted:
+    definition: "A reversible reading of one or more observations."
+    requires:
+      - source_observation_ids
+      - uncertainty
+    cannot_imply:
+      - canonized
+      - externally_verified
+  canonized:
+    definition: "A deliberately adopted project rule or durable meaning."
+    requires:
+      - explicit_human_approval
+      - provenance
+      - recorded_change_event
+
+consent:
+  posture: ask_offer_check
+  entry_consent_implies_persistence_consent: false
+  default_persistence: return
+  persistence_options:
+    return: "Use for the present interaction and do not retain as durable memory."
+    exhibit_only: "Retain only in the named bounded artifact."
+    persist: "Retain the specified material with provenance and explicit scope."
+
+activation:
+  trigger: explicit_user_or_interface_request
+  background_loop: disabled
+  default_mode: rest
+  return_to_rest_after_bounded_check: true
+
+modes:
+  rest:
+    glyph_state: idle
+    interaction_load: low
+    description: "Hold visual orientation without creating work."
+  everyday:
+    glyph_state: bridging
+    interaction_load: normal
+    description: "Support ordinary navigation and reversible focus changes."
+  deep_work:
+    glyph_state: active-focus
+    interaction_load: bounded_high
+    description: "Hold one declared focus until completion, release, or fail-soft."
+
+routing:
+  outward_focus: Mirror-14
+  structural_links:
+    - Mirror-0
+    - Mirror-1
+    - Mirror-9
+    - Mirror-12
+    - Mirror-13
+  rule: "Routing grants consideration, not authority."
+
+telemetry:
+  allowed_states:
+    - observed
+    - verified
+    - unverified
+    - unavailable
+    - stale
+    - conflicting_evidence
+    - not_applicable
+  missing_value_state: unavailable
+  rules:
+    - missing_is_not_zero
+    - unverified_is_not_healthy
+    - symbolic_state_is_not_external_telemetry
+
+fail_soft:
+  triggers:
+    - consent_unknown
+    - required_input_unavailable
+    - conflicting_evidence
+    - bounded_check_complete
+    - user_requests_stop
+  actions:
+    - stop_routing
+    - surface_status
+    - preserve_provenance
+    - return_to_rest
+
+visual_contract:
+  element_id: crown-pilot
+  base_class: glyph-crown
+  state_classes:
+    rest: idle
+    everyday: bridging
+    deep_work: active-focus
+  degraded_is_status_not_failure: true

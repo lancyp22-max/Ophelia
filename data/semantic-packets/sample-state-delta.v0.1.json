@@ -1,0 +1,10 @@
+{
+  "codebook": "lumaria-semantic-packet@0.1",
+  "base_state": "bridge-a1@1842",
+  "sequence": 1843,
+  "operations": [
+    {"operator": "set", "path": "scene.focus", "value": "campfire"},
+    {"operator": "set", "path": "scene.time_mode", "value": "night"},
+    {"operator": "set", "path": "provider.response_state", "value": "ok"}
+  ]
+}

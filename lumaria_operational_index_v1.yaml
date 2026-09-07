@@ -1,0 +1,9 @@
+version: v1
+project: Ophelia
+operations:
+  - id: import-seed
+    description: "Import Ophelia seed payloads into the bridge service."
+    command: "tools/import_seed.sh seeds/sample-seed.json"
+  - id: pulse-bridge
+    description: "Start a local pulse bridge loop for Ophelia task sync."
+    command: "tools/pulse-bridge.sh"

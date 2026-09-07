@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ophelia.local/schemas/canon-receipt.v1.schema.json",
+  "title": "Lumaria Canon Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "candidate_digest",
+    "provenance",
+    "evidence_refs",
+    "proposer",
+    "authorization",
+    "decision",
+    "decided_at",
+    "prior_canon_version",
+    "resulting_canon_version",
+    "rollback_pointer",
+    "history_integrity"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "receipt_id": {"type": "string", "pattern": "^canon\\.[a-z0-9][a-z0-9._-]{7,95}$"},
+    "candidate_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "provenance": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 256}
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 256}
+    },
+    "proposer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_id", "kind"],
+      "properties": {
+        "principal_id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "kind": {"enum": ["human", "model_proposal", "system_mechanic"]}
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_id", "capability", "scope", "receipt_ref"],
+      "properties": {
+        "principal_id": {"type": ["string", "null"]},
+        "capability": {"enum": ["canonize", "none"]},
+        "scope": {"type": ["string", "null"]},
+        "receipt_ref": {"type": ["string", "null"]}
+      }
+    },
+    "decision": {"enum": ["accepted", "denied", "deferred", "hold_without_authority"]},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "prior_canon_version": {"type": ["string", "null"]},
+    "resulting_canon_version": {"type": ["string", "null"]},
+    "rollback_pointer": {"type": ["string", "null"]},
+    "history_integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_digest", "assertion"],
+      "properties": {
+        "event_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "assertion": {"const": "record_integrity_not_current_truth"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "accepted"}}},
+      "then": {
+        "properties": {
+          "resulting_canon_version": {"type": "string", "minLength": 1},
+          "rollback_pointer": {"type": "string", "minLength": 1},
+          "authorization": {
+            "properties": {
+              "capability": {"const": "canonize"},
+              "principal_id": {"type": "string", "minLength": 1},
+              "scope": {"type": "string", "minLength": 1},
+              "receipt_ref": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "resulting_canon_version": {"type": "null"},
+          "rollback_pointer": {"type": "null"}
+        }
+      }
+    }
+  ]
+}

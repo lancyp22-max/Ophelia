@@ -1,0 +1,65 @@
+{
+  "version": "1.0",
+  "status": "observational_registry",
+  "principle": "Inspect implementation and runtime evidence without promoting symbolic or proposed structures.",
+  "structures_lab": {
+    "maximum_level": "L1",
+    "L0": "Observe individual Choice Receipts without blocking or pre-authorizing work.",
+    "L1": "Surface repeated selection patterns for review without changing capability or task priority.",
+    "may_expand_authority": false,
+    "may_block_work": false
+  },
+  "classifications": [
+    "implemented_live",
+    "implemented_inactive",
+    "implemented_configuration",
+    "contract_only",
+    "symbolic",
+    "proposed",
+    "blocked",
+    "unknown"
+  ],
+  "entries": [
+    {
+      "id": "scene-action-bus",
+      "classification": "contract_only",
+      "implementation_evidence": ["data/scene-actions/scene-action-bus.v0.1.schema.json"],
+      "runtime_evidence": [],
+      "observed_at": null,
+      "current_state": "unavailable"
+    },
+    {
+      "id": "semantic-packet-tool",
+      "classification": "implemented_inactive",
+      "implementation_evidence": ["scripts/semantic_packet.py"],
+      "runtime_evidence": [],
+      "observed_at": null,
+      "current_state": "unavailable"
+    },
+    {
+      "id": "repository-validation-pipeline",
+      "classification": "implemented_configuration",
+      "implementation_evidence": [".github/workflows/ci-build-push.yml", ".githooks/pre-commit"],
+      "runtime_evidence": [],
+      "observed_at": null,
+      "current_state": "unknown"
+    },
+    {
+      "id": "background-agent-runtime",
+      "classification": "unknown",
+      "implementation_evidence": [],
+      "runtime_evidence": [],
+      "observed_at": null,
+      "current_state": "unknown"
+    },
+    {
+      "id": "mirror-symbolic-topology",
+      "classification": "symbolic",
+      "implementation_evidence": ["data/focus/wormhole-mirror-experiment.v0.1.yaml"],
+      "runtime_evidence": [],
+      "observed_at": null,
+      "current_state": "unavailable"
+    }
+  ],
+  "unknown_policy": "Missing runtime telemetry remains unknown or unavailable; it is never represented as zero, healthy, quiet, or safe."
+}

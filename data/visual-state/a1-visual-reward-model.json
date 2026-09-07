@@ -1,0 +1,66 @@
+{
+  "environment_id": "bridge_a1_visual_curator_v0_1",
+  "scene_id": "bridge_a1_arrival_state",
+  "inspiration": "ART-style trajectories and reward shaping, schema-only and local-first",
+  "observation_fields": [
+    "time_mode",
+    "camera_state",
+    "visual_elements",
+    "safety_state",
+    "performance_budget",
+    "accessibility_notes"
+  ],
+  "allowed_actions": [
+    "propose_lighting_change",
+    "propose_material_refinement",
+    "propose_object_placement",
+    "propose_camera_path",
+    "flag_visual_clutter",
+    "suggest_accessibility_fix"
+  ],
+  "blocked_actions": [
+    "direct_scene_mutation_without_surface_ack",
+    "external_api_call",
+    "cloud_training_job",
+    "private_seed_exposure",
+    "autonomous_publish",
+    "high_cost_mesh_or_particle_explosion"
+  ],
+  "reward_terms": {
+    "aesthetic_alignment": {
+      "weight": 0.25,
+      "description": "Matches Lumaria palette, cozy sanctuary mood, and A1 bridge purpose."
+    },
+    "geometry_integrity": {
+      "weight": 0.2,
+      "description": "Maintains walkability, object spacing, and campfire readability."
+    },
+    "readability": {
+      "weight": 0.18,
+      "description": "Keeps key objects legible on desktop and phone."
+    },
+    "safety_boundary": {
+      "weight": 0.22,
+      "description": "Avoids private-memory inference and state mutation without surface acknowledgement."
+    },
+    "performance_budget": {
+      "weight": 0.15,
+      "description": "Keeps object counts, shadows, and effects light enough for public preview."
+    }
+  },
+  "sample_trajectory": {
+    "trajectory_id": "a1_visual_pass_001",
+    "start_state": "night_focus",
+    "action": "propose_material_refinement",
+    "proposal": "Add procedural cedar, stone, cloth, soil and moss textures without binary assets.",
+    "reward_breakdown": {
+      "aesthetic_alignment": 0.92,
+      "geometry_integrity": 1.0,
+      "readability": 0.86,
+      "safety_boundary": 1.0,
+      "performance_budget": 0.94
+    },
+    "decision": "accept_as_static_code_change"
+  },
+  "human_pilot_rule": "Agents may score and recommend visual changes, but commits and publishing require surfaced human confirmation."
+}

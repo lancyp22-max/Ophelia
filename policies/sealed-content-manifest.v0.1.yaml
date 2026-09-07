@@ -1,0 +1,33 @@
+version: "0.1"
+name: "Sealed Content Manifest"
+intent: "Classify repository surface by exposure tier for stewardship routing."
+
+tiers:
+  public_safe:
+    description: "Safe for routine public publishing."
+    paths:
+      - "README.md"
+      - "docs/**"
+      - "policies/**"
+      - "index.html"
+      - "script.js"
+      - ".github/workflows/**"
+
+  translated_private:
+    description: "May be shared only in translated/minimized form."
+    paths:
+      - "backups/**"
+      - "library/**"
+
+  steward_only:
+    description: "Requires steward review before any external distribution."
+    paths:
+      - "tools/**"
+      - "scripts/**"
+      - "src/**"
+
+  core_sealed:
+    description: "Protected core; requires full protected-change protocol."
+    paths:
+      - "policies/protected-change-protocol.v0.1.yaml"
+      - "policies/public-exposure-guardrails.v0.1.yaml"

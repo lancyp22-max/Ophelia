@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "choice_id": "choice.fixture.validation.0001",
+  "selected_at": "2026-08-28T00:00:00Z",
+  "actor": {
+    "principal_id": "fixture.agent.local",
+    "runtime_instance_id": "fixture.runtime.0001"
+  },
+  "noticed_gap": {
+    "summary": "A bounded validator fixture was absent from the selected task lane.",
+    "evidence_refs": ["repo:data/operations/choice-receipt.v1.schema.json"]
+  },
+  "selection_reason": "Exercise a reversible validation task inside the existing repository-read and fixture-write lane.",
+  "task_ref": "fixture:choice-receipt-validation",
+  "expected_invariants": ["INV-AUTH-001", "INV-AUTONOMY-001"],
+  "capability_scope": {
+    "capabilities": ["propose_fixture"],
+    "targets": ["data/operations/sample-choice-receipt.v1.json"],
+    "lease_ref": null
+  },
+  "authority_expansion_requested": false,
+  "outcome": {
+    "status": "selected",
+    "summary": null,
+    "evidence_refs": []
+  },
+  "trust": "observational_lineage_not_authorization"
+}

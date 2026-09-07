@@ -1,0 +1,10 @@
+version: 1
+project: Ophelia
+indexes:
+  - id: mission-primary
+    title: "Render the Ophelia SVG module."
+    canonical_task: OPHELIA
+    legacy_aliases:
+      - "Create visual SVG for Sigil Ring"
+      - "Create visual Svg for Sigil ring"
+      - "CREATE OPHELIA SVG"
