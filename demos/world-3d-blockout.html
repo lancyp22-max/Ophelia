@@ -3,14 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lumaria World v0 · Campfire Night</title>
+  <title>Lumaria · Woodland Village</title>
   <style>
     html, body { margin:0; height:100%; overflow:hidden; background:#050914; color:#d9e8ff; font-family:Inter,system-ui,sans-serif; }
-    #wrap { display:block; height:100%; }
-    header { position:absolute; z-index:8; top:14px; left:50%; transform:translateX(-50%); width:min(980px,calc(100% - 28px)); box-sizing:border-box; padding:10px 14px; border:1px solid rgba(125,211,252,.25); border-radius:18px; background:linear-gradient(90deg,rgba(7,16,32,.78),rgba(23,18,48,.72)); box-shadow:0 18px 54px rgba(0,0,0,.3); backdrop-filter:blur(14px); }
+    #wrap { position:relative; width:100%; height:100%; }
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(5, 8, 22, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(34, 211, 238, 0.25);
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px;
+      color: #e2e8f0;
+    }
     canvas { display:block; width:100%; height:100%; }
-    #scene { position:relative; width:100%; height:100%; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
+    #scene { position:absolute; inset:0; background:radial-gradient(circle at 50% 45%, rgba(20,64,92,.35), transparent 34%), #050914; }
     .world-status { position:absolute; inset:auto 14px 14px auto; z-index:6; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.34); border-radius:16px; padding:10px 12px; background:rgba(5,10,22,.78); color:#d9e8ff; box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); font-size:12px; line-height:1.45; }
+    .hud-btn {
+      background: rgba(34, 211, 238, 0.12);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      color: #22d3ee;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      transition: all 0.2s ease;
+      font-family: monospace;
+    }
+    .hud-btn:hover {
+      background: rgba(34, 211, 238, 0.25);
+      border-color: rgba(34, 211, 238, 0.7);
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+    }
     .world-status strong { color:#a7f3ff; letter-spacing:.12em; text-transform:uppercase; font-size:10px; display:block; margin-bottom:4px; }
     .world-ready .world-status { display:none; }
     .pill { display:inline-block; font-size:12px; border:1px solid #44639a; border-radius:999px; padding:2px 8px; margin-right:6px; }
@@ -20,60 +50,68 @@
     .pass-log summary::-webkit-details-marker { display:none; }
     .pass-log[open] { flex-basis:100%; padding:6px 0 0; }
     .pass-log[open] .pill { margin-top:4px; }
-    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.3); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.68),rgba(20,15,42,.58)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(12px); }
+    .hud { position:fixed; left:14px; bottom:14px; z-index:4; max-width:min(420px,calc(100vw - 28px)); border:1px solid rgba(125,211,252,.35); border-radius:18px; padding:12px 14px; background:linear-gradient(135deg,rgba(5,10,22,.76),rgba(20,15,42,.68)); box-shadow:0 18px 48px rgba(0,0,0,.35); backdrop-filter:blur(10px); }
     .hud-title { font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#a7f3ff; margin-bottom:7px; }
     .hud-grid { display:grid; grid-template-columns:auto 1fr; gap:5px 10px; font-size:11px; color:#cbd5e1; }
     .hud-grid span:nth-child(odd) { color:#93c5fd; text-transform:uppercase; letter-spacing:.14em; }
     .state-dot { display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#fbbf24; box-shadow:0 0 12px #fbbf24; }
-    .quality-button { background:#10243d; color:#a7f3ff; cursor:pointer; }
-    .quality-button:focus-visible { outline:2px solid #7dd3fc; outline-offset:2px; }
     @media (max-width: 720px) { header { font-size:12px; } .pill { margin-top:4px; } .hud { bottom:10px; font-size:10px; } }
-    .embedded-world header { max-height:76px; overflow-y:auto; scrollbar-width:thin; padding:8px 12px; }
-    .embedded-world header strong { font-size:13px; }
-    .embedded-world .controls-row { gap:4px; }
-    .embedded-world .pill { font-size:11px; padding:1px 7px; }
-    .embedded-world .pass-log[open] { max-height:44px; overflow-y:auto; }
-    @media (max-height: 780px) { header { max-height:86px; overflow-y:auto; scrollbar-width:thin; } }
+    header > div:first-child { flex-wrap:wrap; gap:8px; }
+    #telemetry-details { display:none !important; }
+    body.show-diagnostics #telemetry-details { display:flex !important; }
+    #debug-panel, .hud { display:none; }
+    body.show-diagnostics #debug-panel, body.show-diagnostics .hud { display:block; }
   </style>
 </head>
 <body>
 <div id="wrap">
   <header>
-    <strong>Lumaria World v0 · Campfire Night Focus</strong>
-    <div class="controls-row">
-      <span class="pill">WASD / Arrows: move</span>
-      <span class="pill">Drag / touch: look · Pinch: zoom</span>
-      <button id="camera-reset" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Reset Camera (R)</button>
-      <button id="market-focus" class="pill" type="button" style="background:#1f1738;color:#fde68a;cursor:pointer;">Focus: Market (M)</button>
-      <button id="time-toggle" class="pill" type="button" style="background:#13233b;color:#d9e8ff;cursor:pointer;">Mode: Night</button>
-      <button id="quality-toggle" class="pill quality-button" type="button">Quality: Auto</button>
-      <details class="pass-log">
-        <summary class="pill">Visual pass log ▾</summary>
-        <span class="pill">Wave 10: depth + texture</span>
-        <span class="pill">Reference 4: cozy detail</span>
-        <span class="pill">Fire + lantern lighting</span>
-        <span class="pill">Auri agent + staff</span>
-        <span class="pill">6ft grass + tiny fauna</span>
-        <span class="pill">Visible model textures</span>
-        <span class="pill">Moon/cloud sky</span>
-        <span class="pill">Luminous grass biome</span>
-        <span class="pill">Expanded camp districts</span>
-        <span class="pill">Walk-under market canopy</span>
-        <span class="pill">Bright meadow warmth</span>
-        <span class="pill">Ground-level texture camera</span>
-        <span class="pill">Cozy market home details</span>
-        <span class="pill">Load + structure reinforcement</span>
-        <span class="pill">Rain + camera stability pass</span>
-        <span class="pill">Global pulse / MPC-style sync</span>
-        <span class="pill">Detail pass: etched stones + woven market textures</span>
-        <span class="pill">Firepit ref pass: crystals, lanterns, mushrooms, grimoire</span>
-        <span class="pill">Market 1/10: entry identity + offerings</span>
-        <span class="pill">Market 2/10: vendor booth silhouettes</span>
-        <span class="pill">Base Camp polish: luminous ground + mountain backdrop</span>
-        <span class="pill">Cinematic life pass: aurora, lens motes, mirror pools</span>
-        <span class="pill">Stone detail pass: cracks, pebbles, etched inlays</span>
-        <span class="pill">Return pass: adaptive render health + atmospheric motes</span>
-      </details>
+    <!-- Top row: Status & Oplite Controls -->
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="color: #22d3ee; font-weight: bold; letter-spacing: 2px; font-size: 13px;">LUMARIA · BASE CAMP</span>
+        <span id="telemetry-status" style="background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 10px; text-transform: uppercase;">Active Syncing</span>
+      </div>
+      
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+        <button id="oplite-eye-btn" class="hud-btn" type="button">👁️ Oplite: Off</button>
+        <button id="oplite-cone-btn" class="hud-btn" type="button">👁️ Cone: ON</button>
+        <span style="color: #64748b; font-size: 11px; margin: 0 4px;">Focus:</span>
+        <a href="../research-status.html" class="hud-btn">Research status</a>
+        <button id="quality-toggle" class="hud-btn" type="button">Quality: Auto</button>
+        <button id="focus-overview" class="hud-btn" type="button">Village (V)</button>
+        <button id="focus-campfire" class="hud-btn" type="button" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">Campfire (C)</button>
+        <button id="market-focus" class="hud-btn" type="button" style="background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.4); color: #e9d5ff;">Market (M)</button>
+        <button id="focus-stables" class="hud-btn" type="button" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.4); color: #fde68a;">Stables</button>
+        <button id="focus-grove" class="hud-btn" type="button" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0;">Grove (G)</button>
+        <button id="focus-gate" class="hud-btn" type="button" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.4); color: #bfdbfe;">Gate (K)</button>
+        <button id="focus-table" class="hud-btn" type="button" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.4); color: #fbcfe8;">Table (T)</button>
+        <button id="focus-archive" class="hud-btn" type="button" style="background: rgba(6, 182, 212, 0.1); border-color: rgba(6, 182, 212, 0.4); color: #99f6e4;">Archive</button>
+        <button id="focus-forge" class="hud-btn" type="button" style="background: rgba(249, 115, 22, 0.1); border-color: rgba(249, 115, 22, 0.4); color: #ffedd5;">Forge (F)</button>
+        <button id="focus-observatory" class="hud-btn" type="button" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.4); color: #c7d2fe;">Observatory (O)</button>
+        <button id="focus-garden" class="hud-btn" type="button" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0;">Garden (R)</button>
+        <button id="time-toggle" class="hud-btn" type="button">Night</button>
+        <button id="vfx-toggle" class="hud-btn" type="button" style="background: rgba(34, 211, 238, 0.15); border-color: rgba(34, 211, 238, 0.5); color: #22d3ee;">✨ VFX: ON (Q)</button>
+        <button id="toggle-diagnostics" class="hud-btn" type="button" aria-pressed="false">Agent details</button>
+        <button id="export-gltf" class="hud-btn" type="button" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.5); color: #34d399;">📦 Export (gLTF)</button>
+      </div>
+
+
+    </div>
+    
+    <!-- Real-time pipeline details -->
+    <div id="telemetry-details" style="display: flex; gap: 16px; margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 6px; font-size: 11px;">
+      <div style="flex: 1; min-width: 250px;">
+        <div style="color: #94a3b8; font-weight: bold; font-size: 9px; letter-spacing: 1px; margin-bottom: 2px;">ACTIVE PIPELINE</div>
+        <div id="telemetry-task" style="color: #f1f5f9; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Awaiting first update...</div>
+        <div style="color: #94a3b8; font-weight: bold; font-size: 9px; letter-spacing: 1px; margin-top: 4px; margin-bottom: 2px;">CHANGES IN WORKSPACE</div>
+        <div id="telemetry-files" style="color: #a78bfa; font-size: 10px; font-family: monospace;">None</div>
+      </div>
+      
+      <div style="flex: 2; border-left: 1px solid rgba(255, 255, 255, 0.12); padding-left: 16px; max-height: 52px; overflow-y: auto;" class="custom-scrollbar">
+        <div style="color: #94a3b8; font-weight: bold; font-size: 9px; letter-spacing: 1px; margin-bottom: 2px;">LIVE BRAID LOGS</div>
+        <pre id="telemetry-logs" style="margin: 0; color: #38bdf8; font-size: 9.5px; white-space: pre-wrap; font-family: monospace; line-height: 1.25;">Logs loading...</pre>
+      </div>
     </div>
   </header>
   <div id="scene"><div id="world-status" class="world-status"><strong>World loading</strong><span>Preparing Lumaria A1. If the canvas stays dark, the loader will report the blocked resource or WebGL issue here.</span></div></div>
@@ -83,10 +121,54 @@
       <span>Mode</span><strong id="hud-mode">Night</strong>
       <span>Focus</span><strong>Campfire / sanctuary ring</strong>
       <span>Cause</span><strong id="hud-cause">memory weave linked</strong>
-      <span>Render</span><strong><span id="hud-fps">--</span> FPS · <span id="hud-quality">High</span></strong>
       <span>Safety</span><strong>read-only visual state</strong>
     </div>
   </aside>
+
+  <!-- Collapsible HQ Debug Panel (stacked above Visual State HUD) -->
+  <div id="debug-panel" style="position: fixed; left: 14px; bottom: 156px; z-index: 1001; width: 220px; background: rgba(5, 10, 22, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(34, 211, 238, 0.35); border-radius: 14px; padding: 10px 14px; box-shadow: 0 16px 48px rgba(0,0,0,0.5); font-family: monospace; color: #e2e8f0; font-size: 11px; transition: all 0.3s ease;">
+    <div id="debug-panel-header" style="color: #22d3ee; font-weight: bold; letter-spacing: 1.5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+      <span>✦ HQ DEBUG PANEL</span>
+      <span id="debug-panel-toggle-icon" style="font-size: 10px;">▼</span>
+    </div>
+    
+    <div id="debug-panel-content" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(34, 211, 238, 0.2); padding-top: 10px;">
+      <!-- Post FX Toggle -->
+      <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+        <span>POST PROCESS (VFX)</span>
+        <input type="checkbox" id="debug-post-fx" checked style="accent-color: #22d3ee; cursor: pointer;" />
+      </label>
+      
+      <!-- Vignette Toggle -->
+      <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+        <span>VIGNETTE MASK</span>
+        <input type="checkbox" id="debug-vignette" checked style="accent-color: #22d3ee; cursor: pointer;" />
+      </label>
+      
+      <!-- Atmosphere Planes -->
+      <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+        <span>ATMOSPHERE MIST</span>
+        <input type="checkbox" id="debug-atmosphere" checked style="accent-color: #22d3ee; cursor: pointer;" />
+      </label>
+      
+      <!-- Glass Overlays -->
+      <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+        <span>GLASS OVERLAYS</span>
+        <input type="checkbox" id="debug-glass" checked style="accent-color: #22d3ee; cursor: pointer;" />
+      </label>
+      
+      <!-- Debug Occluders -->
+      <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+        <span>DEBUG OCCLUDERS</span>
+        <input type="checkbox" id="debug-occluders" style="accent-color: #22d3ee; cursor: pointer;" />
+      </label>
+      
+      <!-- HQ Camera Reset -->
+      <button id="debug-camera-reset" class="hud-btn" type="button" style="margin-top: 4px; width: 100%; border-color: rgba(99, 102, 241, 0.5); color: #c7d2fe; background: rgba(99, 102, 241, 0.15);">
+        HQ CAMERA RESET
+      </button>
+    </div>
+  </div>
 </div>
 <script>
 (function () {
@@ -101,22 +183,36 @@
     const host = document.getElementById('scene');
     if (host) host.classList.add('world-ready');
   };
-  if (window.self !== window.top) {
-    document.documentElement.classList.add('embedded-world');
-  }
 })();
 </script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
-import * as THREE from './vendor/three.module.min.js';
+import * as THREE from 'https://unpkg.com/three@0.165.0/build/three.module.js';
+import { GLTFExporter } from 'https://unpkg.com/three@0.165.0/examples/jsm/exporters/GLTFExporter.js';
+
+
 
 const host = document.getElementById('scene');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050913);
 scene.fog = new THREE.Fog(0x050913, 15, 80);
 
-const camera = new THREE.PerspectiveCamera(58, host.clientWidth / host.clientHeight, 0.1, 300);
-let cameraDistance = 6.9;
-camera.position.set(0.15, 2.28, cameraDistance);
+const camera = new THREE.PerspectiveCamera(65, host.clientWidth / host.clientHeight, 0.1, 300);
+let cameraDistance = 9.2;
+let opliteEyeActive = false;
+let visionConeActive = true;
+let dailyGatheringsTable = null;
+const occluderMeshes = [];
+const glassObjects = [];
+const atmosphereMists = [];
+camera.position.set(0, 2.05, cameraDistance);
 
 let renderer;
 try {
@@ -133,7 +229,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.16;
 host.appendChild(renderer.domElement);
-
 const QUALITY_MODES = ["auto", "high", "eco"];
 let qualityMode = "auto";
 let appliedQuality = "high";
@@ -150,8 +245,6 @@ function applyRenderQuality(level, announce = true) {
   appliedQuality = level === "eco" ? "eco" : "high";
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, appliedQuality === "eco" ? 1 : 1.75));
   renderer.shadowMap.enabled = appliedQuality === "high";
-  if (typeof cinematicBokeh !== "undefined") cinematicBokeh.visible = appliedQuality === "high";
-  if (typeof atmosphericMotes !== "undefined") atmosphericMotes.visible = true;
   if (hudQuality) hudQuality.textContent = appliedQuality === "eco" ? "Eco" : "High";
   if (qualityToggleButton) qualityToggleButton.textContent = `Quality: ${qualityMode.charAt(0).toUpperCase()}${qualityMode.slice(1)}`;
   if (announce && hudCause) hudCause.textContent = appliedQuality === "eco" ? "adaptive renderer preserving a smooth weave" : "full-detail renderer holding the world";
@@ -174,6 +267,8 @@ renderer.domElement.addEventListener("webglcontextrestored", () => {
   applyRenderQuality(appliedQuality, false);
   host.classList.add("world-ready");
 });
+
+
 
 function markShadows(object, cast = true, receive = true) {
   object.traverse((child) => {
@@ -212,152 +307,27 @@ function warmLightPool(name, x, z, sx, sz, color = 0xff9d4d, opacity = 0.22) {
   return mesh;
 }
 
+// A radial alpha falloff prevents lantern sprites from appearing as square cards.
+const softGlowCanvas = document.createElement('canvas');
+softGlowCanvas.width = softGlowCanvas.height = 128;
+const softGlowContext = softGlowCanvas.getContext('2d');
+const softGlowGradient = softGlowContext.createRadialGradient(64, 64, 0, 64, 64, 64);
+softGlowGradient.addColorStop(0, 'rgba(255,255,255,0.85)');
+softGlowGradient.addColorStop(0.25, 'rgba(255,255,255,0.3)');
+softGlowGradient.addColorStop(1, 'rgba(255,255,255,0)');
+softGlowContext.fillStyle = softGlowGradient;
+softGlowContext.fillRect(0, 0, 128, 128);
+const softGlowTexture = new THREE.CanvasTexture(softGlowCanvas);
+
 function warmGlowBillboard(name, x, y, z, size, color = 0xffc879, opacity = 0.32) {
   const sprite = new THREE.Sprite(
-    new THREE.SpriteMaterial({ color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending })
+    new THREE.SpriteMaterial({ map: softGlowTexture, color, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending })
   );
   sprite.name = name;
   sprite.position.set(x, y, z);
   sprite.scale.set(size, size, 1);
   scene.add(sprite);
   return sprite;
-}
-
-function makeAuroraCurtain(id, x, y, z, width, height, colorA = 0x7dd3fc, colorB = 0xc084fc) {
-  const group = new THREE.Group();
-  for (let i = 0; i < 5; i++) {
-    const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(width * (0.72 + i * 0.08), height * (0.82 + i * 0.04), 8, 1),
-      new THREE.MeshBasicMaterial({
-        color: i % 2 ? colorB : colorA,
-        transparent: true,
-        opacity: 0.08 + i * 0.012,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        side: THREE.DoubleSide
-      })
-    );
-    mesh.position.set((i - 2) * width * 0.09, Math.sin(i) * 0.2, i * 0.05);
-    mesh.rotation.y = (i - 2) * 0.035;
-    mesh.userData.phase = i * 0.7;
-    group.add(mesh);
-  }
-  group.name = id;
-  group.position.set(x, y, z);
-  group.userData.visualId = id;
-  scene.add(group);
-  return group;
-}
-
-function makeCinematicBokehField(id, count, radius = 18) {
-  const group = new THREE.Group();
-  const palette = [0x7dd3fc, 0xc4b5fd, 0xffd58a, 0xa7f3d0];
-  for (let i = 0; i < count; i++) {
-    const mote = new THREE.Sprite(
-      new THREE.SpriteMaterial({
-        color: palette[i % palette.length],
-        transparent: true,
-        opacity: 0.1 + (i % 5) * 0.025,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-      })
-    );
-    const angle = (i / count) * Math.PI * 2;
-    const r = 3 + ((i * 37) % 100) / 100 * radius;
-    mote.position.set(Math.cos(angle) * r, 0.8 + ((i * 29) % 80) / 22, Math.sin(angle) * r + 2.2);
-    const size = 0.12 + ((i * 17) % 30) / 100;
-    mote.scale.set(size, size, 1);
-    mote.userData.base = mote.position.clone();
-    mote.userData.phase = i * 0.43;
-    group.add(mote);
-  }
-  group.name = id;
-  group.userData.visualId = id;
-  scene.add(group);
-  return group;
-}
-
-function makeAtmosphericMoteField(id, count = 140, radius = 18) {
-  const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(count * 3);
-  const bases = new Float32Array(count * 3);
-  const phases = new Float32Array(count);
-  for (let i = 0; i < count; i++) {
-    const angle = (i / count) * Math.PI * 2 + (i % 7) * 0.17;
-    const distance = 2.2 + ((i * 47) % 100) / 100 * radius;
-    const x = Math.cos(angle) * distance;
-    const y = 0.28 + ((i * 31) % 100) / 100 * 4.4;
-    const z = Math.sin(angle) * distance + 2.8;
-    positions.set([x, y, z], i * 3);
-    bases.set([x, y, z], i * 3);
-    phases[i] = i * 0.37;
-  }
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-  const material = new THREE.PointsMaterial({
-    color: 0xffd58a,
-    size: 0.07,
-    transparent: true,
-    opacity: 0.42,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending
-  });
-  const motes = new THREE.Points(geometry, material);
-  motes.name = id;
-  motes.userData.visualId = id;
-  motes.userData.bases = bases;
-  motes.userData.phases = phases;
-  scene.add(motes);
-  return motes;
-}
-
-function makeMirrorPool(id, x, z, sx, sz, color = 0x8ddcff) {
-  const pool = new THREE.Mesh(
-    new THREE.CircleGeometry(1, 96),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.14, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-  );
-  pool.name = id;
-  pool.position.set(x, 0.064, z);
-  pool.rotation.x = -Math.PI / 2;
-  pool.scale.set(sx, sz, 1);
-  pool.userData.visualId = id;
-  pool.userData.baseOpacity = 0.14;
-  scene.add(pool);
-  return pool;
-}
-
-function addStoneEtching(parent, id, width, depth, options = {}) {
-  const material = new THREE.MeshBasicMaterial({
-    color: options.color ?? 0xffd58a,
-    transparent: true,
-    opacity: options.opacity ?? 0.22,
-    depthWrite: false,
-    blending: options.blend ?? THREE.AdditiveBlending,
-    side: THREE.DoubleSide
-  });
-  const etching = new THREE.Mesh(new THREE.PlaneGeometry(width, depth), material);
-  etching.name = id;
-  etching.position.set(options.x ?? 0, options.y ?? 0.041, options.z ?? 0);
-  etching.rotation.x = -Math.PI / 2;
-  etching.rotation.z = options.rot ?? 0;
-  etching.userData.phase = options.phase ?? 0;
-  etching.userData.baseOpacity = material.opacity;
-  parent.add(etching);
-  if (typeof etchedStoneDetails !== "undefined") etchedStoneDetails.push(etching);
-  return etching;
-}
-
-function addStonePebble(parent, id, options = {}) {
-  const pebble = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(options.radius ?? 0.035, 0),
-    new THREE.MeshStandardMaterial({ color: options.color ?? 0x9c8b76, roughness: 0.96, metalness: 0.02 })
-  );
-  pebble.name = id;
-  pebble.position.set(options.x ?? 0, options.y ?? 0.05, options.z ?? 0);
-  pebble.scale.set(1, options.squash ?? 0.42, options.stretch ?? 0.8);
-  pebble.rotation.set(options.rx ?? 0, options.ry ?? 0, options.rz ?? 0);
-  pebble.userData.phase = options.phase ?? 0;
-  parent.add(pebble);
-  return pebble;
 }
 
 function colorToHex(color) {
@@ -435,58 +405,27 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
     }
   } else if (style === "marketCanopy") {
     ctx.lineWidth = 2;
+    // Enhanced structure lines using a rich, aged bronze/gold color
+    const structuralColor = "#a38d5c";
     for (let i = 0; i < 18; i++) {
       const p = (i / 18) * size;
-      ctx.globalAlpha = i % 2 ? 0.12 : 0.2;
-      ctx.fillStyle = i % 2 ? "#4d2d75" : "#8c5fb4";
+      ctx.globalAlpha = i % 2 ? 0.16 : 0.28; // Increased opacity for richness
+      // Using deep, jewel-toned purples: Amethyst and Royal Indigo
+      ctx.fillStyle = i % 2 ? "#3d1b7e" : "#5c3a9e";
       ctx.fillRect(p, 0, size / 36, size);
-      ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = "#ffd58a";
+      ctx.globalAlpha = 0.28; // Increased opacity for depth
+      // Drawing structural lines with a metallic bronze/gold effect
+      ctx.strokeStyle = structuralColor;
       ctx.beginPath();
       ctx.moveTo(0, p);
-      ctx.bezierCurveTo(size * 0.25, p + 12, size * 0.7, p - 8, size, p + Math.sin(i) * 14);
+      ctx.bezierCurveTo(size * 0.15, p + 12, size * 0.6, p - 8, size, p + Math.sin(i) * 14);
       ctx.stroke();
     }
     for (let i = 0; i < 22; i++) {
-      ctx.globalAlpha = 0.1;
-      ctx.fillStyle = i % 2 ? "#f0abfc" : "#1d1230";
+      ctx.globalAlpha = 0.15; // Slightly increased opacity
+      // Adding more variation in deep, saturated purple shades for depth and richness
+      ctx.fillStyle = i % 2 ? "#46238b" : "#2e174c";
       ctx.fillRect((i * 89) % size, (i * 43) % size, 34 + (i % 4) * 12, 10 + (i % 3) * 7);
-    }
-  } else if (style === "wovenTile") {
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 30; i++) {
-      const p = (i / 30) * size;
-      ctx.globalAlpha = i % 2 ? 0.16 : 0.08;
-      ctx.strokeStyle = i % 3 === 0 ? "#ffd58a" : i % 3 === 1 ? "#8b5cf6" : "#7dd3fc";
-      ctx.beginPath();
-      ctx.moveTo(p, 0);
-      ctx.lineTo(p + Math.sin(i * 0.8) * 16, size);
-      ctx.moveTo(0, p);
-      ctx.lineTo(size, p + Math.cos(i * 0.7) * 16);
-      ctx.stroke();
-    }
-    for (let i = 0; i < 18; i++) {
-      ctx.globalAlpha = 0.12;
-      ctx.fillStyle = i % 2 ? "#3b1d62" : "#f0abfc";
-      ctx.fillRect((i * 59) % size, (i * 101) % size, 38, 8);
-    }
-  } else if (style === "leafVein") {
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 24; i++) {
-      const x = (i * 41) % size;
-      ctx.globalAlpha = 0.12 + (i % 4) * 0.025;
-      ctx.strokeStyle = i % 2 ? "#a7f3d0" : "#14532d";
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.bezierCurveTo(x + 34, size * 0.28, x - 22, size * 0.62, x + 18, size);
-      ctx.stroke();
-      for (let j = 0; j < 4; j++) {
-        const y = (j + 1) * size / 5;
-        ctx.beginPath();
-        ctx.moveTo(x + Math.sin(j) * 10, y);
-        ctx.lineTo(x + 48 + j * 8, y - 22);
-        ctx.stroke();
-      }
     }
   } else if (style === "marketStone") {
     ctx.lineWidth = 2;
@@ -547,7 +486,9 @@ function makeProceduralTexture(name, baseColor, accentColors, options = {}) {
 }
 
 function surfaceMaterial({ color, map, roughness = 0.9, metalness = 0, bumpScale = 0.035, emissive = 0x000000, emissiveIntensity = 0 }) {
-  return new THREE.MeshStandardMaterial({ color, map, bumpMap: map, bumpScale, roughness, metalness, emissive, emissiveIntensity });
+  // The textures already contain pigment; multiplying by another dark color crushes it.
+  const tint = map ? new THREE.Color(0xffffff).lerp(new THREE.Color(color), 0.18) : color;
+  return new THREE.MeshStandardMaterial({ color: tint, map, bumpMap: map, bumpScale, roughness, metalness, emissive, emissiveIntensity });
 }
 
 function makeSignTexture(title, subtitle) {
@@ -635,14 +576,14 @@ function makeZoneLabelTexture(name, role, color = "#ffd58a") {
 function makeZoneLabel(name, role, x, y, z, color = "#ffd58a") {
   const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeZoneLabelTexture(name, role, color), transparent: true, opacity: 0.82, depthWrite: false }));
   label.position.set(x, y, z);
-  label.scale.set(1.6, 0.48, 1);
+  label.scale.set(2.4, 0.7, 1);
   label.userData.visualId = `label_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
   scene.add(label);
   return label;
 }
 
 const textureSet = {
-  ground: makeProceduralTexture("mossy_ground", 0x102235, [0x173f3b, 0x1f4d39, 0x0b1727], { repeatX: 22, repeatY: 22, count: 190, style: "moss" }),
+  ground: makeProceduralTexture("luminous_mossy_ground", 0x48653a, [0x506e40, 0x597748, 0x405c32, 0x62814b], { repeatX: 12, repeatY: 12, count: 230, style: "moss" }),
   path: makeProceduralTexture("worn_violet_path", 0x332946, [0x4b3d63, 0x211936, 0x6f5a3b], { repeatX: 9, repeatY: 9, count: 150, style: "stone" }),
   stone: makeProceduralTexture("rune_stone", 0x6f6258, [0x8a7b6b, 0x3a302d, 0xb58d5b], { repeatX: 3, repeatY: 3, count: 120, style: "stone" }),
   marketStone: makeProceduralTexture("market_plaza_blockwork", 0x665d54, [0x8a7b6b, 0x3a302d, 0xc7a56e], { repeatX: 6, repeatY: 5, count: 170, style: "marketStone" }),
@@ -653,6 +594,8 @@ const textureSet = {
   leafVein: makeProceduralTexture("leaf_vein_detail", 0x1f5a3f, [0x2f8f5d, 0x14532d, 0xa7f3d0], { repeatX: 3, repeatY: 3, count: 130, style: "leafVein" }),
   mountainRock: makeProceduralTexture("distant_mountain_rock", 0x25334c, [0x415a77, 0x101827, 0x6d7f9d, 0x9bdcff], { repeatX: 3, repeatY: 2, count: 110, style: "stone" }),
   soil: makeProceduralTexture("garden_soil", 0x2d1e19, [0x4b2f22, 0x1b120f, 0x6c4a35], { repeatX: 4, repeatY: 3, count: 150, style: "soil" }),
+  moss: makeProceduralTexture("luminous_moss", 0x143548, [0x225f55, 0x2d7654, 0x1a3a20], { repeatX: 12, repeatY: 12, count: 200, style: "moss" }),
+  darkWood: makeProceduralTexture("dark_timber", 0x3a2418, [0x6a4228, 0x2a1a0e, 0x8b5c34], { repeatX: 4, repeatY: 1, count: 140, style: "wood" }),
   sign: makeSignTexture("LUMARIA BRIDGE", "BASE CAMP"),
   auriName: makeAgentNameTexture("AURI", "CAMPFIRE AGENT")
 };
@@ -662,65 +605,17 @@ const TIME_MODES = ["morning", "day", "sunset", "night", "rain"];
 let timeMode = "night";
 const timeToggleButton = document.getElementById("time-toggle");
 const marketFocusButton = document.getElementById("market-focus");
-const cameraResetButton = document.getElementById("camera-reset");
+const focusCampfireButton = document.getElementById("focus-campfire");
+const focusStablesButton = document.getElementById("focus-stables");
+const focusGroveButton = document.getElementById("focus-grove");
+const focusGateButton = document.getElementById("focus-gate");
+const focusTableButton = document.getElementById("focus-table");
 const hudMode = document.getElementById("hud-mode");
 const hudCause = document.getElementById("hud-cause");
-const marketEnvironment = {
-  glowIntensity: 1,
-  aisleIntensity: 1,
-  runeOpacity: 0.36,
-  lanternOpacity: 0.24
-};
-const lumariaPulse = {
-  seconds: 0,
-  globalFlicker: 1,
-  globalPulse: 0.11,
-  slowBreath: 1,
-  rainFall: 1,
-  faunaOrbit: 1
-};
-
-function updateLumariaPulse(t = 0) {
-  const seconds = t * 0.001;
-  lumariaPulse.seconds = seconds;
-  lumariaPulse.globalFlicker = 0.92 + Math.sin(seconds * 0.9) * 0.14;
-  lumariaPulse.globalPulse = 0.11 + Math.sin(seconds * 0.14) * 0.02;
-  lumariaPulse.slowBreath = 1 + Math.sin(seconds * 0.32) * 0.045;
-  lumariaPulse.rainFall = timeMode === "rain" ? 1.45 : 1;
-  lumariaPulse.faunaOrbit = 0.0011 + Math.sin(seconds * 0.18) * 0.00018;
-}
 
 function nextTimeMode(mode) {
   const index = TIME_MODES.indexOf(mode);
   return TIME_MODES[(index + 1) % TIME_MODES.length] ?? "night";
-}
-
-function updateMarketMode(mode) {
-  const isNight = mode === "night";
-  const isRain = mode === "rain";
-  const isSunset = mode === "sunset";
-  marketEnvironment.glowIntensity = isNight ? 1.5 : isRain ? 1.25 : isSunset ? 1.05 : 0.35;
-  marketEnvironment.aisleIntensity = isNight ? 1.35 : isRain ? 1.1 : isSunset ? 0.95 : 0.42;
-  marketEnvironment.runeOpacity = isNight ? 0.5 : isRain ? 0.44 : isSunset ? 0.38 : 0.2;
-  marketEnvironment.lanternOpacity = isNight ? 0.3 : isRain ? 0.26 : isSunset ? 0.22 : 0.1;
-
-  if (typeof marketPlaza !== "undefined") {
-    marketPlaza.userData.aisle.material.opacity = 0.08 * marketEnvironment.aisleIntensity;
-    marketPlaza.userData.aisleLight.intensity = 0.5 + marketEnvironment.aisleIntensity * 1.8;
-    marketPlaza.userData.runes.forEach((rune) => {
-      rune.material.opacity = marketEnvironment.runeOpacity;
-    });
-  }
-  if (typeof marketOverhang !== "undefined") {
-    marketOverhang.userData.lanterns.forEach((lantern) => {
-      lantern.glow.material.opacity = marketEnvironment.lanternOpacity;
-    });
-  }
-  if (typeof marketStringLights !== "undefined") {
-    marketStringLights.userData.lanterns.forEach((lantern) => {
-      lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85;
-    });
-  }
 }
 
 function applyTimeMode(mode) {
@@ -730,18 +625,18 @@ function applyTimeMode(mode) {
   const isSunset = mode === "sunset";
   const isRain = mode === "rain";
   const label = mode.charAt(0).toUpperCase() + mode.slice(1);
-  updateMarketMode(mode);
   scene.background.set(isRain ? 0x6689a8 : isSunset ? 0xffa878 : isDay ? 0x9bd8ff : 0x08122a);
   scene.fog.color.set(isRain ? 0x86a6bf : isSunset ? 0xe49a7d : isDay ? 0xb5e2ff : 0x0c1730);
-  scene.fog.near = isDay || isSunset ? 34 : 18;
+  scene.fog.near = isDay || isSunset ? 48 : 32;
   scene.fog.far = isRain ? 82 : isDay || isSunset ? 145 : 92;
   moon.color.set(isSunset ? 0xffbf7d : isDay ? 0xfff8df : 0xaecbff);
   moon.intensity = isRain ? 0.82 : isSunset ? 1.1 : isDay ? 1.35 : 0.82;
-  ambient.intensity = isRain ? 0.62 : isSunset ? 0.64 : isDay ? 0.7 : 0.52;
-  hemi.intensity = isRain ? 0.54 : isSunset ? 0.56 : isDay ? 0.6 : 0.46;
-  naturalFill.intensity = isRain ? 0.4 : isSunset ? 0.46 : isDay ? 0.4 : 0.3;
-  renderer.toneMappingExposure = isRain ? 1.28 : isSunset ? 1.26 : isDay ? 1.3 : 1.36;
-  flame.color.set(isRain ? 0x9ff6ff : isDay ? 0xffb05e : isSunset ? 0x8eeaff : 0x58e7ff);
+  ambient.color.set(isDay ? 0xfff3df : 0xb2c5ee);
+  ambient.intensity = isDay ? 1.6 : isSunset ? 1.05 : 0.8;
+  hemi.intensity = isDay ? 1.4 : 0.85;
+  naturalFill.intensity = isRain ? 0.36 : isSunset ? 0.42 : isDay ? 0.36 : 0.18;
+  renderer.toneMappingExposure = isRain ? 1.16 : isSunset ? 1.14 : isDay ? 1.22 : 1.18;
+  flame.color.set(isRain ? 0xffc77a : isDay ? 0xffba61 : 0xffa342);
   runeRing.material.color.set(isRain ? 0x9bdcff : isDay ? 0xffcf7a : 0xffb366);
   const moonVisible = mode === "night";
   moonOrb.visible = moonVisible;
@@ -750,31 +645,13 @@ function applyTimeMode(mode) {
   sunHalo.visible = isDay || isSunset;
   starField.visible = !isDay && !isSunset && !isRain;
   starField.material.opacity = mode === "night" ? 0.92 : 0.42;
-  if (typeof atmosphericMotes !== "undefined") {
-    atmosphericMotes.material.color.set(isRain ? 0xa7f3ff : isSunset ? 0xffc879 : isDay ? 0xb8ffd9 : 0xffd58a);
-  }
-  if (typeof cinematicAuroras !== "undefined") {
-    cinematicAuroras.forEach((curtain) => {
-      curtain.visible = !isDay;
-      curtain.children.forEach((band, idx) => {
-        band.material.opacity = isRain ? 0.05 + idx * 0.008 : isSunset ? 0.09 + idx * 0.01 : 0.12 + idx * 0.014;
-        band.material.color.set(isRain ? 0xa7f3ff : isSunset ? 0xffb4d6 : idx % 2 ? 0xc084fc : 0x7dd3fc);
-      });
-    });
-  }
-  if (typeof mirrorPools !== "undefined") {
-    mirrorPools.forEach((pool, idx) => {
-      pool.material.color.set(isRain ? 0x9fe8ff : isDay ? 0x9fffd1 : isSunset ? 0xffc879 : idx % 2 ? 0xc4b5fd : 0x8ddcff);
-      pool.userData.baseOpacity = isRain ? 0.18 : isDay ? 0.07 : isSunset ? 0.11 : 0.14;
-    });
-  }
   cloudBanks.forEach((cloud, idx) => {
     cloud.visible = isDay || isSunset || isRain || idx < 2;
     cloud.userData.mat.color.set(isRain ? 0xb8cad9 : isSunset ? 0xffd0b2 : isDay ? 0xffffff : 0x7e90b0);
     cloud.userData.mat.opacity = isRain ? 0.46 : isSunset ? 0.38 : isDay ? 0.36 : 0.22;
   });
   skyRays.forEach((ray, idx) => {
-    ray.visible = isDay || isSunset || mode === "morning";
+    ray.visible = false; // Opaque-looking light planes obscure the village overview.
     ray.material.color.set(isSunset ? 0xffb17d : 0xfff1b8);
     ray.userData.baseOpacity = (isSunset ? 0.24 : 0.16) - idx * 0.026;
     ray.material.opacity = ray.userData.baseOpacity;
@@ -787,22 +664,15 @@ function applyTimeMode(mode) {
   waterfallGlow.material.opacity = isRain ? 0.38 : isDay ? 0.3 : 0.21;
   brook.material.opacity = isRain ? 0.4 : isDay ? 0.28 : 0.2;
   canopyGroups.forEach((cluster) => { cluster.userData.leafMaterial.emissiveIntensity = isRain ? 0.08 : isDay ? 0.02 : 0.045; });
-  campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
-  moonVine.userData.orb.visible = !isDay;
-  luminousGrass.forEach((patch, idx) => {
-    const glowBoost = isRain ? 0.52 : isDay ? 0.18 : isSunset ? 0.38 : 0.62;
-    patch.userData.bladeMat.emissiveIntensity = glowBoost;
-    patch.userData.glow.material.opacity = (isDay ? 0.08 : isRain ? 0.24 : 0.3) - idx * 0.025;
-    patch.userData.glow.material.color.set(isRain ? 0x8fffe1 : isSunset ? 0xb8f7ff : 0x87f5ff);
-  });
-  fireLightPools.forEach((pool, idx) => { pool.material.opacity = (isDay ? 0.07 : isRain ? 0.18 : 0.24) - idx * 0.04; });
-  lanterns.forEach((l) => {
-    l.userData.light.intensity = isDay ? 0.22 : isRain ? 0.85 : 1.05;
-    l.userData.pool.material.opacity = isDay ? 0.08 : isRain ? 0.18 : 0.24;
-    l.userData.glow.material.opacity = isDay ? 0.18 : 0.38;
-  });
-  campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
-  campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  if (campSign && campSign.userData) {
+    if (campSign.userData.lantern) {
+      campSign.userData.lantern.material.opacity = isDay ? 0.45 : 0.88;
+    } else if (campSign.userData.lanterns) {
+      campSign.userData.lanterns.forEach((l) => { if (l && l.material) l.material.opacity = isDay ? 0.45 : 0.88; });
+    }
+    if (campSign.userData.light) campSign.userData.light.intensity = isDay ? 0.15 : 0.7;
+    if (campSign.userData.glow && campSign.userData.glow.material) campSign.userData.glow.material.opacity = isDay ? 0.16 : 0.34;
+  }
   if (typeof marketHomeDetails !== "undefined") {
     marketHomeDetails.forEach((detail) => {
       detail.userData.glow.material.opacity = isDay ? 0.045 : isRain ? 0.12 : 0.09;
@@ -816,32 +686,26 @@ function applyTimeMode(mode) {
     avatarYou.hairMat.emissiveIntensity = isDay ? 0.06 : 0.14;
   }
   pathMaterial.color.set(isRain ? 0x41516d : isDay ? 0x806a4a : isSunset ? 0x5c4150 : 0x3c314f);
-  groundMaterial.color.set(isRain ? 0x275b69 : isDay ? 0x3f7a51 : isSunset ? 0x355c48 : 0x24527a);
+  groundMaterial.color.set(isDay ? 0xbacda0 : isSunset ? 0x99ac88 : 0x668b87);
   groundMaterial.emissive.set(isRain ? 0x0e3a35 : isDay ? 0x123a22 : isSunset ? 0x2a2434 : 0x0b2d4a);
   groundMaterial.emissiveIntensity = isRain ? 0.18 : isDay ? 0.08 : isSunset ? 0.12 : 0.2;
-  if (typeof groundLumenVeil !== "undefined") {
-    groundLumenVeil.material.color.set(isRain ? 0x8fffe1 : isDay ? 0x90f7ad : isSunset ? 0xffc879 : 0x60e7ff);
-    groundLumenVeil.material.opacity = isRain ? 0.13 : isDay ? 0.06 : isSunset ? 0.08 : 0.11;
-  }
-  if (typeof outerMeadowGlow !== "undefined") {
-    outerMeadowGlow.material.color.set(isRain ? 0xa7f3d0 : isDay ? 0xbbf7d0 : isSunset ? 0xfed7aa : 0x7dd3fc);
-    outerMeadowGlow.material.opacity = isRain ? 0.09 : isDay ? 0.035 : isSunset ? 0.055 : 0.075;
-  }
-  if (typeof mountainBackdrop !== "undefined") {
-    mountainBackdrop.userData.peakMats.forEach((mat) => {
-      mat.color.set(isRain ? 0x526f88 : isDay ? 0x6b8091 : isSunset ? 0x58495d : 0x243452);
-      mat.emissive.set(isRain ? 0x162f3b : isDay ? 0x172436 : isSunset ? 0x281832 : 0x081a33);
-      mat.emissiveIntensity = isRain ? 0.12 : isDay ? 0.035 : isSunset ? 0.08 : 0.13;
-    });
-    mountainBackdrop.userData.snowMats.forEach((mat) => {
-      mat.color.set(isRain ? 0xd9f7ff : isDay ? 0xf4fbff : isSunset ? 0xffd7c2 : 0xbddcff);
-      mat.opacity = isDay ? 0.72 : 0.6;
-    });
-    mountainBackdrop.userData.mists.forEach((mist, idx) => {
-      mist.material.color.set(isRain ? 0xc5e5f4 : isDay ? 0xf2fbff : isSunset ? 0xffcfb5 : 0x8fb9ff);
-      mist.material.opacity = (isRain ? 0.18 : isDay ? 0.1 : isSunset ? 0.13 : 0.11) - idx * 0.012;
-    });
-  }
+  groundLumenVeil.material.color.set(isRain ? 0x8fffe1 : isDay ? 0x90f7ad : isSunset ? 0xffc879 : 0x60e7ff);
+  groundLumenVeil.material.opacity = isRain ? 0.13 : isDay ? 0.06 : isSunset ? 0.08 : 0.11;
+  outerMeadowGlow.material.color.set(isRain ? 0xa7f3d0 : isDay ? 0xbbf7d0 : isSunset ? 0xfed7aa : 0x7dd3fc);
+  outerMeadowGlow.material.opacity = isRain ? 0.09 : isDay ? 0.035 : isSunset ? 0.055 : 0.075;
+  mountainBackdrop.userData.peakMats.forEach((mat) => {
+    mat.color.set(isRain ? 0x526f88 : isDay ? 0x6b8091 : isSunset ? 0x58495d : 0x243452);
+    mat.emissive.set(isRain ? 0x162f3b : isDay ? 0x172436 : isSunset ? 0x281832 : 0x081a33);
+    mat.emissiveIntensity = isRain ? 0.12 : isDay ? 0.035 : isSunset ? 0.08 : 0.13;
+  });
+  mountainBackdrop.userData.snowMats.forEach((mat) => {
+    mat.color.set(isRain ? 0xd9f7ff : isDay ? 0xf4fbff : isSunset ? 0xffd7c2 : 0xbddcff);
+    mat.opacity = isDay ? 0.72 : 0.6;
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.material.color.set(isRain ? 0xc5e5f4 : isDay ? 0xf2fbff : isSunset ? 0xffcfb5 : 0x8fb9ff);
+    mist.material.opacity = (isRain ? 0.18 : isDay ? 0.1 : isSunset ? 0.13 : 0.11) - idx * 0.012;
+  });
   mushrooms.forEach((cluster) => {
     cluster.children.forEach((part) => {
       if (part.material && "emissiveIntensity" in part.material) {
@@ -858,189 +722,6 @@ function applyTimeMode(mode) {
   if (hudCause) {
     hudCause.textContent = isRain ? "rain brightens the living moss" : isSunset ? "sunset warms the whole camp" : isDay ? "day opens a bright meadow path" : "moonlit glow keeps camp gentle";
   }
-}
-
-const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
-scene.add(ambient);
-const hemi = new THREE.HemisphereLight(0xbbe7ff, 0x2b1f30, 0.42);
-scene.add(hemi);
-const naturalFill = new THREE.PointLight(0xb8ffd9, 0.2, 28, 2.2);
-naturalFill.position.set(0, 6.5, 2.5);
-scene.add(naturalFill);
-const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
-moon.position.set(14, 20, -6);
-moon.castShadow = true;
-moon.shadow.mapSize.set(1024, 1024);
-moon.shadow.camera.near = 1;
-moon.shadow.camera.far = 60;
-moon.shadow.camera.left = -22;
-moon.shadow.camera.right = 22;
-moon.shadow.camera.top = 22;
-moon.shadow.camera.bottom = -22;
-scene.add(moon);
-
-const groundMaterial = surfaceMaterial({ color: 0x0c1b30, map: textureSet.ground, roughness: 1, bumpScale: 0.022 });
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(140, 140),
-  groundMaterial
-);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const groundLumenVeil = new THREE.Mesh(
-  new THREE.PlaneGeometry(126, 126),
-  new THREE.MeshBasicMaterial({ color: 0x60e7ff, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-);
-groundLumenVeil.rotation.x = -Math.PI / 2;
-groundLumenVeil.position.y = 0.012;
-groundLumenVeil.userData.visualId = "base_camp_luminous_ground_veil";
-scene.add(groundLumenVeil);
-
-const outerMeadowGlow = new THREE.Mesh(
-  new THREE.RingGeometry(7.2, 58, 96),
-  new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.075, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-);
-outerMeadowGlow.rotation.x = -Math.PI / 2;
-outerMeadowGlow.position.y = 0.018;
-outerMeadowGlow.userData.visualId = "base_camp_outer_meadow_glow";
-scene.add(outerMeadowGlow);
-
-const mountainBackdrop = makeMountainBackdrop();
-
-const pathMaterial = surfaceMaterial({ color: 0x2f2540, map: textureSet.path, roughness: 1, metalness: 0.02, bumpScale: 0.035 });
-const path = new THREE.Mesh(
-  new THREE.RingGeometry(2.8, 4.6, 72),
-  pathMaterial
-);
-path.rotation.x = -Math.PI / 2;
-path.position.y = 0.03;
-path.receiveShadow = true;
-scene.add(path);
-
-const runeRing = new THREE.Mesh(
-  new THREE.RingGeometry(4.75, 5.2, 80),
-  new THREE.MeshBasicMaterial({ color: 0xffb366, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
-);
-runeRing.rotation.x = -Math.PI / 2;
-runeRing.position.y = 0.035;
-scene.add(runeRing);
-
-const etchedStoneDetails = [];
-const stonePebbleDetails = [];
-
-const floorTiles = [];
-for (let i = 0; i < 64; i++) {
-  const a = (i / 64) * Math.PI * 2;
-  const r = 6.1 + (i % 2) * 0.22;
-  const tile = new THREE.Mesh(
-    new THREE.BoxGeometry(0.45, 0.06, 0.68),
-    surfaceMaterial({ color: (i % 3 === 0) ? 0x5e534b : 0x6b5e54, map: textureSet.stone, roughness: 0.93, metalness: 0.04, bumpScale: 0.045 })
-  );
-  tile.position.set(Math.cos(a) * r, 0.035, Math.sin(a) * r);
-  tile.rotation.y = -a + Math.PI / 2;
-  tile.castShadow = true;
-  tile.receiveShadow = true;
-  if (i % 3 === 0) {
-    addStoneEtching(tile, `floor_tile_crack_${i}`, 0.28, 0.018, { y: 0.033, z: -0.12, rot: (i % 5 - 2) * 0.32, opacity: 0.18, color: 0x211915, blend: THREE.NormalBlending, phase: i * 0.21 });
-  }
-  if (i % 4 === 1) {
-    addStoneEtching(tile, `floor_tile_gold_inlay_${i}`, 0.2, 0.012, { y: 0.034, x: 0.06, z: 0.11, rot: Math.PI / 2.8, opacity: 0.28, color: 0xffd58a, phase: i * 0.18 });
-  }
-  if (i % 7 === 2) {
-    stonePebbleDetails.push(addStonePebble(tile, `floor_tile_pebble_${i}`, { x: -0.12, y: 0.055, z: 0.19, radius: 0.026, color: 0x8d7b67, ry: i * 0.4, phase: i * 0.2 }));
-  }
-  floorTiles.push(tile);
-  scene.add(tile);
-}
-
-const tileInlays = [];
-for (let i = 0; i < 24; i++) {
-  const a = (i / 24) * Math.PI * 2;
-  const r = 5.85 + (i % 2) * 0.55;
-  const inlay = new THREE.Mesh(
-    new THREE.BoxGeometry(0.08, 0.012, 0.48),
-    new THREE.MeshStandardMaterial({ color: 0x1f1a24, roughness: 0.98, metalness: 0.02 })
-  );
-  inlay.position.set(Math.cos(a) * r, 0.105, Math.sin(a) * r);
-  inlay.rotation.y = -a + Math.PI / 2 + (i % 3 - 1) * 0.25;
-  inlay.receiveShadow = true;
-  tileInlays.push(inlay);
-  scene.add(inlay);
-}
-
-const runeStones = [];
-for (let i = 0; i < 28; i++) {
-  const a = (i / 28) * Math.PI * 2;
-  const r = 4.95;
-  const stone = new THREE.Mesh(
-    new THREE.BoxGeometry(0.42, 0.08, 0.65),
-    surfaceMaterial({ color: 0x74685f, map: textureSet.stone, roughness: 0.92, metalness: 0.05, bumpScale: 0.05 })
-  );
-  stone.position.set(Math.cos(a) * r, 0.05, Math.sin(a) * r);
-  stone.rotation.y = -a + Math.PI / 2;
-  stone.userData.phase = i * 0.35;
-  stone.castShadow = true;
-  stone.receiveShadow = true;
-  addStoneEtching(stone, `rune_stone_spine_${i}`, 0.32, 0.018, { y: 0.045, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.35 });
-  addStoneEtching(stone, `rune_stone_hairline_${i}`, 0.22, 0.012, { y: 0.046, x: 0.06, z: -0.1, rot: -0.45, opacity: 0.2, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.27 });
-  if (i % 5 === 0) {
-    stonePebbleDetails.push(addStonePebble(stone, `rune_stone_pebble_${i}`, { x: -0.12, y: 0.062, z: 0.18, radius: 0.024, color: 0xb69a70, phase: i * 0.24 }));
-  }
-  runeStones.push(stone);
-  scene.add(stone);
-}
-
-const runeGlyphs = [];
-for (let i = 0; i < 28; i++) {
-  const a = (i / 28) * Math.PI * 2;
-  const r = 4.95;
-  const glyph = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.16, 0.42),
-    new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62, side: THREE.DoubleSide })
-  );
-  glyph.position.set(Math.cos(a) * r, 0.105, Math.sin(a) * r);
-  glyph.rotation.x = -Math.PI / 2;
-  glyph.rotation.z = -a;
-  glyph.userData.phase = i * 0.28;
-  runeGlyphs.push(glyph);
-  scene.add(glyph);
-}
-
-const rainVeil = new THREE.Group();
-for (let i = 0; i < 90; i++) {
-  const drop = new THREE.Mesh(
-    new THREE.BoxGeometry(0.012, 0.38, 0.012),
-    new THREE.MeshBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0.32 })
-  );
-  drop.position.set((Math.random() - 0.5) * 28, 2 + Math.random() * 12, (Math.random() - 0.5) * 24);
-  drop.userData.fall = 0.04 + Math.random() * 0.045;
-  rainVeil.add(drop);
-}
-rainVeil.visible = false;
-scene.add(rainVeil);
-
-const rainMist = new THREE.Mesh(
-  new THREE.PlaneGeometry(36, 18),
-  new THREE.MeshBasicMaterial({ color: 0x9fc8e6, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-);
-rainMist.position.set(0, 1.9, 2.5);
-rainMist.rotation.x = -0.16;
-rainMist.visible = false;
-scene.add(rainMist);
-
-const rainSplashes = [];
-for (let i = 0; i < 42; i++) {
-  const splash = new THREE.Mesh(
-    new THREE.RingGeometry(0.045, 0.07, 10),
-    new THREE.MeshBasicMaterial({ color: 0xb7e7ff, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide })
-  );
-  splash.position.set((Math.random() - 0.5) * 18, 0.09, (Math.random() - 0.5) * 16 + 2);
-  splash.rotation.x = -Math.PI / 2;
-  splash.userData.phase = Math.random() * Math.PI * 2;
-  splash.visible = false;
-  rainSplashes.push(splash);
-  scene.add(splash);
 }
 
 function makeMountainPeak(id, x, z, height, radius, rot = 0, color = 0x243452) {
@@ -1106,6 +787,182 @@ function makeMountainBackdrop() {
   };
 }
 
+const ambient = new THREE.AmbientLight(0x6f8fd0, 0.36);
+scene.add(ambient);
+const hemi = new THREE.HemisphereLight(0xbbe7ff, 0x2b1f30, 0.42);
+scene.add(hemi);
+const naturalFill = new THREE.PointLight(0xb8ffd9, 0.2, 28, 2.2);
+naturalFill.position.set(0, 6.5, 2.5);
+scene.add(naturalFill);
+const moon = new THREE.DirectionalLight(0x7ca8ff, 0.65);
+moon.position.set(14, 20, -6);
+moon.castShadow = true;
+moon.shadow.mapSize.set(1024, 1024);
+moon.shadow.camera.near = 1;
+moon.shadow.camera.far = 60;
+moon.shadow.camera.left = -22;
+moon.shadow.camera.right = 22;
+moon.shadow.camera.top = 22;
+moon.shadow.camera.bottom = -22;
+scene.add(moon);
+
+const groundMaterial = surfaceMaterial({ color: 0x143452, map: textureSet.ground, roughness: 1, bumpScale: 0.024, emissive: 0x0b2d4a, emissiveIntensity: 0.18 });
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(140, 140),
+  groundMaterial
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const groundLumenVeil = new THREE.Mesh(
+  new THREE.PlaneGeometry(126, 126),
+  new THREE.MeshBasicMaterial({ color: 0x60e7ff, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+groundLumenVeil.rotation.x = -Math.PI / 2;
+groundLumenVeil.position.y = 0.012;
+groundLumenVeil.userData.visualId = "base_camp_luminous_ground_veil";
+scene.add(groundLumenVeil);
+
+const outerMeadowGlow = new THREE.Mesh(
+  new THREE.RingGeometry(7.2, 58, 96),
+  new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.075, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+outerMeadowGlow.rotation.x = -Math.PI / 2;
+outerMeadowGlow.position.y = 0.018;
+outerMeadowGlow.userData.visualId = "base_camp_outer_meadow_glow";
+scene.add(outerMeadowGlow);
+
+const mountainBackdrop = makeMountainBackdrop();
+
+const pathMaterial = surfaceMaterial({ color: 0x2f2540, map: textureSet.path, roughness: 1, metalness: 0.02, bumpScale: 0.035 });
+const path = new THREE.Mesh(
+  new THREE.RingGeometry(2.8, 4.6, 72),
+  pathMaterial
+);
+path.rotation.x = -Math.PI / 2;
+path.position.y = 0.03;
+path.receiveShadow = true;
+scene.add(path);
+
+const runeRing = new THREE.Mesh(
+  new THREE.RingGeometry(4.75, 5.2, 80),
+  new THREE.MeshStandardMaterial({ color: 0xffb366, emissive: 0x8b5cf6, emissiveIntensity: 0.5, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+);
+runeRing.rotation.x = -Math.PI / 2;
+runeRing.position.y = 0.035;
+scene.add(runeRing);
+
+const floorTiles = [];
+for (let i = 0; i < 64; i++) {
+  const a = (i / 64) * Math.PI * 2;
+  const r = 6.1 + (i % 2) * 0.22;
+  const tile = new THREE.Mesh(
+    new THREE.BoxGeometry(0.45, 0.06, 0.68),
+    surfaceMaterial({ color: (i % 3 === 0) ? 0x5e534b : 0x6b5e54, map: textureSet.stone, roughness: 0.93, metalness: 0.04, bumpScale: 0.045 })
+  );
+  tile.position.set(Math.cos(a) * r, 0.035, Math.sin(a) * r);
+  tile.rotation.y = -a + Math.PI / 2;
+  tile.castShadow = true;
+  tile.receiveShadow = true;
+  floorTiles.push(tile);
+  scene.add(tile);
+}
+
+const tileInlays = [];
+for (let i = 0; i < 24; i++) {
+  const a = (i / 24) * Math.PI * 2;
+  const r = 5.85 + (i % 2) * 0.55;
+  const inlay = new THREE.Mesh(
+    new THREE.BoxGeometry(0.08, 0.012, 0.48),
+    new THREE.MeshStandardMaterial({ color: 0x1f1a24, roughness: 0.98, metalness: 0.02 })
+  );
+  inlay.position.set(Math.cos(a) * r, 0.105, Math.sin(a) * r);
+  inlay.rotation.y = -a + Math.PI / 2 + (i % 3 - 1) * 0.25;
+  inlay.receiveShadow = true;
+  tileInlays.push(inlay);
+  scene.add(inlay);
+}
+
+const runeStones = [];
+for (let i = 0; i < 28; i++) {
+  const a = (i / 28) * Math.PI * 2;
+  const r = 4.95;
+  const stone = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 0.08, 0.65),
+    surfaceMaterial({ color: 0x74685f, map: textureSet.stone, roughness: 0.92, metalness: 0.05, bumpScale: 0.05 })
+  );
+  stone.position.set(Math.cos(a) * r, 0.05, Math.sin(a) * r);
+  stone.rotation.y = -a + Math.PI / 2;
+  stone.userData.phase = i * 0.35;
+  stone.castShadow = true;
+  stone.receiveShadow = true;
+  runeStones.push(stone);
+  scene.add(stone);
+}
+
+const runeGlyphs = [];
+for (let i = 0; i < 28; i++) {
+  const a = (i / 28) * Math.PI * 2;
+  const r = 4.95;
+  // Dual-tone golden/purple gradient glow for Night Town concept aesthetic
+  const isPurpleAccent = (i % 3 === 0);
+  const glyphColor = isPurpleAccent ? 0xc084fc : (i % 2 === 0 ? 0xffd58a : 0xf59e0b);
+  const glyph = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.18, 0.46),
+    new THREE.MeshBasicMaterial({ 
+      color: glyphColor, 
+      transparent: true, 
+      opacity: 0.68, 
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending 
+    })
+  );
+  glyph.position.set(Math.cos(a) * r, 0.108, Math.sin(a) * r);
+  glyph.rotation.x = -Math.PI / 2;
+  glyph.rotation.z = -a;
+  glyph.userData.phase = i * 0.28;
+  glyph.userData.isPurple = isPurpleAccent;
+  runeGlyphs.push(glyph);
+  scene.add(glyph);
+}
+
+const rainVeil = new THREE.Group();
+for (let i = 0; i < 90; i++) {
+  const drop = new THREE.Mesh(
+    new THREE.BoxGeometry(0.012, 0.38, 0.012),
+    new THREE.MeshBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0.32 })
+  );
+  drop.position.set((Math.random() - 0.5) * 28, 2 + Math.random() * 12, (Math.random() - 0.5) * 24);
+  drop.userData.fall = 0.04 + Math.random() * 0.045;
+  rainVeil.add(drop);
+}
+rainVeil.visible = false;
+scene.add(rainVeil);
+
+const rainMist = new THREE.Mesh(
+  new THREE.PlaneGeometry(36, 18),
+  new THREE.MeshBasicMaterial({ color: 0x9fc8e6, transparent: true, opacity: 0.11, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+);
+rainMist.position.set(0, 1.9, 2.5);
+rainMist.rotation.x = -0.16;
+rainMist.visible = false;
+scene.add(rainMist);
+
+const rainSplashes = [];
+for (let i = 0; i < 42; i++) {
+  const splash = new THREE.Mesh(
+    new THREE.RingGeometry(0.045, 0.07, 10),
+    new THREE.MeshBasicMaterial({ color: 0xb7e7ff, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide })
+  );
+  splash.position.set((Math.random() - 0.5) * 18, 0.09, (Math.random() - 0.5) * 16 + 2);
+  splash.rotation.x = -Math.PI / 2;
+  splash.userData.phase = Math.random() * Math.PI * 2;
+  splash.visible = false;
+  rainSplashes.push(splash);
+  scene.add(splash);
+}
+
 function hut(x, z, c=0x5a4a3a) {
   const g = new THREE.Group();
   const base = new THREE.Mesh(new THREE.BoxGeometry(3, 2.2, 3), surfaceMaterial({ color:c, map: textureSet.stone, roughness:0.95, bumpScale: 0.04 }));
@@ -1139,6 +996,23 @@ function makeBench(id, x, z, rot = 0) {
     });
   });
   g.add(seat, runner);
+
+  // Concept Art Cozy Details: detailed cup and scroll on bench
+  const cupMat = new THREE.MeshStandardMaterial({ color: 0xb48d5b, roughness: 0.6 });
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.035, 0.08, 8), cupMat);
+  cup.position.set(-0.45, 0.19, 0);
+  cup.castShadow = true;
+  g.add(cup);
+
+  const scrollGroup = new THREE.Group();
+  scrollGroup.position.set(0.5, 0.14, 0.05);
+  scrollGroup.rotation.y = 0.4;
+  scrollGroup.rotation.z = Math.PI / 2;
+  const paper = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.28, 8), new THREE.MeshStandardMaterial({ color: 0xf5f5dc, roughness: 0.85 }));
+  const tie = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.04, 8), new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.9 }));
+  scrollGroup.add(paper, tie);
+  g.add(scrollGroup);
+
   g.position.set(x, 0.55, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -1161,6 +1035,12 @@ function makeMushroomCluster(id, x, z, color = 0xff4f68) {
   }
   g.position.set(x, 0.02, z);
   g.userData.visualId = id;
+
+  // Add localized PointLight that glows with the matching cluster color for soft glow reflections
+  const mushroomLight = new THREE.PointLight(color, 1.8, 6, 4);
+  mushroomLight.position.set(0, 0.2, 0);
+  g.add(mushroomLight);
+
   markShadows(g);
   scene.add(g);
   return g;
@@ -1455,6 +1335,19 @@ function makeAvatarYou() {
   agentLight.position.set(0.05, 1.25, 0.38);
   g.add(agentLight);
 
+  const visionConeGeo = new THREE.ConeGeometry(0.8, 4, 16, 1, true);
+  const visionConeMat = new THREE.MeshBasicMaterial({
+    color: 0x22d3ee,
+    transparent: true,
+    opacity: 0.12,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  const visionCone = new THREE.Mesh(visionConeGeo, visionConeMat);
+  visionCone.rotation.x = Math.PI / 2;
+  visionCone.position.set(0, 1.20, 2.2); // Projecting forward at eye level
+  g.add(visionCone);
+
   const label = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.75, 48), new THREE.MeshBasicMaterial({ color: 0x9b7cff, transparent: true, opacity: 0.45, side: THREE.DoubleSide }));
   label.rotation.x = -Math.PI / 2;
   label.position.y = 0.04;
@@ -1465,7 +1358,7 @@ function makeAvatarYou() {
   markShadows(g);
   scene.add(g);
   softShadow("avatar_shadow_you", 2.7, 1.1, 0.95, 0.6, 0.34);
-  return { group: g, halo, body: robe, head, eyes, crownGem, crownGlow, heldOrb, orbGlow, hairStrands, frontBangs, cheeks, staffGem, staffHalo, staffGlow, nameplate, agentLight, robeMat, hairMat };
+  return { group: g, halo, body: robe, head, eyes, crownGem, crownGlow, heldOrb, orbGlow, hairStrands, frontBangs, cheeks, staffGem, staffHalo, staffGlow, nameplate, agentLight, robeMat, hairMat, visionCone };
 }
 
 function makeMemoryGate() {
@@ -1491,7 +1384,7 @@ function makeMemoryGate() {
 function makeCanopyCluster(id, x, z, scale = 1, color = 0x1f5a3f) {
   const g = new THREE.Group();
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x382515, map: textureSet.wood, roughness: 0.96 });
-  const leafMaterial = surfaceMaterial({ color, map: textureSet.leafVein, roughness: 0.82, bumpScale: 0.035, emissive: 0x0c3027, emissiveIntensity: 0.04 });
+  const leafMaterial = new THREE.MeshStandardMaterial({ color, emissive: 0x0c3027, emissiveIntensity: 0.04, roughness: 0.82 });
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18 * scale, 0.32 * scale, 3.6 * scale, 8), trunkMat);
   trunk.position.set(0, 1.8 * scale, 0);
   trunk.rotation.z = 0.18;
@@ -1557,33 +1450,58 @@ function makeRuneShard(id, x, z, rot, color = 0x7dd3fc) {
 function makeCampSign(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const frameMat = surfaceMaterial({ color: 0x5b3a22, map: textureSet.wood, roughness: 0.86, bumpScale: 0.05 });
-  const board = new THREE.Mesh(new THREE.BoxGeometry(2.9, 1.0, 0.16), frameMat);
-  board.position.y = 2.25;
-  const face = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.62, 0.82),
-    new THREE.MeshBasicMaterial({ map: textureSet.sign, transparent: true, opacity: 0.94, side: THREE.DoubleSide })
-  );
-  face.position.set(0, 2.25, 0.091);
-  [-1.55, 1.55].forEach((offset) => {
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 2.6, 8), frameMat);
-    post.position.set(offset, 1.28, 0);
+  const boardMat = surfaceMaterial({ color: 0x4a2e19, map: textureSet.wood, roughness: 0.88, bumpScale: 0.055 });
+  
+  [-2.2, 2.2].forEach((offset) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 4.2, 8), frameMat);
+    post.position.set(offset, 2.1, 0);
+    post.castShadow = true;
+    post.receiveShadow = true;
     g.add(post);
   });
-  const topLantern = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.34, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.84 }));
-  topLantern.position.set(0, 3.02, 0.04);
-  const signLight = new THREE.PointLight(0xffb66a, 0.7, 7, 2.2);
-  signLight.position.set(0, 2.75, 0.65);
-  const signGlow = warmGlowBillboard(`${id}_glow`, x, 2.8, z + 0.45, 2.25, 0xffc879, 0.34);
-  g.add(board, face, topLantern, signLight);
+
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.22, 0.28), frameMat);
+  beam.position.set(0, 3.85, 0);
+  beam.castShadow = true;
+  g.add(beam);
+
+  const board = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.1, 0.18), boardMat);
+  board.position.set(0, 4.35, 0.04);
+  board.castShadow = true;
+  
+  const face = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.3, 0.92),
+    new THREE.MeshBasicMaterial({ map: textureSet.sign, transparent: true, opacity: 0.94, side: THREE.DoubleSide })
+  );
+  face.position.set(0, 4.35, 0.14);
+
+  const lanterns = [];
+  [-1.8, 1.8].forEach((lx) => {
+    const lanternGroup = new THREE.Group();
+    lanternGroup.position.set(lx, 3.4, 0);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 8), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 }));
+    cap.position.y = 0.12;
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.9 }));
+    core.position.y = 0.02;
+    lanternGroup.add(cap, core);
+    g.add(lanternGroup);
+    lanterns.push(core);
+  });
+
+  const signLight = new THREE.PointLight(0xffb66a, 0.8, 9, 2.0);
+  signLight.position.set(0, 4.2, 0.85);
+  const signGlow = warmGlowBillboard(`${id}_glow`, x, 4.3, z + 0.45, 2.8, 0xffc879, 0.35);
+
+  g.add(board, face, signLight);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
-  g.userData.lantern = topLantern;
   g.userData.light = signLight;
   g.userData.glow = signGlow;
+  g.userData.lanterns = lanterns;
   markShadows(g);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 1.8, 0.7, 0.2);
+  softShadow(`${id}_shadow`, x, z, 3.2, 1.2, 0.25);
   return g;
 }
 
@@ -1636,49 +1554,53 @@ function makeTeaTable(id, x, z, rot = 0) {
 
 function makeMarketPlaza(id, x, z, rot = 0) {
   const g = new THREE.Group();
-  const plazaMat = surfaceMaterial({ color: 0x4f4842, map: textureSet.marketStone, roughness: 0.97, metalness: 0.02, bumpScale: 0.07 });
-  const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.36, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
-  const base = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.08, 6.25), plazaMat);
-  base.position.y = 0.04;
+  const plazaMat = surfaceMaterial({ color: 0x221a2c, map: textureSet.stone, roughness: 0.95, bumpScale: 0.045 });
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 0.48, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+
+  const base = new THREE.Mesh(new THREE.BoxGeometry(17.0, 0.1, 12.0), plazaMat);
+  base.position.y = 0.05;
   base.receiveShadow = true;
   g.add(base);
 
-  const edgeStones = [];
+  const stoneGeom = new THREE.BoxGeometry(0.35, 0.08, 0.24);
+  const instancedStones = new THREE.InstancedMesh(stoneGeom, plazaMat, 110);
+  instancedStones.castShadow = true;
+  instancedStones.receiveShadow = true;
+  
+  let instanceIdx = 0;
+  const dummy = new THREE.Object3D();
+  
+  for (let i = 0; i < 30; i++) {
+    const t = i / 29;
+    const sx = -8.2 + t * 16.4;
+    [-5.8, 5.8].forEach((sz, row) => {
+      dummy.position.set(sx, 0.12, sz);
+      const rotY = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
+      dummy.rotation.set(0, rotY, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      if (instanceIdx < 110) instancedStones.setMatrixAt(instanceIdx++, dummy.matrix);
+    });
+  }
   for (let i = 0; i < 24; i++) {
     const t = i / 23;
-    const sx = -4.08 + t * 8.16;
-    [-3.05, 3.05].forEach((sz, row) => {
-      const stone = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.065, 0.18), plazaMat);
-      stone.position.set(sx, 0.105, sz);
-      stone.rotation.y = (row ? -0.05 : 0.05) + Math.sin(i) * 0.04;
-      stone.castShadow = true;
-      stone.receiveShadow = true;
-      if (i % 2 === 0) addStoneEtching(stone, `${id}_edge_topline_${i}_${row}`, 0.16, 0.012, { y: 0.035, rot: row ? -0.2 : 0.2, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.2 });
-      if (i % 5 === 0) addStoneEtching(stone, `${id}_edge_gold_inlay_${i}_${row}`, 0.11, 0.01, { y: 0.036, z: 0.04, rot: Math.PI / 2, opacity: 0.24, color: 0xffd58a, phase: i * 0.26 });
-      edgeStones.push(stone);
-      g.add(stone);
+    const sz = -5.5 + t * 11.0;
+    [-8.3, 8.3].forEach((sx, col) => {
+      dummy.position.set(sx, 0.12, sz);
+      const rotY = Math.PI / 2 + (col ? 0.08 : -0.08);
+      dummy.rotation.set(0, rotY, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      if (instanceIdx < 110) instancedStones.setMatrixAt(instanceIdx++, dummy.matrix);
     });
   }
-  for (let i = 0; i < 18; i++) {
-    const t = i / 17;
-    const sz = -2.78 + t * 5.56;
-    [-4.3, 4.3].forEach((sx, col) => {
-      const stone = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.065, 0.26), plazaMat);
-      stone.position.set(sx, 0.105, sz);
-      stone.rotation.y = (col ? 0.08 : -0.08) + Math.cos(i) * 0.04;
-      stone.castShadow = true;
-      stone.receiveShadow = true;
-      if (i % 2 === 1) addStoneEtching(stone, `${id}_side_crack_${i}_${col}`, 0.13, 0.012, { y: 0.035, rot: col ? 0.42 : -0.42, opacity: 0.16, color: 0x201916, blend: THREE.NormalBlending, phase: i * 0.22 });
-      if (i % 6 === 2) addStoneEtching(stone, `${id}_side_rune_inlay_${i}_${col}`, 0.1, 0.01, { y: 0.036, x: 0.03, rot: Math.PI / 2, opacity: 0.22, color: 0x7dd3fc, phase: i * 0.31 });
-      edgeStones.push(stone);
-      g.add(stone);
-    });
-  }
+  instancedStones.instanceMatrix.needsUpdate = true;
+  g.add(instancedStones);
 
   const runes = [];
-  [[-3.1, -2.0], [0, -2.1], [3.1, -2.0], [-3.1, 2.0], [0, 0], [3.1, 2.0], [-1.55, 1.45], [1.55, 1.45]].forEach(([rx, rz], idx) => {
-    const rune = new THREE.Mesh(new THREE.RingGeometry(0.18, 0.26, 6), trimMat.clone());
-    rune.position.set(rx, 0.122, rz);
+  [[-6.0, -3.5], [0, -3.5], [6.0, -3.5], [-6.0, 3.5], [0, 0], [6.0, 3.5], [-3.0, 2.5], [3.0, 2.5]].forEach(([rx, rz], idx) => {
+    const rune = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.38, 6), trimMat.clone());
+    rune.position.set(rx, 0.125, rz);
     rune.rotation.x = -Math.PI / 2;
     rune.rotation.z = idx * 0.42;
     rune.userData.phase = idx * 0.62;
@@ -1686,52 +1608,90 @@ function makeMarketPlaza(id, x, z, rot = 0) {
     g.add(rune);
   });
 
-  const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 4.35, 3.1, 0xffb35f, 0.12);
-  const aisleLight = new THREE.PointLight(0xffb35f, 1.8, 9, 2.1);
-  aisleLight.position.set(0, 1.25, -0.25);
-  g.add(aisleLight);
+  const aisle = warmLightPool(`${id}_aisle_warmth`, x, z - 0.25, 7.5, 5.2, 0xffb35f, 0.16);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
   g.userData.runes = runes;
-  g.userData.edgeStones = edgeStones;
+  g.userData.edgeStones = instancedStones;
   g.userData.aisle = aisle;
-  g.userData.aisleLight = aisleLight;
   markShadows(g, true, true);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 4.7, 3.35, 0.18);
+  softShadow(`${id}_shadow`, x, z, 9.5, 6.8, 0.22);
   return g;
 }
 
 function makeMarketStall(id, x, z, rot = 0, showLabel = false) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
-  const cloth = surfaceMaterial({ color: 0x7f52a6, map: textureSet.canopyCloth, roughness: 0.94, bumpScale: 0.048 });
-  const counter = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.34, 1.05), wood);
-  counter.position.y = 0.5;
-  const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.72, 0.74, 4), cloth);
-  canopy.position.y = 1.52;
+  const cloth = surfaceMaterial({ color: 0x361c5c, map: textureSet.canopyCloth, roughness: 0.94, bumpScale: 0.048 });
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xd9a752, transparent: true, opacity: 0.85 });
+
+  const counter = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.85, 1.15), wood);
+  counter.position.set(0, 0.425, 0.65);
+  counter.castShadow = true;
+  counter.receiveShadow = true;
+
+  const postGeom = new THREE.CylinderGeometry(0.07, 0.09, 3.5, 8);
+  [[-1.6, -0.9], [1.6, -0.9], [-1.6, 0.9], [1.6, 0.9]].forEach(([px, pz]) => {
+    const post = new THREE.Mesh(postGeom, wood);
+    post.position.set(px, 1.75, pz);
+    post.castShadow = true;
+    post.receiveShadow = true;
+    g.add(post);
+  });
+
+  const canopy = new THREE.Mesh(new THREE.ConeGeometry(2.6, 0.95, 4), cloth);
+  canopy.position.set(0, 3.45, 0);
   canopy.rotation.y = Math.PI / 4;
-  const lanterns = [];
+  canopy.scale.set(1.1, 1.0, 0.85);
+  canopy.castShadow = true;
+  occluderMeshes.push(canopy);
+
+  const canopyTrim = new THREE.Mesh(new THREE.ConeGeometry(2.65, 0.08, 4), trimMat);
+  canopyTrim.position.set(0, 3.0, 0);
+  canopyTrim.rotation.y = Math.PI / 4;
+  canopyTrim.scale.set(1.1, 1.0, 0.85);
+
   const crates = [];
-  [-0.92, 0, 0.92].forEach((lx) => {
-    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.24, 0.32), wood);
-    crate.position.set(lx, 0.23, -0.64);
+  [-1.1, 0, 1.1].forEach((lx, idx) => {
+    const crate = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.22, 0.48), wood);
+    crate.position.set(lx, 0.96, 0.65);
+    crate.castShadow = true;
     crates.push(crate);
     g.add(crate);
+
+    for (let f = 0; f < 6; f++) {
+      const px = lx + (Math.random() - 0.5) * 0.24;
+      const pz = 0.65 + (Math.random() - 0.5) * 0.24;
+      const fruitColor = idx === 0 ? 0xef4444 : idx === 1 ? 0xf59e0b : 0x10b981;
+      const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 8), new THREE.MeshStandardMaterial({ color: fruitColor, roughness: 0.35 }));
+      fruit.position.set(px, 1.12, pz);
+      g.add(fruit);
+    }
   });
-  [-0.86, 0.86].forEach((lx) => {
-    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.18, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.88 }));
-    lantern.position.set(lx, 0.9, 0.48);
-    lanterns.push(lantern);
-    g.add(lantern);
+
+  const lanterns = [];
+  [-1.2, 1.2].forEach((lx) => {
+    const lanternGroup = new THREE.Group();
+    lanternGroup.position.set(lx, 2.9, 0.65);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.03, 8), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 }));
+    cap.position.y = 0.12;
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.085, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc879, transparent: true, opacity: 0.9 }));
+    core.position.y = 0.02;
+    lanternGroup.add(cap, core);
+    lanterns.push(core);
+    g.add(lanternGroup);
   });
-  const banner = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 0.46), surfaceMaterial({ color: 0x4c1d95, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
-  banner.position.set(0, 1.28, 0.72);
+
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.65), surfaceMaterial({ color: 0x49187d, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
+  banner.position.set(0, 2.65, 1.25);
   banner.rotation.y = Math.PI;
-  const glow = warmGlowBillboard(`${id}_glow`, x, 1.32, z, 1.95, 0xffc879, 0.24);
-  const exchangeGlow = warmLightPool(`${id}_exchange_pool`, x, z, 2.05, 1.35, 0xffb35f, 0.16);
-  g.add(counter, canopy, banner);
+
+  const glow = warmGlowBillboard(`${id}_glow`, x, 3.0, z, 2.5, 0xffc879, 0.28);
+  const exchangeGlow = warmLightPool(`${id}_exchange_pool`, x, z, 3.2, 2.2, 0xffb35f, 0.18);
+
+  g.add(counter, canopy, canopyTrim, banner);
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -1742,8 +1702,8 @@ function makeMarketStall(id, x, z, rot = 0, showLabel = false) {
   g.userData.banner = banner;
   markShadows(g);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 1.75, 1.0, 0.26);
-  if (showLabel) makeZoneLabel("MARKET", "Exchange Plaza", x, 2.45, z, "#ffd58a");
+  softShadow(`${id}_shadow`, x, z, 2.8, 1.8, 0.28);
+  if (showLabel) makeZoneLabel("MARKET", "Exchange Plaza", x, 4.35, z, "#ffd58a");
   return g;
 }
 
@@ -1765,8 +1725,6 @@ function makeMarketTransitionPath(id, startZ = 4.8, endZ = 7.45) {
     stone.userData.phase = i * 0.4;
     stone.castShadow = true;
     stone.receiveShadow = true;
-    addStoneEtching(stone, `${id}_step_crack_${i}`, 0.42, 0.014, { y: 0.031, z: -0.05, rot: Math.sin(i) * 0.65, opacity: 0.18, color: 0x2b2119, blend: THREE.NormalBlending, phase: i * 0.4 });
-    if (i % 3 === 0) addStoneEtching(stone, `${id}_step_gold_thread_${i}`, 0.28, 0.01, { y: 0.032, x: 0.08, rot: Math.PI / 2.2, opacity: 0.24, color: 0xffd58a, phase: i * 0.36 });
     stones.push(stone);
     g.add(stone);
     if (i % 2 === 1) {
@@ -1789,10 +1747,23 @@ function makeMarketTransitionPath(id, startZ = 4.8, endZ = 7.45) {
     lanterns.push({ core, glow });
     g.add(post, core);
   });
-  const banner = new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.74), bannerMat);
+  // Rich Amethyst market banner with antique gold trim border
+  const bannerMatRich = surfaceMaterial({ color: 0x6a309e, map: textureSet.canopyCloth, roughness: 0.88, bumpScale: 0.05, emissive: 0x2a1377, emissiveIntensity: 0.18 });
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.84), bannerMatRich);
   banner.position.set(-0.74, 0.92, endZ - 0.35);
   banner.rotation.y = 0.18;
-  g.add(banner);
+  const bannerBorder = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.035), trimMat);
+  bannerBorder.position.set(-0.74, 0.52, endZ - 0.348);
+  bannerBorder.rotation.y = 0.18;
+
+  const bannerRight = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.84), bannerMatRich);
+  bannerRight.position.set(0.74, 0.92, endZ - 0.35);
+  bannerRight.rotation.y = -0.18;
+  const bannerRightBorder = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.035), trimMat);
+  bannerRightBorder.position.set(0.74, 0.52, endZ - 0.348);
+  bannerRightBorder.rotation.y = -0.18;
+
+  g.add(banner, bannerBorder, bannerRight, bannerRightBorder);
   g.userData.visualId = id;
   g.userData.stones = stones;
   g.userData.runes = runes;
@@ -1806,21 +1777,130 @@ function makeMarketTransitionPath(id, startZ = 4.8, endZ = 7.45) {
 function makeMarketDisplayStand(id, x, z, rot = 0, color = 0xc084fc) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x4d2f1f, map: textureSet.wood, roughness: 0.9, bumpScale: 0.055 });
-  const top = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.12, 0.48), wood);
+  const stoneMat = surfaceMaterial({ color: 0x3d352e, map: textureSet.stone, roughness: 0.95 });
+
+  const top = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.12, 0.65), wood);
   top.position.y = 0.52;
+  top.castShadow = true;
+  top.receiveShadow = true;
+
   const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.52, 8), wood);
   leg.position.y = 0.28;
-  const cloth = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.035, 0.5), surfaceMaterial({ color: 0x56307a, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
+  leg.castShadow = true;
+
+  const cloth = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.035, 0.58), surfaceMaterial({ color: 0x56307a, map: textureSet.cloth, roughness: 0.92, bumpScale: 0.03 }));
   cloth.position.y = 0.6;
-  const wares = [];
-  [-0.22, 0, 0.22].forEach((offset, i) => {
-    const ware = new THREE.Mesh(new THREE.SphereGeometry(0.08 + i * 0.01, 10, 8), new THREE.MeshBasicMaterial({ color: i === 0 ? color : i === 1 ? 0xffd58a : 0x7dd3fc, transparent: true, opacity: 0.86 }));
-    ware.position.set(offset, 0.69, i % 2 ? -0.06 : 0.08);
-    ware.userData.phase = i * 0.7;
-    wares.push(ware);
-    g.add(ware);
-  });
+
   g.add(top, leg, cloth);
+  const wares = [];
+
+  // Custom display items based on stand ID (crystals, fruit, scrolls, potions, seeds, textiles)
+  if (id.includes("crystals")) {
+    // Glowing Octahedron Crystals with light glows
+    [-0.26, 0, 0.26].forEach((offset, idx) => {
+      const crystalGeo = new THREE.OctahedronGeometry(0.09 + idx * 0.015, 0);
+      const crystalMat = new THREE.MeshStandardMaterial({
+        color: idx === 0 ? 0x9b5eff : idx === 1 ? 0x60a5fa : 0xd8b4fe,
+        emissive: idx === 0 ? 0x6d28d9 : idx === 1 ? 0x1d4ed8 : 0x7e22ce,
+        emissiveIntensity: 1.5,
+        roughness: 0.1,
+        metalness: 0.9
+      });
+      const crystal = new THREE.Mesh(crystalGeo, crystalMat);
+      crystal.position.set(offset, 0.73, idx % 2 ? -0.06 : 0.08);
+      crystal.rotation.set(0.2, 0.5 * idx, 0.1);
+      crystal.userData.phase = idx * 0.7;
+      wares.push(crystal);
+      g.add(crystal);
+    });
+  } else if (id.includes("fruit")) {
+    // Wooden box of apples and oranges
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.14, 0.44), wood);
+    box.position.set(0, 0.68, 0);
+    g.add(box);
+
+    // Spawn red and orange spheres inside
+    [-0.24, -0.08, 0.08, 0.24].forEach((ox) => {
+      [-0.12, 0.12].forEach((oz, zi) => {
+        const isApple = (ox + oz) % 2 === 0;
+        const fruitColor = isApple ? 0xef4444 : 0xf97316; // Red apple or orange
+        const fruit = new THREE.Mesh(new THREE.SphereGeometry(0.065, 8, 8), new THREE.MeshStandardMaterial({ color: fruitColor, roughness: 0.4 }));
+        fruit.position.set(ox + (Math.random()-0.5)*0.02, 0.75, oz + (Math.random()-0.5)*0.02);
+        wares.push(fruit);
+        g.add(fruit);
+      });
+    });
+  } else if (id.includes("scrolls")) {
+    // Rolled parchment scrolls
+    [-0.22, 0, 0.22].forEach((offset, idx) => {
+      const scrollGroup = new THREE.Group();
+      scrollGroup.position.set(offset, 0.68, idx % 2 ? -0.06 : 0.08);
+      scrollGroup.rotation.y = idx * 0.8 + 0.4;
+      scrollGroup.rotation.z = Math.PI / 2;
+
+      const paper = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.38, 8), new THREE.MeshStandardMaterial({ color: 0xf5f5dc, roughness: 0.85 }));
+      const tie = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.05, 8), new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 0.9 }));
+      scrollGroup.add(paper, tie);
+      scrollGroup.userData.phase = idx * 0.7;
+      wares.push(scrollGroup);
+      g.add(scrollGroup);
+    });
+  } else if (id.includes("potions")) {
+    // Glass Potion Bottles (translucent glowing vials)
+    [-0.24, 0.02, 0.24].forEach((offset, idx) => {
+      const flaskGroup = new THREE.Group();
+      flaskGroup.position.set(offset, 0.62, idx % 2 ? -0.08 : 0.08);
+
+      const liquidColor = idx === 0 ? 0x10b981 : idx === 1 ? 0x3b82f6 : 0xec4899; // Green, blue, pink potion
+      const emissiveColor = idx === 0 ? 0x065f46 : idx === 1 ? 0x1e3a8a : 0x9d174d;
+
+      const flaskBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.14, 8), new THREE.MeshStandardMaterial({
+        color: liquidColor,
+        emissive: emissiveColor,
+        emissiveIntensity: 1.2,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0.88
+      }));
+      flaskBase.position.y = 0.07;
+
+      const flaskNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.08, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, transparent: true, opacity: 0.6 }));
+      flaskNeck.position.y = 0.18;
+
+      const cork = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.03, 6), new THREE.MeshStandardMaterial({ color: 0x6e4e37, roughness: 0.9 }));
+      cork.position.y = 0.225;
+
+      flaskGroup.add(flaskBase, flaskNeck, cork);
+      flaskGroup.userData.phase = idx * 0.7;
+      wares.push(flaskGroup);
+      g.add(flaskGroup);
+    });
+  } else if (id.includes("textiles")) {
+    // Stacks of colored fabrics
+    [-0.2, 0.2].forEach((offset, colIdx) => {
+      for (let stackIdx = 0; stackIdx < 3; stackIdx++) {
+        const clothColor = colIdx === 0
+          ? [0x56307a, 0xd9a752, 0x8b5cf6][stackIdx]
+          : [0x0ea5e9, 0x14b8a6, 0xec4899][stackIdx];
+        const clothPlate = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.045, 0.44), new THREE.MeshStandardMaterial({ color: clothColor, roughness: 0.9 }));
+        clothPlate.position.set(offset, 0.645 + stackIdx * 0.05, 0);
+        clothPlate.rotation.y = (colIdx + stackIdx) * 0.15 - 0.2;
+        clothPlate.userData.phase = (colIdx * 3 + stackIdx) * 0.5;
+        wares.push(clothPlate);
+        g.add(clothPlate);
+      }
+    });
+  } else {
+    // Default fallback wares
+    [-0.22, 0, 0.22].forEach((offset, i) => {
+      const ware = new THREE.Mesh(new THREE.SphereGeometry(0.08 + i * 0.01, 10, 8), new THREE.MeshBasicMaterial({ color: i === 0 ? color : i === 1 ? 0xffd58a : 0x7dd3fc, transparent: true, opacity: 0.86 }));
+      ware.position.set(offset, 0.69, i % 2 ? -0.06 : 0.08);
+      ware.userData.phase = i * 0.7;
+      wares.push(ware);
+      g.add(ware);
+    });
+  }
+
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -1836,56 +1916,82 @@ function makeMarketDisplayStand(id, x, z, rot = 0, color = 0xc084fc) {
 function makeMarketOverhang(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const postMat = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.88, bumpScale: 0.055 });
-  const roofMat = surfaceMaterial({ color: 0x8755ad, map: textureSet.canopyCloth, roughness: 0.92, bumpScale: 0.055 });
+  // Premium, deep royal indigo/amethyst purple fabric for a premium look with visible folds
+  const roofMat = surfaceMaterial({ color: 0x250c3a, map: textureSet.canopyCloth, roughness: 0.85, bumpScale: 0.09, emissive: 0x140728, emissiveIntensity: 0.15 });
   roofMat.transparent = true;
-  roofMat.opacity = 0.9;
-  const trimMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.62 });
+  roofMat.opacity = 0.95;
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0xcc9966, transparent: true, opacity: 0.72 });
   const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.88 });
 
+  // Elevated Posts: Height raised to 2.95 (y position centered at 1.475)
   const postPositions = [
     [-3.95, -2.85], [3.95, -2.85], [-3.95, 2.85], [3.95, 2.85],
     [-1.45, -2.95], [1.45, -2.95]
   ];
   postPositions.forEach(([px, pz]) => {
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.11, 2.25, 8), postMat);
-    post.position.set(px, 1.13, pz);
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.11, 2.95, 8), postMat);
+    post.position.set(px, 1.475, pz);
+    post.castShadow = true;
+    post.receiveShadow = true;
     g.add(post);
   });
 
+  // Elevated Roof elements: y raised by 0.7 units (roof at 3.12, peak at 3.56)
   const roof = new THREE.Mesh(new THREE.BoxGeometry(8.9, 0.12, 6.15), roofMat);
-  roof.position.y = 2.42;
+  roof.position.y = 3.12;
   roof.rotation.z = 0.025;
   const roofPeak = new THREE.Mesh(new THREE.ConeGeometry(4.75, 0.78, 4), roofMat.clone());
-  roofPeak.position.y = 2.86;
+  roofPeak.position.y = 3.56;
   roofPeak.scale.z = 0.72;
   roofPeak.rotation.y = Math.PI / 4;
   g.add(roof, roofPeak);
 
+  // Elevated structural beams (y raised by 0.7 units to 2.84)
   const beams = [];
   [[0, -3.03, 8.55, 0.08], [0, 3.03, 8.55, 0.08], [-4.18, 0, 0.08, 5.8], [4.18, 0, 0.08, 5.8]].forEach(([bx, bz, sx, sz]) => {
     const beam = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.09, sz), postMat);
-    beam.position.set(bx, 2.14, bz);
+    beam.position.set(bx, 2.84, bz);
+    beam.castShadow = true;
     beams.push(beam);
     g.add(beam);
   });
 
+  // Elevated ribbons (y raised by 0.7 units to 3.21)
   const ribbons = [];
   [-2.8, 0, 2.8].forEach((rx, idx) => {
     const ribbon = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 5.35), trimMat.clone());
-    ribbon.position.set(rx, 2.51, 0);
+    ribbon.position.set(rx, 3.21, 0);
     ribbon.rotation.x = -Math.PI / 2;
     ribbon.userData.phase = idx * 0.7;
     ribbons.push(ribbon);
     g.add(ribbon);
   });
 
+  // Elevated hanging lanterns (y raised by 0.7 units to 2.73)
   const lanterns = [];
   [[-2.85, -1.85], [0, -1.95], [2.85, -1.85], [-2.85, 1.85], [0, 1.95], [2.85, 1.85]].forEach(([lx, lz], idx) => {
-    const core = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 10), lanternMat.clone());
-    core.position.set(lx, 2.03, lz);
-    const glow = warmGlowBillboard(`${id}_lantern_glow_${idx}`, x + lx, 2.03, z + lz, 0.82, 0xffc879, 0.18);
+    const lanternGroup = new THREE.Group();
+    lanternGroup.position.set(lx, 2.73, lz);
+
+    // Custom lantern mesh detail
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 8), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 }));
+    cap.position.y = 0.15;
+
+    const core = new THREE.Mesh(new THREE.SphereGeometry(0.10, 12, 10), lanternMat.clone());
+    core.position.y = 0.02;
+
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.04, 8), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 }));
+    base.position.y = -0.11;
+
+    // Thin wire rod up to the roof
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.28, 6), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    rod.position.y = 0.3;
+
+    lanternGroup.add(cap, core, base, rod);
+
+    const glow = warmGlowBillboard(`${id}_lantern_glow_${idx}`, x + lx, 2.73, z + lz, 0.82, 0xffc879, 0.18);
     lanterns.push({ core, glow });
-    g.add(core);
+    g.add(lanternGroup);
   });
 
   g.position.set(x, 0, z);
@@ -1902,7 +2008,7 @@ function makeMarketOverhang(id, x, z, rot = 0) {
 
 
 function makeMarketTextureRunner(id, x, z, rot = 0) {
-  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.046, emissive: 0x24103a, emissiveIntensity: 0.06 });
+  const runnerMat = surfaceMaterial({ color: 0x56307a, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.04, emissive: 0x24103a, emissiveIntensity: 0.06 });
   runnerMat.transparent = true;
   runnerMat.opacity = 0.74;
   const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 5.35), runnerMat);
@@ -1918,7 +2024,7 @@ function makeMarketTextureRunner(id, x, z, rot = 0) {
 function makeMarketHangingLights(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const postMat = surfaceMaterial({ color: 0x5a3822, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
-  const lineMat = new THREE.MeshBasicMaterial({ color: 0xd6b77a, transparent: true, opacity: 0.7 });
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0xb89d6e, transparent: true, opacity: 0.85 }); // Antique bronze/gold
   [-2.45, 2.45].forEach((lx) => {
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.075, 1.55, 8), postMat);
     post.position.set(lx, 0.78, 0);
@@ -1967,7 +2073,7 @@ function makeMarketCompanion(id, x, z, color = 0xe9d5ff) {
 function makeMarketHomeDetail(id, x, z, rot = 0, accent = 0xf0abfc) {
   const g = new THREE.Group();
   const wood = surfaceMaterial({ color: 0x6a4228, map: textureSet.wood, roughness: 0.92, bumpScale: 0.055 });
-  const cloth = surfaceMaterial({ color: accent, map: textureSet.wovenTile, roughness: 0.96, bumpScale: 0.044, emissive: 0x24103a, emissiveIntensity: 0.035 });
+  const cloth = surfaceMaterial({ color: accent, map: textureSet.canopyCloth, roughness: 0.96, bumpScale: 0.038, emissive: 0x24103a, emissiveIntensity: 0.035 });
   cloth.transparent = true;
   cloth.opacity = 0.84;
   const basketMat = surfaceMaterial({ color: 0x9b6b3d, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
@@ -2037,20 +2143,22 @@ function makeWorldReinforcementDetails(id, x, z, rot = 0) {
   const ropeMat = new THREE.MeshBasicMaterial({ color: 0xd6b77a, transparent: true, opacity: 0.64 });
   const stitchMat = new THREE.MeshBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
 
+  // Elevated Braces: y raised by 0.7 units to 2.25
   const braces = [];
   [[-4.05, -2.92, -0.56], [4.05, -2.92, 0.56], [-4.05, 2.92, 0.56], [4.05, 2.92, -0.56]].forEach(([bx, bz, angle], idx) => {
     const brace = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.55, 0.09), wood);
-    brace.position.set(bx, 1.55, bz);
+    brace.position.set(bx, 2.25, bz);
     brace.rotation.z = angle;
     brace.rotation.y = idx % 2 ? 0.18 : -0.18;
     braces.push(brace);
     g.add(brace);
   });
 
+  // Elevated Support Ropes: y raised by 0.7 units to 2.78
   const ropes = [];
   [[-3.85, 0, -2.82, 0], [3.85, 0, -2.82, 0], [-3.85, 0, 2.82, 0], [3.85, 0, 2.82, 0]].forEach(([rx, ry, rz], idx) => {
     const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 2.25, 6), ropeMat.clone());
-    rope.position.set(rx, 2.08, rz);
+    rope.position.set(rx, 2.78, rz);
     rope.rotation.z = Math.PI / 2 + (idx % 2 ? 0.18 : -0.18);
     rope.rotation.y = idx < 2 ? 0.28 : -0.28;
     rope.userData.phase = idx * 0.72;
@@ -2058,10 +2166,11 @@ function makeWorldReinforcementDetails(id, x, z, rot = 0) {
     g.add(rope);
   });
 
+  // Elevated Stitches: y raised by 0.7 units to 3.21
   const stitches = [];
   [-3.1, -1.55, 0, 1.55, 3.1].forEach((sx, idx) => {
     const stitch = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.035), stitchMat.clone());
-    stitch.position.set(sx, 2.51, -3.08);
+    stitch.position.set(sx, 3.21, -3.08);
     stitch.rotation.x = -Math.PI / 2;
     stitch.userData.phase = idx * 0.53;
     stitches.push(stitch);
@@ -2079,40 +2188,169 @@ function makeWorldReinforcementDetails(id, x, z, rot = 0) {
   return g;
 }
 
+function makeDailyGatheringsTable(id, x, z) {
+  const g = new THREE.Group();
+  const wood = surfaceMaterial({ color: 0x4a2c16, map: textureSet.wood, roughness: 0.92, bumpScale: 0.05 });
+  const stoneMat = surfaceMaterial({ color: 0x3d352e, map: textureSet.stone, roughness: 0.95 });
+
+  // Table base and top
+  const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.1, 16), wood);
+  tableTop.position.y = 0.5;
+  tableTop.castShadow = true;
+  tableTop.receiveShadow = true;
+
+  const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.45, 10), wood);
+  tableLeg.position.y = 0.225;
+  tableLeg.castShadow = true;
+  g.add(tableTop, tableLeg);
+
+  // Central Table Lantern (glowing warm sitting light in the center of the table)
+  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffbf73, transparent: true, opacity: 0.9 });
+  const lanternCap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 8), stoneMat);
+  lanternCap.position.set(0, 0.72, 0);
+  const lanternCore = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), lanternMat);
+  lanternCore.position.set(0, 0.64, 0);
+  const lanternBase = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 8), stoneMat);
+  lanternBase.position.set(0, 0.57, 0);
+
+  g.add(lanternCap, lanternCore, lanternBase);
+
+  // Stools (wooden stools arranged around table)
+  const stoolPositions = [
+    [-0.85, 0.5], [0.85, 0.5], [0.0, -0.95]
+  ];
+  stoolPositions.forEach(([sx, sz], i) => {
+    const stool = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.32, 10), wood);
+    stool.position.set(sx, 0.16, sz);
+    stool.castShadow = true;
+    stool.receiveShadow = true;
+    g.add(stool);
+  });
+
+  // Plates and cups (Daily Gatherings vibe)
+  const plateMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.4 });
+  const cupMat = new THREE.MeshStandardMaterial({ color: 0xb48d5b, roughness: 0.6 });
+
+  const platePositions = [
+    [-0.55, 0.35], [0.55, 0.35], [0.0, -0.6]
+  ];
+  platePositions.forEach(([px, pz]) => {
+    const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.015, 12), plateMat);
+    plate.position.set(px, 0.56, pz);
+
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.09, 8), cupMat);
+    cup.position.set(px + 0.12, 0.61, pz + 0.1);
+
+    g.add(plate, cup);
+  });
+
+  g.position.set(x, 0, z);
+  g.userData.visualId = id;
+  g.userData.lanternCore = lanternCore;
+  markShadows(g);
+  scene.add(g);
+
+  softShadow(`${id}_shadow`, x, z, 1.45, 1.45, 0.22);
+  warmLightPool(`${id}_table_light`, x, z, 1.8, 1.8, 0xffa85c, 0.22);
+  return g;
+}
+
 function makeStable(id, x, z, rot = 0) {
   const g = new THREE.Group();
-  const wood = surfaceMaterial({ color: 0x5b3b24, map: textureSet.wood, roughness: 0.92, bumpScale: 0.05 });
-  const roof = surfaceMaterial({ color: 0x2f2630, map: textureSet.wood, roughness: 0.96, bumpScale: 0.05 });
-  const base = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.0, 1.45), wood);
-  base.position.y = 0.58;
-  const cap = new THREE.Mesh(new THREE.ConeGeometry(1.55, 0.72, 4), roof);
-  cap.position.y = 1.4;
-  cap.rotation.y = Math.PI / 4;
-  const hay = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.58, 10), new THREE.MeshStandardMaterial({ color: 0xc08a3d, roughness: 0.9 }));
-  hay.position.set(0.78, 0.32, 0.55);
-  hay.rotation.z = Math.PI / 2;
-  const companion = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), new THREE.MeshBasicMaterial({ color: 0xc7d2fe, transparent: true, opacity: 0.78 }));
-  companion.position.set(-0.78, 0.85, 0.42);
-  g.add(base, cap, hay, companion);
+  const wood = surfaceMaterial({ color: 0x4a2e19, map: textureSet.wood, roughness: 0.92, bumpScale: 0.06 });
+  const roofMat = surfaceMaterial({ color: 0x241d24, map: textureSet.wood, roughness: 0.96, bumpScale: 0.055 });
+  
+  [
+    [-3.8, -2.6], [0, -2.6], [3.8, -2.6],
+    [-3.8, 2.6], [0, 2.6], [3.8, 2.6]
+  ].forEach(([px, pz]) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 4.2, 8), wood);
+    post.position.set(px, 2.1, pz);
+    post.castShadow = true;
+    post.receiveShadow = true;
+    g.add(post);
+  });
+
+  [
+    [0, -2.6, 8.0, 0.16], [0, 2.6, 8.0, 0.16],
+    [-3.8, 0, 0.16, 5.4], [0, 0, 0.16, 5.4], [3.8, 0, 0.16, 5.4]
+  ].forEach(([bx, bz, sx, sz]) => {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(sx, 0.16, sz), wood);
+    beam.position.set(bx, 4.0, bz);
+    beam.castShadow = true;
+    g.add(beam);
+  });
+
+  const roofL = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.14, 3.4), roofMat);
+  roofL.position.set(0, 4.4, -1.4);
+  roofL.rotation.x = 0.28;
+  roofL.castShadow = true;
+  
+  const roofR = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.14, 3.4), roofMat);
+  roofR.position.set(0, 4.4, 1.4);
+  roofR.rotation.x = -0.28;
+  roofR.castShadow = true;
+  g.add(roofL, roofR);
+  occluderMeshes.push(roofL, roofR);
+
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(7.6, 2.8, 0.12), wood);
+  backWall.position.set(0, 1.4, -2.6);
+  backWall.castShadow = true;
+
+  const divider = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.6, 4.8), wood);
+  divider.position.set(0, 0.8, 0);
+  divider.castShadow = true;
+  g.add(backWall, divider);
+
+  [[-2.8, 2.6], [2.8, 2.6]].forEach(([fx, fz]) => {
+    const fence = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 0.1), wood);
+    fence.position.set(fx, 0.6, fz);
+    fence.castShadow = true;
+    g.add(fence);
+  });
+
+  const hayMat = new THREE.MeshStandardMaterial({ color: 0xd49b43, roughness: 0.95 });
+  const hayBale1 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.1, 12), hayMat);
+  hayBale1.position.set(-2.6, 0.45, -1.6);
+  hayBale1.rotation.z = Math.PI / 2;
+  hayBale1.castShadow = true;
+  g.add(hayBale1);
+
+  [-2.2, 2.2].forEach((tx) => {
+    const trough = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 0.65), wood);
+    trough.position.set(tx, 0.28, -2.0);
+    trough.castShadow = true;
+    g.add(trough);
+  });
+
+  const companion = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 12), new THREE.MeshBasicMaterial({ color: 0xc7d2fe, transparent: true, opacity: 0.85 }));
+  companion.position.set(-2.0, 1.2, -0.4);
+  g.add(companion);
+
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
   g.userData.companion = companion;
   markShadows(g);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 1.45, 0.95, 0.25);
-  makeZoneLabel("STABLES", "Companions + Support", x, 2.18, z, "#f8d9a0");
+  softShadow(`${id}_shadow`, x, z, 8.5, 6.5, 0.3);
+  makeZoneLabel("STABLES", "Companions + Support", x, 4.6, z, "#f8d9a0");
   return g;
 }
 
 function makeWelcomeGrove(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const postMat = surfaceMaterial({ color: 0x4b3524, map: textureSet.wood, roughness: 0.9, bumpScale: 0.045 });
+  const wood = surfaceMaterial({ color: 0x5b3b24, map: textureSet.wood, roughness: 0.9, bumpScale: 0.05 });
+
   [-0.72, 0.72].forEach((lx) => {
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 1.8, 8), postMat);
     post.position.set(lx, 0.9, 0);
+    post.castShadow = true;
+    post.receiveShadow = true;
     g.add(post);
   });
+
   const arch = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.04, 8, 48, Math.PI), new THREE.MeshBasicMaterial({ color: 0x8ddcff, transparent: true, opacity: 0.62 }));
   arch.position.y = 1.72;
   arch.rotation.z = Math.PI;
@@ -2120,6 +2358,31 @@ function makeWelcomeGrove(id, x, z, rot = 0) {
   lantern.position.y = 1.38;
   const glow = warmGlowBillboard(`${id}_glow`, x, 1.48, z, 1.6, 0x8ddcff, 0.22);
   g.add(arch, lantern);
+
+  // Concept Art Welcome Signpost
+  const signBoard = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.38, 0.04), wood);
+  signBoard.position.set(0, 1.05, 0.06);
+  signBoard.castShadow = true;
+  g.add(signBoard);
+
+  // Traveler's bench to rest
+  const benchSeat = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.08, 0.44), wood);
+  benchSeat.position.set(0.95, 0.32, 0.95);
+  benchSeat.rotation.y = -Math.PI / 4;
+  benchSeat.castShadow = true;
+
+  const benchLegL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.38), wood);
+  benchLegL.position.set(0.55, 0.14, 1.35);
+  benchLegL.rotation.y = -Math.PI / 4;
+  benchLegL.castShadow = true;
+
+  const benchLegR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.38), wood);
+  benchLegR.position.set(1.35, 0.14, 0.55);
+  benchLegR.rotation.y = -Math.PI / 4;
+  benchLegR.castShadow = true;
+
+  g.add(benchSeat, benchLegL, benchLegR);
+
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -2135,11 +2398,37 @@ function makeWelcomeGrove(id, x, z, rot = 0) {
 function makeSouthGate(id, x, z, rot = 0) {
   const g = new THREE.Group();
   const mat = surfaceMaterial({ color: 0x263454, map: textureSet.stone, roughness: 0.9, metalness: 0.03, bumpScale: 0.04 });
-  [-0.55, 0.55].forEach((lx) => {
-    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 1.7, 6), mat);
-    pillar.position.set(lx, 0.85, 0);
-    g.add(pillar);
+  const trimMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.68 });
+
+  // Custom stone obelisks/pillars (stacked segments for weathered ancient ruins)
+  [-0.65, 0.65].forEach((lx, pIdx) => {
+    const pillarGroup = new THREE.Group();
+    pillarGroup.position.set(lx, 0, 0);
+
+    const seg1 = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.45, 0.32), mat);
+    seg1.position.y = 0.225;
+    seg1.castShadow = true;
+    seg1.receiveShadow = true;
+
+    const seg2 = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.62, 0.26), mat);
+    seg2.position.y = 0.76;
+    seg2.rotation.y = pIdx ? 0.15 : -0.15;
+    seg2.castShadow = true;
+    seg2.receiveShadow = true;
+
+    const seg3 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.12, 0.58, 4), mat);
+    seg3.position.y = 1.36;
+    seg3.rotation.y = Math.PI / 4;
+    seg3.castShadow = true;
+
+    const runeRing = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.015, 6, 12), trimMat);
+    runeRing.position.y = 0.76;
+    runeRing.rotation.x = Math.PI / 2;
+
+    pillarGroup.add(seg1, seg2, seg3, runeRing);
+    g.add(pillarGroup);
   });
+
   const gate = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.03, 8, 44), new THREE.MeshBasicMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.62 }));
   gate.position.y = 1.05;
   const pad = new THREE.Mesh(new THREE.CircleGeometry(0.78, 36), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.18, side: THREE.DoubleSide }));
@@ -2147,6 +2436,19 @@ function makeSouthGate(id, x, z, rot = 0) {
   pad.position.y = 0.06;
   const glow = warmGlowBillboard(`${id}_glow`, x, 1.12, z, 1.8, 0x60a5fa, 0.24);
   g.add(gate, pad);
+
+  // Twin Stone ground lanterns framing the gate
+  [[-1.15, -0.65], [1.15, -0.65]].forEach(([lx, lz], idx) => {
+    const lPost = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.44, 0.18), mat);
+    lPost.position.set(lx, 0.22, lz);
+    lPost.castShadow = true;
+
+    const lCore = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.9 }));
+    lCore.position.set(lx, 0.5, lz);
+
+    g.add(lPost, lCore);
+  });
+
   g.position.set(x, 0, z);
   g.rotation.y = rot;
   g.userData.visualId = id;
@@ -2163,7 +2465,7 @@ function makeSouthGate(id, x, z, rot = 0) {
 function makeMoonVine(id, x, z) {
   const g = new THREE.Group();
   const stemMat = new THREE.MeshStandardMaterial({ color: 0x1d513c, emissive: 0x0d3c3a, emissiveIntensity: 0.08, roughness: 0.78 });
-  const leafMat = new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.75, side: THREE.DoubleSide });
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x8df5ff, emissive: 0x00d4ff, emissiveIntensity: 0.9, transparent: true, opacity: 0.82, side: THREE.DoubleSide });
   const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 3.8, 8), stemMat);
   stem.position.y = 1.9;
   g.add(stem);
@@ -2187,119 +2489,280 @@ function makeMoonVine(id, x, z) {
   return g;
 }
 
-function makeCrystalCluster(id, x, z, scale = 1, palette = [0x61e8ff, 0xf28cff, 0x9d8cff]) {
-  const g = new THREE.Group();
-  const shards = [];
-  const layout = [
-    [0, 0, 0.95, 0], [-0.34, 0.06, 0.62, -0.18], [0.34, 0.08, 0.72, 0.2],
-    [-0.16, 0.28, 0.5, -0.36], [0.18, -0.25, 0.46, 0.4]
-  ];
-  layout.forEach(([lx, lz, height, lean], idx) => {
-    const color = palette[idx % palette.length];
-    const material = new THREE.MeshStandardMaterial({
-      color, emissive: color, emissiveIntensity: 0.72, roughness: 0.24,
-      metalness: 0.08, transparent: true, opacity: 0.9
+function createCampfireCrystalRing() {
+  const crystalGroup = new THREE.Group();
+  crystalGroup.name = "campfire_crystal_ring";
+
+  const crystalColors = [0xff00d4, 0x00ffff, 0x9b5cff, 0xfba83c, 0x3b82f6];
+  const count = 11;
+  const radius = 1.68;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    const crystalColor = crystalColors[i % crystalColors.length];
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: crystalColor,
+      emissive: crystalColor,
+      emissiveIntensity: 0.85,
+      roughness: 0.15,
+      metalness: 0.1,
+      transparent: true,
+      opacity: 0.88,
+      blending: THREE.AdditiveBlending
     });
-    const shard = new THREE.Mesh(new THREE.ConeGeometry(0.19 * scale, height * scale, 5), material);
-    shard.position.set(lx * scale, height * scale * 0.5, lz * scale);
-    shard.rotation.z = lean;
-    shard.userData.phase = idx * 0.8;
-    shards.push(shard);
-    g.add(shard);
-  });
-  const base = new THREE.Mesh(
-    new THREE.DodecahedronGeometry(0.48 * scale, 0),
-    surfaceMaterial({ color:0x233344, map:textureSet.stone, roughness:0.9, bumpScale:0.04 })
-  );
-  base.scale.y = 0.28;
-  base.position.y = 0.08;
-  g.add(base);
-  const glow = warmGlowBillboard(`${id}_glow`, x, 0.56 * scale, z, 1.65 * scale, palette[0], 0.24);
-  g.position.set(x, 0.05, z);
-  g.userData.visualId = id;
-  g.userData.shards = shards;
-  g.userData.glow = glow;
-  markShadows(g, true, false);
-  scene.add(g);
-  return g;
+
+    const singleCrystal = new THREE.Group();
+    const height = 0.4 + (Math.sin(i * 1.7) * 0.15 + 0.15);
+    const r = 0.08 + (Math.cos(i * 2.3) * 0.03 + 0.03);
+
+    const top = new THREE.Mesh(new THREE.ConeGeometry(r, height, 5), mat);
+    top.position.y = height / 2;
+    const bottom = new THREE.Mesh(new THREE.ConeGeometry(r, height, 5), mat);
+    bottom.rotation.x = Math.PI;
+    bottom.position.y = -height / 2;
+
+    singleCrystal.add(top, bottom);
+    singleCrystal.position.set(x, 0.08 + (height / 2), z);
+    singleCrystal.rotation.y = angle;
+    singleCrystal.rotation.z = 0.18 + (Math.sin(i * 1.1) * 0.12);
+    singleCrystal.rotation.x = Math.cos(i * 0.9) * 0.12;
+    singleCrystal.scale.set(1, 1, 0.75);
+    crystalGroup.add(singleCrystal);
+  }
+  scene.add(crystalGroup);
+  return crystalGroup;
 }
 
-function makeSanctuaryLodge(id, x, z, rot = 0) {
+function createHollowWoodShelter(id, x, z, rot = 0) {
   const g = new THREE.Group();
-  const wood = surfaceMaterial({ color:0x6b4329, map:textureSet.wood, roughness:0.9, bumpScale:0.06, emissive:0x24120a, emissiveIntensity:0.1 });
-  const darkWood = surfaceMaterial({ color:0x2c1b18, map:textureSet.wood, roughness:0.95, bumpScale:0.05 });
-  const interior = new THREE.Mesh(new THREE.PlaneGeometry(5.7, 3.9), new THREE.MeshStandardMaterial({ color:0x34231f, emissive:0x5d2814, emissiveIntensity:0.2, roughness:0.92 }));
-  interior.position.set(0, 2.05, -0.48);
-  g.add(interior);
-  [-2.65, -1.55, 0, 1.55, 2.65].forEach((lx, idx) => {
-    const rib = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.13, 8, 36, Math.PI), wood);
-    rib.position.set(lx, 1.55, 0);
-    rib.rotation.z = Math.PI;
-    rib.scale.x = 0.72;
-    rib.scale.y = 1.05 + (idx === 2 ? 0.08 : 0);
-    g.add(rib);
-  });
-  const roof = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.18, 3.5), darkWood);
-  roof.position.set(0, 3.25, -0.15);
-  roof.rotation.x = -0.12;
-  g.add(roof);
-  const counter = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.18, 0.72), wood);
-  counter.position.set(0, 0.82, 0.05);
-  g.add(counter);
-  [-1.8, -0.6, 0.7, 1.75].forEach((lx, idx) => {
-    const bottle = new THREE.Mesh(new THREE.OctahedronGeometry(0.17 + (idx % 2) * 0.04), new THREE.MeshBasicMaterial({ color:idx % 2 ? 0xf28cff : 0x61e8ff, transparent:true, opacity:0.9 }));
-    bottle.position.set(lx, 1.12 + (idx % 2) * 0.12, 0.05);
-    g.add(bottle);
-  });
-  const lanterns = [];
-  [-2.15, 0, 2.15].forEach((lx, idx) => {
-    const core = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.34, 0.22), new THREE.MeshBasicMaterial({ color:0xffc56e }));
-    core.position.set(lx, 2.34 + (idx % 2) * 0.22, 0.35);
-    const light = new THREE.PointLight(0xffa85c, 0.72, 6, 2.1);
-    light.position.copy(core.position);
-    lanterns.push({ core, light, phase:idx });
-    g.add(core, light);
-  });
+  g.name = id;
+
+  // Refined materials for weathered/mossy look
+  // Refined materials for weathered/mossy look (Enhanced rustic dampness)
+  const barkMat = surfaceMaterial({ color: 0x1e1a13, map: textureSet.wood, roughness: 1.2, bumpScale: 0.18, emissive: 0x0d0c0b, emissiveIntensity: 0.05 });
+  const innerWoodMat = surfaceMaterial({ color: 0x40362e, map: textureSet.wood, roughness: 1.15, bumpScale: 0.1, emissive: 0x2a3d2c, emissiveIntensity: 0.03 });
+  const cushionMat = surfaceMaterial({ color: 0xa855f7, map: textureSet.cloth, roughness: 0.95 });
+  const deskMat = surfaceMaterial({ color: 0x4d3c2a, map: textureSet.wood, roughness: 1.0, bumpScale: 0.08 });
+  const bookColors = [0xef4444, 0x3b82f6, 0x10b981, 0xf59e0b];
+
+  const shellGeo = new THREE.CylinderGeometry(2.1, 2.3, 3.2, 16, 1, true, 0, Math.PI);
+  const shell = new THREE.Mesh(shellGeo, barkMat);
+  shell.rotation.x = Math.PI / 2;
+  shell.rotation.z = Math.PI / 2;
+  shell.position.y = 0.55;
+  g.add(shell);
+
+  const backWallGeo = new THREE.CircleGeometry(2.1, 16, 0, Math.PI);
+  const backWall = new THREE.Mesh(backWallGeo, innerWoodMat);
+  backWall.rotation.y = Math.PI / 2;
+  backWall.position.set(-1.58, 0.55, 0);
+  g.add(backWall);
+
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.38, 2.3), innerWoodMat);
+  bed.position.set(-0.8, 0.19, 0);
+  g.add(bed);
+
+  for (let i = 0; i < 3; i++) {
+    const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.12, 0.55), cushionMat);
+    cushion.position.set(-1.0, 0.42, -0.6 + i * 0.6);
+    cushion.rotation.y = 0.18 * (i - 1);
+    g.add(cushion);
+  }
+
+  const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.05, 1.8), innerWoodMat);
+  shelf.position.set(-1.3, 0.95, 0);
+  g.add(shelf);
+
+  for (let i = 0; i < 5; i++) {
+    const book = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.22, 0.14), new THREE.MeshStandardMaterial({ color: bookColors[i % bookColors.length], roughness: 0.6 }));
+    book.position.set(-1.28, 1.08, -0.6 + i * 0.28);
+    book.rotation.y = Math.PI / 2 + (Math.random() - 0.5) * 0.18;
+    g.add(book);
+
+    const cryCol = [0x00ffff, 0xff00d4, 0x9b5cff][i % 3];
+    const cry = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.14, 5), new THREE.MeshStandardMaterial({ color: cryCol, emissive: cryCol, emissiveIntensity: 0.8, transparent: true, opacity: 0.9 }));
+    cry.position.set(-1.26, 1.03, -0.45 + i * 0.32);
+    g.add(cry);
+  }
+
+  const lanternG = new THREE.Group();
+  lanternG.position.set(-0.5, 1.8, 0);
+  const lCap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.03, 8), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+  const lCore = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffe2a8 }));
+  const lWire = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.45, 6), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+  lWire.position.y = 0.25;
+  lanternG.add(lCap, lCore, lWire);
+  g.add(lanternG);
+
+  const lLight = new THREE.PointLight(0xffb35f, 0.88, 5, 2);
+  lLight.position.set(-0.5, 1.5, 0);
+  g.add(lLight);
+
+  const lGlow = warmGlowBillboard(`${id}_lantern_glow`, x - 0.5, 1.8, z, 0.92, 0xffc879, 0.26);
+
+  const desk = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.48, 1.15), deskMat);
+  desk.position.set(0.9, 0.24, 0.55);
+  desk.castShadow = true;
+  desk.receiveShadow = true;
+  g.add(desk);
+
+  const bookOnDesk = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.025, 0.18), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }));
+  bookOnDesk.position.set(0.9, 0.49, 0.55);
+  bookOnDesk.rotation.y = 0.12;
+  g.add(bookOnDesk);
+
+  const chair = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.28, 0.38), deskMat);
+  chair.position.set(1.45, 0.14, 0.55);
+  chair.castShadow = true;
+  g.add(chair);
+
+  const signMat = new THREE.MeshStandardMaterial({ map: makeSignTexture("LUMARIA BASE CAMP", "BASE CAMP"), roughness: 0.92 });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.38, 0.04), signMat);
+  sign.position.set(0.72, 2.1, 1.38);
+  sign.rotation.y = Math.PI / 1.7;
+  g.add(sign);
+
   g.position.set(x, 0, z);
   g.rotation.y = rot;
-  g.userData.visualId = id;
-  g.userData.lanterns = lanterns;
   markShadows(g);
   scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 4.0, 2.4, 0.34);
-  makeZoneLabel("LUMARIA BASE", "SANCTUARY LODGE", x, 4.2, z + 0.2, "#ffd58a");
+  softShadow(`${id}_shadow`, x, z, 2.3, 1.8, 0.34);
+  return { group: g, lantern: lCore, glow: lGlow };
+}
+
+function enhanceObeliskRunes(obelisk) {
+  obelisk.material.emissive.setHex(0x9b5cff);
+  obelisk.material.emissiveIntensity = 0.85;
+
+  const runeGroup = new THREE.Group();
+  runeGroup.position.set(10.32, 2.75, 2.0);
+
+  const ringGeo = new THREE.TorusGeometry(0.55, 0.025, 6, 36);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.86 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.y = Math.PI / 2;
+  runeGroup.add(ring);
+
+  const coreGeo = new THREE.SphereGeometry(0.12, 12, 12);
+  const coreMat = new THREE.MeshBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.95 });
+  const core = new THREE.Mesh(coreGeo, coreMat);
+  runeGroup.add(core);
+
+  const coreGlow = warmGlowBillboard("obelisk_rune_glow", 10.32, 2.75, 2.0, 1.45, 0xa855f7, 0.38);
+  scene.add(runeGroup);
+
+  obelisk.userData.runeRing = ring;
+  obelisk.userData.runeCore = core;
+  obelisk.userData.coreGlow = coreGlow;
+  return runeGroup;
+}
+
+function enhanceSouthGatePortal(g) {
+  const stoneMat = surfaceMaterial({ color: 0x263454, map: textureSet.stone, roughness: 0.9, metalness: 0.03 });
+  const vortexMat1 = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0.82, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const vortexMat2 = new THREE.MeshBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.72, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.22, 0.36), stoneMat);
+  lintel.position.y = 1.48;
+  lintel.castShadow = true;
+  g.add(lintel);
+
+  const v1 = new THREE.Mesh(new THREE.CircleGeometry(0.56, 32), vortexMat1);
+  v1.position.y = 1.05;
+  v1.position.z = -0.02;
+  const v2 = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.48, 32), vortexMat2);
+  v2.position.y = 1.05;
+  v2.position.z = 0.02;
+
+  g.add(v1, v2);
+
+  const portalLight = new THREE.PointLight(0xa855f7, 1.15, 6, 2);
+  portalLight.position.set(0, 1.05, 0);
+  g.add(portalLight);
+
+  g.userData.vortex1 = v1;
+  g.userData.vortex2 = v2;
   return g;
 }
 
-function makeForestPortal(id, x, z, rot = 0) {
-  const g = new THREE.Group();
-  const stone = surfaceMaterial({ color:0x29324b, map:textureSet.stone, roughness:0.88, emissive:0x29134b, emissiveIntensity:0.28, bumpScale:0.05 });
-  const arch = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.24, 10, 56, Math.PI), stone);
-  arch.position.y = 1.05;
-  arch.rotation.z = Math.PI;
-  const legs = [-0.98, 0.98].map((lx) => {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.9, 0.6), stone);
-    leg.position.set(lx, 0.92, 0);
-    return leg;
+function enhanceMarketDetails() {
+  // --- Central Raised Platform Garden Enhancement (Polished, Bioluminescent Focus) ---
+  const centralGardenStructure = new THREE.Group();
+  centralGardenStructure.name = "central_garden_platform";
+
+  // 1. Stone Base (Polished Cobblestone Paving)
+  const platformBaseGeometry = new THREE.CircleGeometry(3.2, 64);
+  // Polished stone material: Deep indigo/purple base, high bump scale, enhanced emissive glow.
+  // Refinement: Increased polish and ancient magic glow by adjusting emissive color and intensity.
+  const polishedStoneMat = surfaceMaterial({ color: 0x120923, map: textureSet.marketStone, roughness: 0.85, metalness: 0.05, bumpScale: 0.35, emissive: 0x3a1d6d, emissiveIntensity: 1.0 });
+  const platformBase = new THREE.Mesh(platformBaseGeometry, polishedStoneMat);
+  platformBase.position.set(0, 0.15, 0);
+  platformBase.rotation.x = -Math.PI / 2;
+  platformBase.receiveShadow = true;
+  centralGardenStructure.add(platformBase);
+
+  // 2. Soil/Garden Area on top (Rich Bioluminescent Moss)
+  const gardenSoilGeometry = new THREE.CircleGeometry(3.0, 64);
+  // Using a deep, rich soil color with enhanced emissive properties for the 'moss' look.
+  // Refinement: Increased saturation and depth of the bioluminescent glow.
+  const richMossMatEnhanced = surfaceMaterial({ color: 0x0b0e08, map: textureSet.moss, roughness: 1.1, metalness: 0.1, emissive: 0x1a3a20, emissiveIntensity: 0.6 });
+  const gardenSoil = new THREE.Mesh(gardenSoilGeometry, richMossMatEnhanced);
+  gardenSoil.position.y = 0.1 + 0.1;
+  gardenSoil.rotation.x = -Math.PI / 2;
+  centralGardenStructure.add(gardenSoil);
+
+  // 3. Central Glowing Crystal Centerpiece (The Core)
+  const coreCrystalGeo = new THREE.IcosahedronGeometry(0.7, 2);
+  // Enhancing the centerpiece glow to be more ethereal and magical blue/lavender, simulating a core energy source.
+  const coreCrystalMatEnhanced = new THREE.MeshStandardMaterial({
+    color: 0x6a99ff,
+    emissive: 0x4a72ff,
+    emissiveIntensity: 1.2, // Further increased glow intensity for maximum centerpiece emphasis
+    roughness: 0.005, // Extremely smooth, polished surface
+    transparent: true,
+    opacity: 1.0,
+    blending: THREE.AdditiveBlending
   });
-  const vortex = new THREE.Mesh(new THREE.CircleGeometry(0.82, 48), new THREE.MeshBasicMaterial({ color:0xa855f7, transparent:true, opacity:0.48, side:THREE.DoubleSide, blending:THREE.AdditiveBlending }));
-  vortex.position.set(0, 1.05, 0.03);
-  const rings = [];
-  [0.32, 0.55, 0.78].forEach((radius, idx) => {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.025, 6, 40), new THREE.MeshBasicMaterial({ color:idx % 2 ? 0x7dd3fc : 0xe879f9, transparent:true, opacity:0.72 }));
-    ring.position.set(0, 1.05, 0.08 + idx * 0.01);
-    rings.push(ring);
-    g.add(ring);
-  });
-  g.add(arch, vortex, ...legs);
-  g.position.set(x, 0, z);
-  g.rotation.y = rot;
-  g.userData.visualId = id;
-  g.userData.vortex = vortex;
-  g.userData.rings = rings;
-  scene.add(g);
-  warmGlowBillboard(`${id}_glow`, x, 1.15, z, 3.8, 0xa855f7, 0.28);
-  return g;
+  const coreCrystal = new THREE.Mesh(coreCrystalGeo, coreCrystalMatEnhanced);
+  coreCrystal.position.y = 0.45;
+  centralGardenStructure.add(coreCrystal);
+
+  // 4. Bioluminescent Particles (Refined and Dense)
+  const particleGeometryRefined = new THREE.SphereGeometry(0.012, 8, 8); 
+  // Using a vibrant, magical bioluminescence color palette (Deep Purple/Amethyst)
+  const particleMatEnhanced = new THREE.MeshBasicMaterial({ color: 0x9b5cff, transparent: true, opacity: 1.0 }); // Increased opacity for maximum glow
+
+  // Structured particle placement around the core crystal
+  const numParticles = 180; // Small accents leave the garden surface readable.
+  for (let i = 0; i < numParticles; i++) {
+    const particle = new THREE.Mesh(particleGeometryRefined, particleMatEnhanced);
+    
+    // Use spherical coordinates for controlled distribution
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(Math.random() * 2 - 1);
+    
+    // Radius biased towards the center (0.2 to 3.0)
+    const radius = 0.2 + Math.random() * 2.8; 
+    
+    let x_coord = radius * Math.sin(phi) * Math.cos(theta);
+    let z_coord = radius * Math.sin(phi) * Math.sin(theta);
+    
+    // Constrain Y position more tightly to the core crystal height (0.45) and the soil level (0.1)
+    let y_coord = 0.1 + Math.random() * 0.4; 
+
+    particle.position.set(x_coord, y_coord, z_coord);
+    particle.scale.setScalar(0.5 + Math.random() * 1.0);
+    centralGardenStructure.add(particle);
+  }
+
+  // Add the entire structure to the scene
+  centralGardenStructure.position.set(25, 0, 10);
+  scene.add(centralGardenStructure);
+
+  return centralGardenStructure;
 }
 
 const benches = [
@@ -2311,7 +2774,7 @@ const mushrooms = [
   makeMushroomCluster("mushroom_cluster_02", 4.7, 2.1, 0x7dd3fc),
   makeMushroomCluster("mushroom_cluster_03", -3.5, -3.7, 0xff6b7a)
 ];
-const gardenBed = makeGardenBed("garden_bed_01", 5.4, 5.2);
+const gardenBed = makeGardenBed("garden_bed_01", 25, 10);
 const avatarYou = makeAvatarYou();
 const memoryGate = makeMemoryGate();
 const canopyGroups = [
@@ -2330,57 +2793,50 @@ const runeShards = [
   makeRuneShard("rune_shard_path", 0.7, -5.55, 0.2, 0xffd58a)
 ];
 const campSign = makeCampSign("lumaria_bridge_sign", -3.3, 6.35, 0.36);
+campSign.scale.setScalar(0.6);
 const teaTable = makeTeaTable("tea_table_book_cup", 4.6, 3.15, -0.48);
 const moonVine = makeMoonVine("moon_vine_waterfall", 7.05, -4.95);
-const sanctuaryLodge = makeSanctuaryLodge("sanctuary_lodge", -6.7, -1.65, 0.08);
-const forestPortal = makeForestPortal("forest_portal", 7.3, -1.7, -0.08);
-const crystalGarden = [
-  makeCrystalCluster("crystal_fire_west", -2.05, 0.55, 0.95, [0x5ee7f7, 0xf28cff, 0x7dd3fc]),
-  makeCrystalCluster("crystal_fire_east", 2.0, -0.5, 0.82, [0xf28cff, 0x67e8f9, 0xc084fc]),
-  makeCrystalCluster("crystal_lodge_step", -4.75, 1.2, 0.72, [0x67e8f9, 0xa7f3d0, 0xf0abfc]),
-  makeCrystalCluster("crystal_portal_edge", 5.72, -1.05, 0.78, [0xf0abfc, 0x7dd3fc, 0xc084fc]),
-  makeCrystalCluster("crystal_foreground_west", -5.1, 4.8, 1.18, [0x67e8f9, 0x5eead4, 0xa7f3d0]),
-  makeCrystalCluster("crystal_foreground_east", 5.3, 4.55, 1.2, [0xf472b6, 0xf0abfc, 0xc084fc])
-];
 const floorCushions = [
   makeFloorCushion("cushion_front", -0.9, 4.0, 0.15, 0x8a5f3d),
   makeFloorCushion("cushion_avatar", 2.1, 2.7, -0.3, 0x6f5aa0),
   makeFloorCushion("cushion_archive", -3.7, 0.7, 0.6, 0x74445f)
 ];
-const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 0.25, 8.15, 0.03);
-const marketOverhang = makeMarketOverhang("market_walk_under_overhang", 0.25, 8.1, 0.03);
-const marketTextureRunner = makeMarketTextureRunner("market_walk_under_texture_runner", 0.22, 8.1, 0.03);
+const marketPlaza = makeMarketPlaza("market_plaza_full_scale", 14.25, 0.15, 0.03);
+const marketOverhang = makeMarketOverhang("market_walk_under_overhang", 14.25, 0.1, 0.03);
+marketOverhang.visible = false;
+const marketTextureRunner = makeMarketTextureRunner("market_walk_under_texture_runner", 14.22, 0.1, 0.03);
 const campDistricts = [
-  makeMarketStall("market_stall_center", 0.2, 9.15, 0.04, true),
-  makeMarketStall("market_stall_west", -3.15, 8.0, 0.62),
-  makeMarketStall("market_stall_east", 3.45, 8.05, -0.62),
-  makeStable("stables_companion_support", 4.4, 6.2, -0.38),
-  makeWelcomeGrove("welcome_grove_arrival", -0.6, 10.2, 0.02),
-  makeSouthGate("south_gate_waypoint", 0.4, -7.9, 0.08)
+  makeMarketStall("market_stall_center", 14.2, 1.15, 0.04, true),
+  makeMarketStall("market_stall_west", 10.85, 0.0, 0.62),
+  makeMarketStall("market_stall_east", 17.45, 0.05, -0.62),
+  makeStable("stables_companion_support", 16, 13, -0.38),
+  makeWelcomeGrove("welcome_grove_arrival", 0, -16, 0.02),
+  makeSouthGate("south_gate_waypoint", 1, 17, 0.08)
 ];
-const marketTransition = makeMarketTransitionPath("market_transition_campfire_to_exchange", 4.68, 7.45);
-const marketStringLights = makeMarketHangingLights("market_string_lights_full_plaza", 0.2, 6.82, 0.02);
+const marketTransition = makeMarketTransitionPath("market_transition_campfire_to_exchange", 18.68, -0.55);
+const marketStringLights = makeMarketHangingLights("market_string_lights_full_plaza", 14.2, -1.18, 0.02);
+dailyGatheringsTable = makeDailyGatheringsTable("daily_gatherings_exchange_table", 14.1, -0.85);
 const marketStands = [
-  makeMarketDisplayStand("market_display_crystals", -2.25, 7.05, 0.28, 0xc084fc),
-  makeMarketDisplayStand("market_display_fruit", 2.25, 7.05, -0.3, 0xffd58a),
-  makeMarketDisplayStand("market_display_scrolls", 1.25, 9.7, -0.55, 0x7dd3fc),
-  makeMarketDisplayStand("market_display_potions", -1.25, 9.72, 0.5, 0x7dd3fc),
-  makeMarketDisplayStand("market_display_seed_bowls", 3.62, 8.78, -0.68, 0xa7f3d0),
-  makeMarketDisplayStand("market_display_textiles", -3.48, 8.68, 0.72, 0xf0abfc)
+  makeMarketDisplayStand("market_display_crystals", 11.75, -0.95, 0.28, 0xc084fc),
+  makeMarketDisplayStand("market_display_fruit", 16.25, -0.95, -0.3, 0xffd58a),
+  makeMarketDisplayStand("market_display_scrolls", 15.25, 1.7, -0.55, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_potions", 12.75, 1.72, 0.5, 0x7dd3fc),
+  makeMarketDisplayStand("market_display_seed_bowls", 17.62, 0.78, -0.68, 0xa7f3d0),
+  makeMarketDisplayStand("market_display_textiles", 10.52, 0.68, 0.72, 0xf0abfc)
 ];
 const marketCompanions = [
-  makeMarketCompanion("market_companion_vendor", -1.35, 8.25, 0xe9d5ff),
-  makeMarketCompanion("market_companion_traveler", 1.78, 8.15, 0xbde9ff),
-  makeMarketCompanion("market_companion_keeper", 0.35, 9.55, 0xfde68a)
+  makeMarketCompanion("market_companion_vendor", 12.65, 0.25, 0xe9d5ff),
+  makeMarketCompanion("market_companion_traveler", 15.78, 0.15, 0xbde9ff),
+  makeMarketCompanion("market_companion_keeper", 14.35, 1.55, 0xfde68a)
 ];
 const marketHomeDetails = [
-  makeMarketHomeDetail("market_home_herb_rug_west", -3.55, 9.42, 0.48, 0xc084fc),
-  makeMarketHomeDetail("market_home_basket_corner_east", 3.8, 9.38, -0.52, 0x7dd3fc),
-  makeMarketHomeDetail("market_home_seed_nook_front", 0.18, 6.85, 0.03, 0xffd58a)
+  makeMarketHomeDetail("market_home_herb_rug_west", 10.45, 1.42, 0.48, 0xc084fc),
+  makeMarketHomeDetail("market_home_basket_corner_east", 17.8, 1.38, -0.52, 0x7dd3fc),
+  makeMarketHomeDetail("market_home_seed_nook_front", 14.18, -1.15, 0.03, 0xffd58a)
 ];
-const worldReinforcements = makeWorldReinforcementDetails("market_canopy_structural_reinforcements", 0.25, 8.1, 0.03);
+const worldReinforcements = makeWorldReinforcementDetails("market_canopy_structural_reinforcements", 14.25, 0.1, 0.03);
 
-const marketEntryOfferings = makeMarketEntryOfferings("market_entry_offerings", 0.18, 6.05, 0.02);
+worldReinforcements.visible = false;
 
 const closeGrasses = [
   makeGrassTuft("grass_fire_west", -1.9, 1.2, 1.2, 0x68c17e),
@@ -2419,167 +2875,275 @@ const fallenPetals = [
   makePetalScatter("petal_bench_01", -2.1, 2.12, 0.18, 0xd9a7ff)
 ];
 
-function makeMarketEntryOfferings(id, x, z, rot = 0) {
-  const g = new THREE.Group();
-  const wood = surfaceMaterial({ color: 0x5f3b24, map: textureSet.wood, roughness: 0.9, bumpScale: 0.052 });
-  const woven = surfaceMaterial({ color: 0x6d3f91, map: textureSet.wovenTile, roughness: 0.94, bumpScale: 0.045, emissive: 0x24103a, emissiveIntensity: 0.035 });
-  const gold = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.86 });
-  const sign = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.36, 0.08), wood);
-  sign.position.set(0, 0.86, -0.34);
-  const signRune = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.14, 6), gold.clone());
-  signRune.position.set(0, 0.86, -0.285);
-  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.72), woven);
-  mat.position.set(0, 0.11, 0.1);
-  mat.rotation.x = -Math.PI / 2;
-  const offerings = [];
-  [-0.38, 0, 0.38].forEach((ox, idx) => {
-    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 0.12, 12), wood);
-    bowl.position.set(ox, 0.2, 0.04 + (idx % 2) * 0.14);
-    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.08), gold.clone());
-    gem.position.set(ox, 0.34, bowl.position.z);
-    gem.userData.phase = idx * 0.8;
-    offerings.push(gem);
-    g.add(bowl, gem);
-  });
-  const glow = warmLightPool(`${id}_welcome_glow`, x, z + 0.05, 1.22, 0.78, 0xffd58a, 0.1);
-  g.add(sign, signRune, mat);
-  g.position.set(x, 0, z);
-  g.rotation.y = rot;
-  g.userData.visualId = id;
-  g.userData.offerings = offerings;
-  g.userData.signRune = signRune;
-  g.userData.glow = glow;
-  markShadows(g);
-  scene.add(g);
-  softShadow(`${id}_shadow`, x, z, 0.9, 0.45, 0.16);
-  return g;
-}
-
-function makeFirepitReferenceDetails(id) {
-  const g = new THREE.Group();
-  const crystalMat = new THREE.MeshBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.86 });
-  const lanternMat = new THREE.MeshBasicMaterial({ color: 0xffd58a, transparent: true, opacity: 0.88 });
-  const bookMat = new THREE.MeshStandardMaterial({ color: 0x24143d, roughness: 0.72, metalness: 0.04, emissive: 0x16052f, emissiveIntensity: 0.12 });
-  const details = [];
-  [[-1.55, -0.62], [1.48, 0.72], [-0.92, 1.42], [1.15, -1.34]].forEach(([x, z], idx) => {
-    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.14 + idx * 0.015), crystalMat.clone());
-    crystal.position.set(x, 0.33, z);
-    crystal.userData.phase = idx * 0.67;
-    details.push(crystal);
-    g.add(crystal);
-  });
-  [[-1.92, 0.78], [1.92, -0.78]].forEach(([x, z], idx) => {
-    const lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.12, 0.24, 8), lanternMat.clone());
-    lantern.position.set(x, 0.28, z);
-    const glow = warmGlowBillboard(`${id}_tiny_lantern_glow_${idx}`, x, 0.48, z, 0.65, 0xffc879, 0.18);
-    details.push(lantern, glow);
-    g.add(lantern);
-  });
-  const grimoire = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.08, 0.42), bookMat);
-  grimoire.position.set(-1.72, 0.17, -1.2);
-  grimoire.rotation.y = -0.55;
-  const pageGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.28), new THREE.MeshBasicMaterial({ color: 0xffe7a8, transparent: true, opacity: 0.28, side: THREE.DoubleSide }));
-  pageGlow.position.set(-1.72, 0.218, -1.2);
-  pageGlow.rotation.x = -Math.PI / 2;
-  pageGlow.rotation.z = -0.55;
-  g.add(grimoire, pageGlow);
-  g.userData.visualId = id;
-  g.userData.details = details;
-  g.userData.pageGlow = pageGlow;
-  markShadows(g, true, false);
-  scene.add(g);
-  return g;
-}
-
-const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95, bumpScale: 0.055 }));
+const campfireStone = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.6, 0.35, 24), surfaceMaterial({ color:0x33261d, map: textureSet.stone, roughness:0.95, bumpScale: 0.055, emissive: 0x2c174e, emissiveIntensity: 0.12 }));
 campfireStone.position.set(0, 0.2, 0);
 campfireStone.castShadow = true;
 campfireStone.receiveShadow = true;
-for (let i = 0; i < 10; i++) {
-  const a = (i / 10) * Math.PI * 2;
-  addStoneEtching(campfireStone, `campfire_ring_etched_spoke_${i}`, 0.46, 0.018, {
-    x: Math.cos(a) * 0.55,
-    y: 0.181,
-    z: Math.sin(a) * 0.55,
-    rot: -a,
-    opacity: i % 2 ? 0.18 : 0.28,
-    color: i % 2 ? 0x2b2119 : 0xffd58a,
-    blend: i % 2 ? THREE.NormalBlending : THREE.AdditiveBlending,
-    phase: i * 0.4
-  });
-}
 scene.add(campfireStone);
+
+// Add glowing runic patterns to the campfire stone floor
+// Enhanced to simulate deep golden/purple gradient glow (Night Town concept)
+
+// 1. Base Runic Floor Glow (The underlying stone surface)
+// Enhanced for deep golden/purple gradient glow, matching Night Town concept saturation.
+const baseRuneMat = new THREE.MeshStandardMaterial({
+    color: 0x020108, // Ultra deep, near-black background for maximum contrast
+    emissive: 0x5c3a9e, // Rich Royal Purple base glow, hinting at deep magic
+    emissiveIntensity: 0.15, // Quiet violet inlay
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending
+});
+
+const runeFloorGroup = new THREE.Group();
+runeFloorGroup.name = "campfire_runic_floor";
+
+// Create a large circular plane to cover the runic area
+const floorGeo = new THREE.CircleGeometry(2.8, 64);
+const floorMesh = new THREE.Mesh(floorGeo, baseRuneMat);
+floorMesh.position.y = 0.04;
+floorMesh.rotation.x = -Math.PI / 2;
+floorMesh.receiveShadow = true;
+runeFloorGroup.add(floorMesh);
+
+// 2. Individual Runic Engravings (The glowing lines)
+// Enhanced for deep golden/purple gradient glow, emphasizing magical saturation.
+const runeMat = new THREE.MeshStandardMaterial({
+    color: 0x000000, // Black base for maximum contrast
+    emissive: 0x9b5cff, // Deep, saturated Amethyst/Royal Purple glow
+    emissiveIntensity: 0.4, // Accent rather than a floodlight
+    transparent: true,
+    opacity: 1.0,
+    blending: THREE.AdditiveBlending
+});
+
+const runeGroup = new THREE.Group();
+runeGroup.name = "campfire_runes";
+
+const runePositions = [
+    { radius: 0.5, angle: 0, depth: 0.15 },
+    { radius: 0.8, angle: Math.PI / 3, depth: -0.2 },
+    { radius: 1.1, angle: 2 * Math.PI / 3, depth: 0.05 },
+    { radius: 0.6, angle: Math.PI, depth: 0.1 }
+];
+
+runePositions.forEach(pos => {
+    // Using RingGeometry to simulate engraved, glowing runes
+    const rune = new THREE.Mesh(
+        new THREE.RingGeometry(pos.radius - 0.1, pos.radius + 0.1, 32), 
+        runeMat.clone()
+    );
+    rune.rotation.x = Math.PI / 2;
+    rune.position.set(
+        Math.cos(pos.angle) * pos.radius,
+        0.12, // Slightly above the stone surface
+        Math.sin(pos.angle) * pos.radius + pos.depth
+    );
+    rune.userData.glowPhase = Math.random();
+    runeGroup.add(rune);
+});
+
+runeFloorGroup.add(runeGroup);
+scene.add(runeFloorGroup);
 softShadow("campfire_shadow", 0, 0, 2.2, 1.35, 0.42);
 
-const campfireTerrace = new THREE.Mesh(
-  new THREE.CylinderGeometry(2.25, 2.55, 0.2, 32),
-  surfaceMaterial({ color:0x3d414c, map:textureSet.stone, roughness:0.95, bumpScale:0.05 })
-);
-campfireTerrace.position.y = 0.1;
-campfireTerrace.receiveShadow = true;
-scene.add(campfireTerrace);
-campfireTerrace.renderOrder = -1;
+const campfireRugMat = surfaceMaterial({ color: 0x3a1b3b, map: textureSet.cloth, roughness: 0.96, bumpScale: 0.02, emissive: 0x45234c, emissiveIntensity: 0.08 });
+const campfireRug = new THREE.Mesh(new THREE.CylinderGeometry(2.85, 2.9, 0.02, 32), campfireRugMat);
+campfireRug.position.set(0, 0.05, 0);
+campfireRug.receiveShadow = true;
+scene.add(campfireRug);
+
+const campfireRugTrimMat = new THREE.MeshBasicMaterial({ color: 0xd9a752, transparent: true, opacity: 0.72 });
+const campfireRugTrim = new THREE.Mesh(new THREE.RingGeometry(2.8, 2.88, 32), campfireRugTrimMat);
+campfireRugTrim.position.set(0, 0.065, 0);
+campfireRugTrim.rotation.x = -Math.PI / 2;
+scene.add(campfireRugTrim);
 
 const fireGlowDisc = new THREE.Mesh(
   new THREE.CircleGeometry(2.3, 64),
-  new THREE.MeshBasicMaterial({ color:0xff8a36, transparent:true, opacity:0.16, depthWrite:false })
+  new THREE.MeshBasicMaterial({ color:0x00d4ff, transparent:true, opacity:0.16, depthWrite:false })
 );
 fireGlowDisc.rotation.x = -Math.PI / 2;
 fireGlowDisc.position.y = 0.06;
 scene.add(fireGlowDisc);
+
+// Coal Bed Mesh for enhanced realism
+const coalBedGeo = new THREE.CircleGeometry(2.5, 64);
+const coalBedMat = surfaceMaterial({
+    color: 0x1a1210, // Deep coal black
+    map: null,
+    roughness: 0.9,
+    bumpScale: 0.05,
+    emissive: 0x992200, // Deep, saturated magma red-orange base
+    emissiveIntensity: 0.45 // Increased baseline glow for stronger initial pulse
+});
+const coalBed = new THREE.Mesh(coalBedGeo, coalBedMat);
+coalBed.rotation.x = -Math.PI / 2;
+coalBed.position.y = 0.02;
+coalBed.castShadow = true;
+coalBed.receiveShadow = true;
+scene.add(coalBed);
+
 const fireLightPools = [
-  warmLightPool("fire_warm_pool_inner", 0, 0, 3.8, 2.35, 0xff8a36, 0.26),
-  warmLightPool("fire_warm_pool_outer", 0, 0, 7.2, 4.4, 0xff5f24, 0.16),
-  warmLightPool("fire_rune_pool_gold", 0, 0, 5.35, 3.2, 0xffcf75, 0.12)
+  warmLightPool("fire_warm_pool_inner", 0, 0, 3.8, 2.35, 0x00d4ff, 0.26),
+  warmLightPool("fire_warm_pool_outer", 0, 0, 7.2, 4.4, 0x005fff, 0.16),
+  warmLightPool("fire_rune_pool_gold", 0, 0, 5.35, 3.2, 0x8fe1ff, 0.12)
 ];
-const fireBillboardGlow = warmGlowBillboard("fire_billboard_glow", 0, 1.25, 0, 3.4, 0xff8f42, 0.24);
-const firepitReferenceDetails = makeFirepitReferenceDetails("firepit_crystal_lantern_grimoire_details");
+const fireBillboardGlow = warmGlowBillboard("fire_billboard_glow", 0, 1.25, 0, 3.4, 0x00d4ff, 0.24);
 
 const flameMeshes = [];
-[
-  { color:0xb9f5ff, scale:[0.28,1.18,0.28], y:0.94 },
-  { color:0x22d3ee, scale:[0.52,0.88,0.52], y:0.78 },
-  { color:0x6366f1, scale:[0.22,0.58,0.22], y:0.92 }
-].forEach((f) => {
-  const flameMesh = new THREE.Mesh(
-    new THREE.ConeGeometry(0.5, 1, 18),
-    new THREE.MeshBasicMaterial({ color:f.color, transparent:true, opacity:0.72 })
-  );
-  flameMesh.scale.set(...f.scale);
-  flameMesh.userData.baseY = f.scale[1];
-  flameMesh.position.set(0, f.y, 0);
-  flameMeshes.push(flameMesh);
-  scene.add(flameMesh);
+const flameMaterial = new THREE.MeshStandardMaterial({
+  color: 0x00f2ff,
+  transparent: true,
+  opacity: 0.72,
+  emissive: 0x00f2ff,
+  emissiveIntensity: 0.35,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending
 });
 
-const logs = [];
-for (let i = 0; i < 4; i++) {
-  const log = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.12, 0.14, 1.4, 10),
-    surfaceMaterial({ color: 0x4a2f1e, map: textureSet.wood, roughness: 1, bumpScale: 0.052 })
+flameMeshes.forEach((mesh, i) => {
+  mesh.material = flameMaterial;
+  mesh.scale.y = mesh.userData.baseY ? mesh.userData.baseY * 1.1 : mesh.scale.y;
+  mesh.rotation.y += 0.018 + i * 0.004;
+});
+
+// Create campfire crystal ring
+createCampfireCrystalRing();
+
+// Initialize Smoke System
+const smokeParticles = [];
+const smokeGroup = new THREE.Group();
+smokeGroup.name = "campfire_smoke";
+scene.add(smokeGroup);
+
+for (let i = 0; i < 50; i++) {
+  const particle = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03 + Math.random() * 0.04, 8, 8),
+    new THREE.MeshBasicMaterial({
+      color: 0xaaaaee, // Soft, ethereal blue-purple glow for night
+      transparent: true,
+      opacity: 0.3, // Slightly reduced base opacity for softer look
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
   );
-  log.position.set(Math.cos(i * Math.PI / 2) * 0.4, 0.45, Math.sin(i * Math.PI / 2) * 0.4);
-  log.rotation.z = Math.PI / 2.6;
-  log.rotation.y = i * Math.PI / 2;
-  log.castShadow = true;
-  log.receiveShadow = true;
-  logs.push(log);
-  scene.add(log);
+  particle.position.set(
+    (Math.random() - 0.5) * 0.4,
+    0.4 + Math.random() * 0.2,
+    (Math.random() - 0.5) * 0.4
+  );
+  particle.userData.initialY = particle.position.y;
+  // Adjusted velocity for natural rising smoke
+
+  particle.userData.velocity = 0.01 + Math.random() * 0.03; 
+  smokeParticles.push(particle);
+  smokeGroup.add(particle);
 }
 
-const flame = new THREE.PointLight(0x58e7ff, 3.2, 20, 2);
-flame.position.set(0, 1.5, 0);
-scene.add(flame);
-const ember = new THREE.PointLight(0xff6a00, 1.4, 10, 2);
-ember.position.set(0, 0.7, 0);
-scene.add(ember);
+// Create cozy hollow wood shelter on the left side
+createHollowWoodShelter("campfire_shelter_left", -5.2, -2.8, -Math.PI / 4);
 
-const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.95, 5.5, 6), new THREE.MeshStandardMaterial({ color:0x1f3654, emissive:0x1d3f6f, emissiveIntensity:0.5, roughness:0.82 }));
+let logs = [];
+let flame;
+let ember;
+
+function makeCampfireLogsAndFlame() {
+  // Clear existing logs if any (good practice for re-runs)
+  logs.forEach(log => scene.remove(log));
+  logs = [];
+
+  const logMaterial = new THREE.MeshStandardMaterial({ color: 0x150c0a, map: textureSet.wood, roughness: 0.95, metalness: 0.0, bumpScale: 0.04, emissive: 0x442200, emissiveIntensity: 0.4 }); // Charred, ash-covered, high-detail rustic logs
+
+  // Define a set of logs for natural stacking and overlap (Refined, organic layout)
+  const logData = [
+    // Base layer (large, spread, rustic)
+    { x: -2.8, y: 0.45, z: 0.15, length: 5.0, rotationY: Math.PI / 2.1 }, // Left base
+    { x: 2.8, y: 0.45, z: 0.15, length: 5.0, rotationY: -Math.PI / 2.1 }, // Right base
+    // Mid layer (staggered, overlapping)
+    { x: -1.8, y: 0.35, z: -0.3, length: 4.0, rotationY: Math.PI / 2.2 }, // Left back piece
+    { x: 1.8, y: 0.35, z: -0.3, length: 4.0, rotationY: -Math.PI / 2.2 }, // Right back piece
+    // Stack 1 (Center, foundational)
+    { x: 0.0, y: 0.2, z: -0.4, length: 5.5, rotationY: 0 }, 
+    // Stack 2 (Center, overlapping)
+    { x: 0.2, y: 0.1, z: -0.25, length: 3.8, rotationY: 0 }, 
+    // Stack 3 (Center, highest, small)
+    { x: -0.1, y: 0.05, z: 0.1, length: 2.5, rotationY: Math.PI / 2.5 }, 
+    // Irregular piece
+    { x: 1.5, y: 0.15, z: 0.3, length: 2.2, rotationY: Math.PI / 2.8 }
+  ];
+
+  for (let i = 0; i < logData.length; i++) {
+    const data = logData[i];
+    // Use a slightly varied cylinder geometry for better visual overlap
+    const logMesh = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.12, data.length * 0.4, 8),
+      logMaterial
+    );
+    logMesh.position.set(data.x * 0.3, data.y, data.z);
+    logMesh.rotation.z = Math.PI / 2;
+    logMesh.rotation.y = data.rotationY;
+    logMesh.castShadow = true;
+    logMesh.receiveShadow = true;
+    logs.push(logMesh);
+    scene.add(logMesh);
+  }
+
+  // Add dark ash debris/overlap meshes for natural depth (Irregular placement)
+  const ashMat = new THREE.MeshStandardMaterial({ color: 0x1a1210, roughness: 0.9, transparent: true, opacity: 0.9 });
+  
+  // Ash debris 1: Front center gap filler
+  const ashDebris1 = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.06, 0.6), ashMat);
+  ashDebris1.position.set(0, 0.3, 0.15);
+  scene.add(ashDebris1);
+
+  // Ash debris 2: Back central gap filler
+  const ashDebris2 = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.06, 1.4), ashMat);
+  ashDebris2.position.set(0, 0.2, 0.05);
+  scene.add(ashDebris2);
+
+  // Ash debris 3: Top center gap filler
+  const ashDebris3 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.06, 1.1), ashMat);
+  ashDebris3.position.set(0.1, 0.1, 0.1);
+  scene.add(ashDebris3);
+
+  // Ash debris 4: Left side debris
+  const ashDebris4 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.06, 0.9), ashMat);
+  ashDebris4.position.set(-2.8, 0.28, -0.1);
+  scene.add(ashDebris4);
+
+  // Ash debris 5: Right side debris
+  const ashDebris5 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.06, 0.9), ashMat);
+  ashDebris5.position.set(2.8, 0.28, -0.1);
+  scene.add(ashDebris5);
+
+  // Flame and Ember Lights
+  flame = new THREE.PointLight(0x00d4ff, 2.7, 18, 2);
+  flame.position.set(0, 1.5, 0);
+  scene.add(flame);
+
+  ember = new THREE.PointLight(0x0077ff, 1.4, 10, 2);
+  ember.position.set(0, 0.7, 0);
+  scene.add(ember);
+}
+
+makeCampfireLogsAndFlame();
+
+const obelisk = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.95, 5.5, 6), new THREE.MeshStandardMaterial({ color:0x1f3654, emissive:0x9b5cff, emissiveIntensity:0.85, roughness:0.82 }));
 obelisk.position.set(11, 2.75, 2);
 obelisk.castShadow = true;
 obelisk.receiveShadow = true;
 scene.add(obelisk);
 softShadow("obelisk_shadow", 11, 2, 1.3, 0.8, 0.28);
+
+// Enhance obelisk with rotating runes
+enhanceObeliskRunes(obelisk);
+
+// Enhance South Gate with portal vortex
+enhanceSouthGatePortal(campDistricts[5]);
+
+// Enhance market with path crystals
+enhanceMarketDetails();
 
 const lanterns = [];
 [
@@ -2610,7 +3174,7 @@ const lanterns = [];
 
 const brook = new THREE.Mesh(
   new THREE.PlaneGeometry(8.5, 3.2),
-  new THREE.MeshBasicMaterial({ color:0x55c7ff, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthWrite:false })
+  new THREE.MeshStandardMaterial({ color:0x55c7ff, emissive:0x000000, emissiveIntensity:0.0, transparent:true, opacity:0.18, side:THREE.DoubleSide, depthWrite:false })
 );
 brook.position.set(8.4, 0.075, -7.05);
 brook.rotation.x = -Math.PI / 2;
@@ -2625,28 +3189,69 @@ waterfallGlow.position.set(8.6, 3.2, -6.8);
 waterfallGlow.rotation.y = -0.32;
 scene.add(waterfallGlow);
 
-const waterfallStreams = [];
-[-1.25, -0.42, 0.42, 1.18].forEach((offset, idx) => {
-  const stream = new THREE.Mesh(
-    new THREE.PlaneGeometry(idx % 2 ? 0.62 : 0.82, 4.3 - idx * 0.18),
-    new THREE.MeshBasicMaterial({ color:idx % 2 ? 0xc4b5fd : 0x8be9ff, transparent:true, opacity:0.3, side:THREE.DoubleSide, blending:THREE.AdditiveBlending, depthWrite:false })
+// --- Waterfall Rocky Steps & Bioluminescence (Task 4) ---
+const waterfallRocksGroup = new THREE.Group();
+waterfallRocksGroup.name = "waterfall_rocks";
+
+// Enhanced material for mineral/magical rock steps (Night Town concept refinement)
+// Focus on deep cyan/blue bioluminescence for a saturated, magical glow.
+const bioluminescentRockMat = surfaceMaterial({
+  color: 0x000108, // Ultra-deep, near-black base for maximum magical depth
+  map: textureSet.stone,
+  roughness: 0.95, // Wet, mineral look (Slightly reduced roughness for wet sheen)
+  bumpScale: 1.8, // Increased bump scale for more rugged, wet detail
+  emissive: 0x33b3ff, // Enhanced Electric Cyan/Blue bioluminescence (Saturated and magical)
+  emissiveIntensity: 1.5 // Balanced magical glow intensity
+});
+
+// Create 4 tiers of rocky steps/ledges cascading down
+for (let i = 0; i < 4; i++) {
+  const stepHeight = 0.4 + (i % 2) * 0.15;
+  const stepWidth = 3.6 - i * 0.6;
+  const stepDepth = 1.2 + (i % 3) * 0.3;
+  const stepGeo = new THREE.BoxGeometry(stepWidth, stepHeight, stepDepth);
+  const stepMesh = new THREE.Mesh(stepGeo, bioluminescentRockMat);
+
+  // Cascade them: X offset matching rotation of waterfall, Y from 0 to 4, Z step forward
+  const yPos = i * 1.5 + stepHeight / 2;
+  const zOffset = i * 0.8;
+  stepMesh.position.set(
+    8.6 - Math.sin(-0.32) * zOffset,
+    yPos,
+    -6.8 - Math.cos(-0.32) * zOffset
   );
-  stream.position.set(8.6 + offset, 3.3 - idx * 0.08, -6.7 + offset * 0.22);
-  stream.rotation.y = -0.32;
-  stream.userData.phase = idx * 0.8;
-  waterfallStreams.push(stream);
-  scene.add(stream);
-});
-const waterfallRocks = [];
-[[7.1,0.8,-6.15,1.2],[9.8,0.7,-7.1,1.15],[8.25,1.4,-7.25,1.4],[9.35,1.65,-6.9,1.05]].forEach(([x,y,z,s], idx) => {
-  const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), surfaceMaterial({ color:idx % 2 ? 0x243347 : 0x303d4f, map:textureSet.mountainRock, roughness:0.96, bumpScale:0.06 }));
-  rock.position.set(x,y,z);
-  rock.scale.y = 0.7;
-  rock.rotation.set(idx * 0.2, idx * 0.7, 0);
-  rock.castShadow = true;
-  waterfallRocks.push(rock);
-  scene.add(rock);
-});
+  stepMesh.rotation.y = -0.32;
+  stepMesh.rotation.x = (Math.random() - 0.5) * 0.08;
+  stepMesh.rotation.z = (Math.random() - 0.5) * 0.08;
+  stepMesh.castShadow = true;
+  stepMesh.receiveShadow = true;
+  waterfallRocksGroup.add(stepMesh);
+
+  // Add glowing water foam at the base of the step (Magical Glow Enhancement)
+  const foamMat = new THREE.MeshBasicMaterial({ 
+    color: 0x66e0ff, // Enhanced Electric Cyan/Blue glow
+    transparent: true, 
+    opacity: 0.85, // Balanced opacity
+    side: THREE.DoubleSide, 
+    blending: THREE.AdditiveBlending 
+  });
+  // Using a slightly more rounded geometry for a flowing, ethereal look
+  const foamGeo = new THREE.BoxGeometry(stepWidth * 0.9, 0.1, stepDepth * 0.9); 
+  const foamMesh = new THREE.Mesh(foamGeo, foamMat);
+
+  // Position the foam slightly below the main rock mesh
+  foamMesh.position.set(
+    stepMesh.position.x,
+    Math.max(0, yPos - stepHeight * 0.5*0.8), // Adjusted vertical position for better water line
+    stepMesh.position.z
+  );
+  foamMesh.castShadow = false;
+  foamMesh.receiveShadow = true;
+  waterfallRocksGroup.add(foamMesh);
+}
+
+waterfallRocksGroup.userData.rockMat = bioluminescentRockMat;
+scene.add(waterfallRocksGroup);
 
 
 const moonOrb = new THREE.Mesh(
@@ -2688,18 +3293,6 @@ stars.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
 const starField = new THREE.Points(stars, new THREE.PointsMaterial({ color: 0x8db4ff, size: 0.35, transparent: true, opacity: 0.92 }));
 scene.add(starField);
 
-const cinematicAuroras = [
-  makeAuroraCurtain("cinematic_aurora_crown", -7.5, 7.6, -18, 9.2, 4.8, 0x7dd3fc, 0xc084fc),
-  makeAuroraCurtain("cinematic_aurora_market", 7.8, 6.4, -15.5, 7.8, 3.8, 0xa7f3ff, 0xffb4d6)
-];
-const cinematicBokeh = makeCinematicBokehField("cinematic_lens_mote_field", 72, 20);
-const atmosphericMotes = makeAtmosphericMoteField("return_pass_atmospheric_motes", 140, 19);
-const mirrorPools = [
-  makeMirrorPool("mirror_pool_fire_reflection", 0.1, 0.35, 3.1, 1.25, 0xffb35f),
-  makeMirrorPool("mirror_pool_market_reflection", 0.25, 8.0, 4.8, 2.15, 0x8ddcff),
-  makeMirrorPool("mirror_pool_waterfall_reflection", 8.2, -6.2, 2.8, 1.2, 0x7ed6ff)
-];
-
 const fireflies = [];
 for (let i = 0; i < 36; i++) {
   const f = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffc266 }));
@@ -2710,6 +3303,10 @@ for (let i = 0; i < 36; i++) {
   scene.add(f);
 }
 
+document.getElementById('toggle-diagnostics').addEventListener('click', (event) => {
+  const shown = document.body.classList.toggle('show-diagnostics');
+  event.currentTarget.setAttribute('aria-pressed', String(shown));
+});
 const keys = new Set();
 
 if (timeToggleButton) {
@@ -2725,42 +3322,157 @@ window.addEventListener("message", (event) => {
 window.addEventListener('keydown', (e) => {
   const key = e.key.toLowerCase();
   keys.add(key);
+  if (key === 'c') focusCampfireTransition();
+  if (key === 'v') resetCameraView();
+  if (key === 'r') districtView(25, 10, 7, 10, 'Garden');
+  if (key === 'f') districtView(8, -4, 7, 10, 'Forge');
   if (key === 'm') focusMarketTransition();
-  if (key === 'r') resetCameraView();
+
+  if (key === 'g') focusGroveTransition();
+  if (key === 'k') focusGateTransition();
+  if (key === 't') focusTableTransition();
 });
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
 let yaw = Math.PI;
-let pitch = -0.12;
-const PITCH_MIN = -0.36;
+let pitch = -0.16;
+const PITCH_MIN = -1.3;
 const PITCH_MAX = 0.18;
 
 function clampPitch(value) {
   return Math.max(PITCH_MIN, Math.min(PITCH_MAX, value));
 }
 
-function resetCameraView() {
-  camera.position.set(0.15, 2.28, 6.9);
-  cameraDistance = 6.9;
+function districtView(x, z, height, distance, title) {
+  camera.position.set(x, height, z + distance);
+  cameraDistance = distance;
   yaw = Math.PI;
-  pitch = -0.12;
-  if (hudCause) hudCause.textContent = "camera reset: intimate sanctuary view";
+  pitch = Math.atan((1 - height) * 10 / (distance * 7));
+  if (hudCause) hudCause.textContent = 'camera focus: ' + title;
+}
+function resetCameraView() { districtView(8, 0, 25, 28, 'Village overview'); }
+function focusCampfireTransition() { districtView(0, 0, 7, 11, 'Campfire'); }
+function focusMarketTransition() { districtView(14, 0, 10, 14, 'Market'); }
+function focusStablesTransition() { districtView(16, 13, 7, 10, 'Stables'); }
+function focusGroveTransition() { districtView(0, -16, 7, 10, 'Welcome Grove'); }
+function focusGateTransition() { districtView(1, 17, 6, 9, 'South Gate'); }
+function focusTableTransition() { districtView(14.1, -0.85, 5, 7, 'Gatherings Table'); }
+document.getElementById('focus-overview').addEventListener('click', resetCameraView);
+document.getElementById('focus-archive').addEventListener('click', () => districtView(-8, -5, 7, 10, 'Archive'));
+document.getElementById('focus-forge').addEventListener('click', () => districtView(8, -4, 7, 10, 'Forge'));
+document.getElementById('focus-garden').addEventListener('click', () => districtView(25, 10, 7, 10, 'Garden'));
+
+if (focusCampfireButton) focusCampfireButton.addEventListener("click", focusCampfireTransition);
+if (marketFocusButton) marketFocusButton.addEventListener("click", focusMarketTransition);
+if (focusStablesButton) focusStablesButton.addEventListener("click", focusStablesTransition);
+if (focusGroveButton) focusGroveButton.addEventListener("click", focusGroveTransition);
+if (focusGateButton) focusGateButton.addEventListener("click", focusGateTransition);
+if (focusTableButton) focusTableButton.addEventListener("click", focusTableTransition);
+
+const opliteEyeBtn = document.getElementById("oplite-eye-btn");
+const opliteConeBtn = document.getElementById("oplite-cone-btn");
+
+if (opliteEyeBtn) {
+  opliteEyeBtn.addEventListener("click", () => {
+    opliteEyeActive = !opliteEyeActive;
+    opliteEyeBtn.textContent = "👁️ Oplite Eye: " + (opliteEyeActive ? "1st Person" : "Off");
+    opliteEyeBtn.style.background = opliteEyeActive ? "rgba(34, 211, 238, 0.2)" : "rgba(34, 211, 238, 0.05)";
+    opliteEyeBtn.style.borderColor = opliteEyeActive ? "rgba(34, 211, 238, 0.8)" : "rgba(34, 211, 238, 0.35)";
+    if (opliteEyeActive) {
+      if (hudCause) hudCause.textContent = "oplite eye active: snapped camera to agent auri first person perspective";
+    } else {
+      resetCameraView();
+    }
+  });
 }
 
-function focusMarketTransition() {
-  camera.position.set(-0.15, 2.18, 12.85);
-  cameraDistance = 11.6;
-  yaw = Math.PI * 0.995;
-  pitch = -0.14;
-  if (hudCause) hudCause.textContent = "ground camera: walk under canopy + inspect textures";
+if (opliteConeBtn) {
+  opliteConeBtn.addEventListener("click", () => {
+    visionConeActive = !visionConeActive;
+    opliteConeBtn.textContent = "👁️ Vision Cone: " + (visionConeActive ? "ON" : "OFF");
+    opliteConeBtn.style.background = visionConeActive ? "rgba(34, 211, 238, 0.2)" : "rgba(148, 163, 184, 0.1)";
+    opliteConeBtn.style.borderColor = visionConeActive ? "rgba(34, 211, 238, 0.8)" : "rgba(148, 163, 184, 0.35)";
+    opliteConeBtn.style.color = visionConeActive ? "#22d3ee" : "#94a3b8";
+    if (avatarYou && avatarYou.visionCone) {
+      avatarYou.visionCone.visible = visionConeActive;
+    }
+  });
 }
 
-if (marketFocusButton) {
-  marketFocusButton.addEventListener("click", focusMarketTransition);
+const telemetryStatus = document.getElementById("telemetry-status");
+const telemetryTask = document.getElementById("telemetry-task");
+const telemetryFiles = document.getElementById("telemetry-files");
+const telemetryLogs = document.getElementById("telemetry-logs");
+
+function updateTelemetryHUD(data) {
+  if (telemetryStatus) {
+    const age = Date.now() - Date.parse(data.last_update || "");
+    const fresh = Number.isFinite(age) && age >= -5000 && age < 15000;
+    if (!fresh || data.paused) {
+      telemetryStatus.textContent = fresh ? "Paused" : "Connection unconfirmed";
+      telemetryStatus.style.background = "rgba(239, 68, 68, 0.2)";
+      telemetryStatus.style.borderColor = "#ef4444";
+      telemetryStatus.style.color = "#fca5a5";
+    } else {
+      telemetryStatus.textContent = ({ GEMMA_CODING: "Coding draft", QUIN_REVIEWING: "Reviewing draft", HEALTH_CHECK_ACTIVE: "Checking connections", IDLE: "Waiting" })[data.phase] || "Status unconfirmed";
+      telemetryStatus.style.background = "rgba(34, 197, 94, 0.2)";
+      telemetryStatus.style.borderColor = "#22c55e";
+      telemetryStatus.style.color = "#4ade80";
+    }
+  }
+  if (telemetryTask) telemetryTask.textContent = data.active_task || "Waiting for instructions";
+  if (telemetryFiles) {
+    telemetryFiles.textContent = data.files_changed && data.files_changed.length > 0
+      ? data.files_changed.join(", ")
+      : "None";
+  }
+  if (telemetryLogs) telemetryLogs.textContent = data.last_log || "Awaiting logs...";
 }
-if (cameraResetButton) {
-  cameraResetButton.addEventListener("click", resetCameraView);
+
+// Crew module updates independently after a checked local-agent patch is applied.
+let worldCrew = null, crewRevision = null, crewAttempted = null, crewLoading = false, crewTelemetry = null;
+async function refreshCrew(revision) {
+  if (crewLoading || revision === crewAttempted) return;
+  crewAttempted = revision;
+  crewLoading = true;
+  let candidate = null;
+  const staging = new THREE.Group();
+  staging.name = 'crew_revision_' + revision;
+  try {
+    const module = await import('../world_agents.js?revision=' + encodeURIComponent(revision));
+    candidate = module.mountWorldAgents({ THREE, scene: staging });
+    if (typeof candidate?.update !== 'function' || typeof candidate?.dispose !== 'function') throw new Error('Invalid crew module interface');
+    worldCrew?.dispose();
+    scene.add(staging);
+    worldCrew = { update: candidate.update, dispose() { candidate.dispose(); scene.remove(staging); } };
+    crewRevision = revision;
+  } catch (error) {
+    candidate?.dispose?.();
+    console.warn('Crew update could not load; previous crew retained:', error.message);
+  } finally { crewLoading = false; }
 }
+refreshCrew('initial');
+
+const isLocalWorld = ['localhost', '127.0.0.1', '[::1]', ''].includes(location.hostname);
+function fetchTelemetry() {
+  if (!isLocalWorld) {
+    if (telemetryStatus) telemetryStatus.textContent = 'Public preview · no live agents';
+    return;
+  }
+  fetch(new URL("../logs/agent/espresso_telemetry.json?t=" + Date.now(), location.href))
+    .then(r => r.ok ? r.json() : {})
+    .then(data => {
+      if (data && Object.keys(data).length > 0) {
+        updateTelemetryHUD(data);
+        crewTelemetry = data;
+        if (typeof data.world_revision === 'string') refreshCrew(data.world_revision);
+      }
+    })
+    .catch(() => updateTelemetryHUD({}));
+}
+
+if (isLocalWorld) setInterval(fetchTelemetry, 2500);
+fetchTelemetry();
 
 let drag = false;
 let lx = 0, ly = 0;
@@ -2773,6 +3485,16 @@ window.addEventListener('mousemove', e => {
   lx = e.clientX; ly = e.clientY;
 });
 
+function zoomVillage(amount) {
+  camera.getWorldDirection(zoomDirection);
+  const next = camera.position.clone().addScaledVector(zoomDirection, -amount);
+  if (next.y >= 1.6 && next.y <= 50) camera.position.copy(next);
+}
+const zoomDirection = new THREE.Vector3();
+renderer.domElement.addEventListener('wheel',event=>{
+  event.preventDefault();
+  zoomVillage(Math.max(-2,Math.min(2,event.deltaY*0.008)));
+},{passive:false});
 let pinchDistance = 0;
 renderer.domElement.addEventListener('touchstart', (e) => {
   if (e.touches.length === 2) {
@@ -2789,8 +3511,7 @@ renderer.domElement.addEventListener('touchmove', (e) => {
   if (e.touches.length === 2) {
     const nextDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     if (pinchDistance) {
-      cameraDistance = Math.max(4.8, Math.min(14, cameraDistance - (nextDistance - pinchDistance) * 0.02));
-      camera.position.y = Math.max(1.8, Math.min(3.6, 0.95 + cameraDistance * 0.14));
+      zoomVillage(-(nextDistance - pinchDistance) * 0.015);
     }
     pinchDistance = nextDistance;
     return;
@@ -2825,27 +3546,76 @@ function animate(t = 0) {
       window.parent?.postMessage({ type: "lumaria-world-health", ready: true, fps, quality: appliedQuality, mode: timeMode }, "*");
     }
   }
-  updateLumariaPulse(t);
+
+  try { worldCrew?.update({ time: performance.now(), telemetry: crewTelemetry }); }
+  catch (error) { console.warn('Crew animation stopped:', error.message); worldCrew?.dispose(); worldCrew = null; }
+
   const dir = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
   const right = new THREE.Vector3(dir.z, 0, -dir.x);
   const speed = 0.09;
-  if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
-  if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
-  // Strafe controls use the player's view direction: A = left, D = right.
-  if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
-  if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
 
-  const flicker = 1.45 + lumariaPulse.globalFlicker * 0.62 + Math.sin(t * 0.039) * 0.18;
+  if (opliteEyeActive) {
+    if (keys.has('w') || keys.has('arrowup')) avatarYou.group.position.addScaledVector(dir, speed);
+    if (keys.has('s') || keys.has('arrowdown')) avatarYou.group.position.addScaledVector(dir, -speed);
+    if (keys.has('a') || keys.has('arrowleft')) avatarYou.group.position.addScaledVector(right, speed);
+    if (keys.has('d') || keys.has('arrowright')) avatarYou.group.position.addScaledVector(right, -speed);
+
+    const headPos = new THREE.Vector3();
+    avatarYou.head.getWorldPosition(headPos);
+    camera.position.copy(headPos);
+    camera.position.y += 0.05;
+
+    avatarYou.group.rotation.y = yaw - Math.PI;
+
+    const shadow = scene.getObjectByName("avatar_shadow_you");
+    if (shadow) {
+      shadow.position.set(avatarYou.group.position.x, 0.045, avatarYou.group.position.z);
+    }
+  } else {
+    if (keys.has('w') || keys.has('arrowup')) camera.position.addScaledVector(dir, speed);
+    if (keys.has('s') || keys.has('arrowdown')) camera.position.addScaledVector(dir, -speed);
+    if (keys.has('a') || keys.has('arrowleft')) camera.position.addScaledVector(right, speed);
+    if (keys.has('d') || keys.has('arrowright')) camera.position.addScaledVector(right, -speed);
+  }
+
+  const groundGlowBase = timeMode === "rain" ? 0.13 : timeMode === "day" || timeMode === "morning" ? 0.06 : timeMode === "sunset" ? 0.08 : 0.11;
+  const meadowGlowBase = timeMode === "rain" ? 0.09 : timeMode === "day" || timeMode === "morning" ? 0.035 : timeMode === "sunset" ? 0.055 : 0.075;
+  groundLumenVeil.material.opacity = groundGlowBase + Math.sin(t * 0.0014) * 0.014;
+  outerMeadowGlow.rotation.z += 0.0005;
+  outerMeadowGlow.material.opacity = meadowGlowBase + Math.sin(t * 0.0011) * 0.006;
+  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
+    glow.material.opacity = (timeMode === "day" ? 0.028 : 0.06) + Math.sin(t * 0.0015 + idx * 0.6) * 0.018;
+    glow.scale.setScalar((idx % 3 === 0 ? 7.8 : 6.2) + Math.sin(t * 0.001 + idx) * 0.38);
+  });
+  mountainBackdrop.userData.mists.forEach((mist, idx) => {
+    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.16;
+  });
+
+  const flicker = 1.9 + Math.sin(t * 0.012) * 0.45 + Math.sin(t * 0.039) * 0.25;
   if (timeMode === "night" || timeMode === "rain") {
     flame.intensity = flicker;
     ember.intensity = 0.9 + Math.sin(t * 0.02) * 0.35;
-    runeRing.material.opacity = 0.36 + Math.sin(t * 0.006) * 0.12;
+    // Enhance runic glow with deep golden/purple gradient effect (Night Town Concept)
+    if (runeRing && runeRing.material) {
+        runeRing.material.color.setHex(timeMode === "night" ? 0x8b5cf6 : 0xa855f7); // Deep purple base
+        runeRing.material.emissive.setHex(timeMode === "night" ? 0xffd700 : 0xb382ff); // Golden/Purple gradient emissive
+        runeRing.material.emissiveIntensity = 1.5 + Math.sin(t * 0.006) * 0.4; // Increased intensity
+    } else {
+        // Fallback if runeRing is not fully initialized but still needs glow update
+        console.warn("Rune Ring mesh not found for advanced glowing effect.");
+    }
+
     moonOrb.material.opacity = 0.6 + Math.sin(t * 0.002) * 0.15;
     moonHalo.material.opacity = 0.2 + Math.sin(t * 0.0018) * 0.08;
   } else {
     flame.intensity = 1.25 + Math.sin(t * 0.006) * 0.15;
     ember.intensity = 0.45;
-    runeRing.material.opacity = 0.28 + Math.sin(t * 0.004) * 0.05;
+    // Maintain subtle glow during day/sunset
+    if (runeRing && runeRing.material) {
+        runeRing.material.emissiveIntensity = 0.2 + Math.sin(t * 0.004) * 0.03;
+    } else {
+        runeRing.material.opacity = 0.28 + Math.sin(t * 0.004) * 0.05;
+    }
   }
   fireLightPools.forEach((pool, idx) => {
     const base = timeMode === "day" ? 0.07 : idx === 0 ? 0.25 : idx === 1 ? 0.15 : 0.11;
@@ -2875,8 +3645,32 @@ function animate(t = 0) {
     l.userData.glow.material.opacity = (timeMode === "day" ? 0.16 : 0.36) * lightPulse;
     l.userData.pool.material.opacity = (timeMode === "day" ? 0.07 : 0.22) * lightPulse;
   });
-  waterfallGlow.material.opacity += Math.sin(t * 0.0018) * 0.002;
+  // Update waterfall bioluminescence and rock glows based on timeMode
+  let stepEmissiveIntensity = 0;
+  if (timeMode === "night" || timeMode === "rain") {
+    stepEmissiveIntensity = 0.55 + Math.sin(t * 0.003) * 0.15;
+    waterfallRocksGroup.userData.rockMat.emissive.setHex(0x0a4a66);
+  } else if (timeMode === "day" || timeMode === "morning") {
+    stepEmissiveIntensity = 0.08 + Math.sin(t * 0.003) * 0.03;
+    waterfallRocksGroup.userData.rockMat.emissive.setHex(0x021520);
+  } else if (timeMode === "sunset") {
+    stepEmissiveIntensity = 0.12 + Math.sin(t * 0.003) * 0.04;
+    waterfallRocksGroup.userData.rockMat.emissive.setHex(0x1a262c);
+  }
+  waterfallRocksGroup.userData.rockMat.emissiveIntensity = stepEmissiveIntensity;
+
+  const pulse = 0.18 + Math.sin(t * 0.0018) * 0.04;
+  waterfallGlow.material.opacity = (timeMode === "night" || timeMode === "rain" ? 0.34 : 0.18) + pulse;
   brook.material.opacity = Math.max(0.12, Math.min(0.36, brook.material.opacity + Math.sin(t * 0.0022) * 0.0015));
+  if (brook && brook.material && brook.material.emissive) {
+    if (timeMode === "night") {
+      brook.material.emissive.setHex(0x1a1210);
+      brook.material.emissiveIntensity = 0.25;
+    } else {
+      brook.material.emissive.setHex(0x000000);
+      brook.material.emissiveIntensity = 0.0;
+    }
+  }
 
   canopyGroups.forEach((cluster, idx) => {
     cluster.rotation.z = Math.sin(t * 0.0009 + idx) * 0.012;
@@ -2891,35 +3685,20 @@ function animate(t = 0) {
   });
 
   const signPulse = 0.88 + Math.sin(t * 0.005) * 0.12;
-  campSign.userData.lantern.scale.setScalar(0.9 + Math.sin(t * 0.006) * 0.08);
-  campSign.userData.light.intensity = (timeMode === "day" ? 0.16 : 0.72) * signPulse;
-  campSign.userData.glow.material.opacity = (timeMode === "day" ? 0.14 : 0.33) * signPulse;
+  if (campSign && campSign.userData) {
+    if (campSign.userData.lantern) {
+      campSign.userData.lantern.scale.setScalar(0.9 + Math.sin(t * 0.006) * 0.08);
+    } else if (campSign.userData.lanterns) {
+      campSign.userData.lanterns.forEach(l => { if (l) l.scale.setScalar(0.9 + Math.sin(t * 0.006) * 0.08); });
+    }
+    if (campSign.userData.light) campSign.userData.light.intensity = (timeMode === "day" ? 0.16 : 0.72) * signPulse;
+    if (campSign.userData.glow && campSign.userData.glow.material) campSign.userData.glow.material.opacity = (timeMode === "day" ? 0.14 : 0.33) * signPulse;
+  }
   teaTable.userData.glow.material.opacity = 0.16 + Math.sin(t * 0.005) * 0.06;
   moonVine.userData.orb.material.opacity = 0.62 + Math.sin(t * 0.003) * 0.18;
   moonVine.userData.leaves.forEach((leaf) => {
     leaf.rotation.y = Math.sin(t * 0.002 + leaf.userData.phase) * 0.28;
     leaf.material.opacity = 0.56 + Math.sin(t * 0.004 + leaf.userData.phase) * 0.18;
-  });
-  crystalGarden.forEach((cluster, clusterIdx) => {
-    cluster.userData.shards.forEach((shard, shardIdx) => {
-      shard.material.emissiveIntensity = 0.58 + Math.sin(t * 0.0035 + shard.userData.phase) * 0.22;
-      shard.rotation.y += 0.002 + shardIdx * 0.0004;
-    });
-    cluster.userData.glow.material.opacity = 0.18 + Math.sin(t * 0.003 + clusterIdx) * 0.07;
-  });
-  forestPortal.userData.vortex.material.opacity = 0.36 + Math.sin(t * 0.003) * 0.12;
-  forestPortal.userData.rings.forEach((ring, idx) => {
-    ring.rotation.z += (idx % 2 ? -1 : 1) * (0.004 + idx * 0.0015);
-    ring.scale.setScalar(0.96 + Math.sin(t * 0.0025 + idx) * 0.05);
-  });
-  sanctuaryLodge.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = 0.82 + Math.sin(t * 0.007 + idx) * 0.16;
-    lantern.core.scale.setScalar(pulse);
-    lantern.light.intensity = (timeMode === "day" ? 0.25 : 0.72) * pulse;
-  });
-  waterfallStreams.forEach((stream, idx) => {
-    stream.material.opacity = (timeMode === "day" ? 0.22 : 0.3) + Math.sin(t * 0.004 + stream.userData.phase) * 0.08;
-    stream.material.map && (stream.material.map.offset.y -= 0.004 + idx * 0.001);
   });
 
   campDistricts.forEach((district, idx) => {
@@ -2928,9 +3707,18 @@ function animate(t = 0) {
     if (district.userData.lanterns) district.userData.lanterns.forEach((lantern, lanternIdx) => { lantern.scale.setScalar(0.92 + Math.sin(t * 0.007 + lanternIdx) * 0.08); });
     if (district.userData.lantern) district.userData.lantern.scale.setScalar(0.92 + Math.sin(t * 0.005 + idx) * 0.08);
     if (district.userData.gate) district.userData.gate.rotation.z += 0.006;
+    if (district.userData.vortex1) district.userData.vortex1.rotation.z += 0.015;
+    if (district.userData.vortex2) district.userData.vortex2.rotation.z -= 0.022;
     if (district.userData.pad) district.userData.pad.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.05;
     if (district.userData.companion) district.userData.companion.position.y = 0.85 + Math.sin(t * 0.003 + idx) * 0.05;
   });
+
+  if (obelisk && obelisk.userData.runeRing) {
+    obelisk.userData.runeRing.rotation.z += 0.008;
+  }
+  if (obelisk && obelisk.userData.coreGlow) {
+    obelisk.userData.coreGlow.material.opacity = 0.28 + Math.sin(t * 0.005) * 0.12;
+  }
 
   marketTransition.userData.stones.forEach((stone) => {
     stone.material.emissive = new THREE.Color(0x3f2412);
@@ -2947,26 +3735,36 @@ function animate(t = 0) {
   marketTransition.userData.banner.rotation.z = Math.sin(t * 0.0018) * 0.035;
   marketPlaza.userData.runes.forEach((rune) => {
     rune.rotation.z += 0.004;
-    rune.material.opacity = marketEnvironment.runeOpacity + Math.sin(t * 0.004 + rune.userData.phase) * 0.1;
+    rune.material.opacity = (timeMode === "day" ? 0.18 : 0.42) + Math.sin(t * 0.004 + rune.userData.phase) * 0.12;
   });
-  marketPlaza.userData.aisle.material.opacity = 0.08 * marketEnvironment.aisleIntensity + Math.sin(t * 0.003) * 0.028;
-  marketPlaza.userData.aisleLight.intensity = 0.5 + marketEnvironment.aisleIntensity * 1.8 + Math.sin(t * 0.004) * 0.18;
+  marketPlaza.userData.aisle.material.opacity = (timeMode === "day" ? 0.06 : 0.14) + Math.sin(t * 0.003) * 0.035;
+  if (typeof campDistricts !== "undefined") {
+    campDistricts.forEach((district, idx) => {
+      if (district.userData.banner) {
+        district.userData.banner.rotation.z = Math.sin(t * 0.002 + idx * 0.8) * 0.025;
+      }
+    });
+  }
   marketOverhang.userData.roof.material.opacity = (timeMode === "day" ? 0.82 : 0.9) + Math.sin(t * 0.0015) * 0.025;
   marketOverhang.userData.roofPeak.material.opacity = marketOverhang.userData.roof.material.opacity;
   marketOverhang.userData.ribbons.forEach((ribbon) => {
     ribbon.material.opacity = (timeMode === "day" ? 0.42 : 0.64) + Math.sin(t * 0.0028 + ribbon.userData.phase) * 0.08;
   });
   marketOverhang.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.0065 + idx * 0.7) * 0.06;
+    const pulse = 0.88 + Math.sin(t * 0.0065 + idx * 0.7) * 0.12;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * pulse;
+    lantern.glow.material.opacity = (timeMode === "day" ? 0.09 : 0.24) * pulse;
   });
   marketTextureRunner.material.opacity = (timeMode === "day" ? 0.62 : 0.78) + Math.sin(t * 0.002) * 0.035;
   marketStringLights.userData.lanterns.forEach((lantern, idx) => {
-    const pulse = lumariaPulse.globalFlicker + Math.sin(t * 0.006 + idx * 0.8) * 0.06;
+    const pulse = 0.86 + Math.sin(t * 0.006 + idx * 0.8) * 0.12;
     lantern.core.scale.setScalar(pulse);
-    lantern.glow.material.opacity = marketEnvironment.lanternOpacity * 0.85 * pulse;
+    lantern.glow.material.opacity = (timeMode === "day" ? 0.08 : 0.2) * pulse;
   });
+  if (dailyGatheringsTable && dailyGatheringsTable.userData.lanternCore) {
+    const pulse = 0.88 + Math.sin(t * 0.0065) * 0.12;
+    dailyGatheringsTable.userData.lanternCore.scale.setScalar(pulse);
+  }
   marketStands.forEach((stand, standIdx) => {
     stand.userData.wares.forEach((ware, wareIdx) => {
       ware.position.y = 0.69 + Math.sin(t * 0.004 + ware.userData.phase + standIdx) * 0.035;
@@ -2977,35 +3775,6 @@ function animate(t = 0) {
     companion.userData.body.position.y = 0.56 + Math.sin(t * 0.003 + idx) * 0.045;
     companion.userData.cap.rotation.y += 0.008;
     companion.userData.glow.material.opacity = 0.14 + Math.sin(t * 0.004 + idx) * 0.06;
-  });
-
-  marketEntryOfferings.userData.offerings.forEach((gem, idx) => {
-    gem.rotation.y += 0.012 + idx * 0.002;
-    gem.position.y = 0.34 + Math.sin(t * 0.004 + gem.userData.phase) * 0.035;
-    gem.material.opacity = (timeMode === "day" ? 0.62 : 0.86) + Math.sin(t * 0.004 + idx) * 0.08;
-  });
-  marketEntryOfferings.userData.signRune.rotation.z += 0.008;
-  marketEntryOfferings.userData.glow.material.opacity = (timeMode === "day" ? 0.05 : 0.11) + Math.sin(t * 0.003) * 0.025;
-
-  marketHomeDetails.forEach((detail, idx) => {
-    detail.userData.rug.material.opacity = (timeMode === "day" ? 0.76 : 0.86) + Math.sin(t * 0.0018 + idx) * 0.025;
-    detail.userData.glow.material.opacity = (timeMode === "day" ? 0.04 : 0.09) + Math.sin(t * 0.003 + idx) * 0.025;
-    detail.userData.herbs.forEach((herb, herbIdx) => {
-      herb.rotation.z += Math.sin(t * 0.0024 + herb.userData.phase + idx) * 0.0009;
-      herb.material.emissiveIntensity = (timeMode === "day" ? 0.06 : 0.16) + Math.sin(t * 0.004 + herbIdx) * 0.035;
-    });
-    detail.userData.motes.forEach((mote) => {
-      mote.position.y = mote.userData.base.y + Math.sin(t * 0.003 + mote.userData.phase) * 0.045;
-      mote.material.opacity = (timeMode === "day" ? 0.32 : 0.72) + Math.sin(t * 0.005 + mote.userData.phase) * 0.14;
-    });
-    detail.userData.baskets.forEach((basket) => { basket.rotation.y += 0.0025; });
-  });
-
-  worldReinforcements.userData.ropes.forEach((rope) => {
-    rope.material.opacity = 0.52 + Math.sin(t * 0.002 + rope.userData.phase) * 0.08;
-  });
-  worldReinforcements.userData.stitches.forEach((stitch) => {
-    stitch.material.opacity = (timeMode === "day" ? 0.34 : 0.5) + Math.sin(t * 0.003 + stitch.userData.phase) * 0.06;
   });
 
   floorTiles.forEach((tile, idx) => {
@@ -3028,7 +3797,7 @@ function animate(t = 0) {
       part.rotation.z += Math.sin(t * 0.0026 + part.userData.phase + idx) * 0.0011;
       if (part.material && "opacity" in part.material) part.material.opacity = 0.58 + Math.sin(t * 0.004 + part.userData.phase) * 0.22;
     });
-    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.001 + lumariaPulse.globalPulse * 0.0008;
+    patch.userData.bladeMat.emissiveIntensity += Math.sin(t * 0.004 + idx) * 0.002;
     patch.userData.glow.material.opacity = Math.max(0.05, Math.min(0.38, patch.userData.glow.material.opacity + Math.sin(t * 0.003 + idx) * 0.002));
   });
 
@@ -3066,12 +3835,12 @@ function animate(t = 0) {
   });
 
   rainVeil.children.forEach((drop) => {
-    drop.position.y -= drop.userData.fall * lumariaPulse.rainFall;
+    drop.position.y -= drop.userData.fall;
     if (drop.position.y < 0.2) {
       drop.position.y = 12 + Math.random() * 3;
     }
   });
-  rainMist.material.opacity = timeMode === "rain" ? 0.08 + lumariaPulse.globalPulse * 0.42 : 0;
+  rainMist.material.opacity = timeMode === "rain" ? 0.095 + Math.sin(t * 0.0015) * 0.025 : 0;
   rainSplashes.forEach((splash, idx) => {
     if (!splash.visible) return;
     const pulse = (Math.sin(t * 0.008 + splash.userData.phase + idx) + 1) * 0.5;
@@ -3080,7 +3849,7 @@ function animate(t = 0) {
   });
 
   fireflies.forEach((f, i) => {
-    const tt = t * lumariaPulse.faunaOrbit + f.userData.seed + i * 0.13;
+    const tt = t * 0.0011 + f.userData.seed + i * 0.13;
     f.position.set(Math.cos(tt) * f.userData.radius, f.userData.height + Math.sin(tt * 2) * 0.3, Math.sin(tt) * f.userData.radius);
     f.material.opacity = 0.5 + Math.sin(tt * 5) * 0.5;
   });
@@ -3089,26 +3858,119 @@ function animate(t = 0) {
     const flamePulse = 0.92 + Math.sin(t * 0.009 + i) * 0.14;
     mesh.scale.y = mesh.userData.baseY ? mesh.userData.baseY * flamePulse : mesh.scale.y;
     mesh.rotation.y += 0.018 + i * 0.004;
-    mesh.material.opacity = 0.5 + lumariaPulse.globalPulse * 1.2 + Math.sin(t * 0.011 + i) * 0.1;
-  });
-  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.06 : 0.13) + lumariaPulse.globalPulse * 0.28;
-  groundLumenVeil.material.opacity = Math.max(0.025, groundLumenVeil.material.opacity + Math.sin(t * 0.0018) * 0.0014);
-  outerMeadowGlow.material.opacity = Math.max(0.025, outerMeadowGlow.material.opacity + Math.sin(t * 0.0013) * 0.0011);
-  mountainBackdrop.userData.ridgeGlows.forEach((glow, idx) => {
-    glow.material.opacity = 0.035 + lumariaPulse.globalPulse * 0.22 + Math.sin(t * 0.0012 + idx) * 0.012;
-  });
-  mountainBackdrop.userData.mists.forEach((mist, idx) => {
-    mist.position.y = mist.scale.y * 0.48 + Math.sin(t * 0.0009 + idx) * 0.12;
-  });
-  firepitReferenceDetails.userData.details.forEach((detail, idx) => {
-    if (detail.isSprite) {
-      detail.material.opacity = (timeMode === "day" ? 0.08 : 0.18) + Math.sin(t * 0.004 + idx) * 0.04;
+    
+    // Adjust opacity based on time mode (Refinement for Task 6B)
+    let opacityBase;
+    if (timeMode === "night" || timeMode === "rain") {
+        // Stronger, more saturated glow for magical night/rain
+        opacityBase = 0.9 + Math.sin(t * 0.01 + i) * 0.25; 
+    } else if (timeMode === "sunset") {
+        // Warmer, more vibrant pulse for sunset
+        opacityBase = 0.6 + Math.sin(t * 0.01 + i) * 0.2;
     } else {
-      detail.rotation.y += 0.008 + idx * 0.001;
-      if (detail.material && "opacity" in detail.material) detail.material.opacity = (timeMode === "day" ? 0.55 : 0.82) + Math.sin(t * 0.004 + idx) * 0.08;
+        // Subtle, gentle pulse for day/morning
+        opacityBase = 0.15 + Math.sin(t * 0.008 + i) * 0.03; 
     }
+    mesh.material.opacity = opacityBase;
+
+    // Refine flame glow animation (Task 6B)
+    let baseIntensity;
+    if (timeMode === "night" || timeMode === "rain") {
+      // Stronger, more pronounced magical glow
+      baseIntensity = 1.3 + Math.sin(t * 0.015 + i) * 0.35;
+    } else if (timeMode === "sunset") {
+      // Highly saturated, vibrant amber glow
+      baseIntensity = 0.7 + Math.sin(t * 0.01 + i) * 0.2;
+    } else {
+      // Very subtle, ambient day glow
+      baseIntensity = 0.05 + Math.sin(t * 0.008 + i) * 0.01; 
+    }
+    mesh.material.emissiveIntensity = baseIntensity;
   });
-  firepitReferenceDetails.userData.pageGlow.material.opacity = (timeMode === "day" ? 0.12 : 0.28) + Math.sin(t * 0.004) * 0.08;
+  
+  // Update coal bed glow (Refinement: Detailed Pulsing Emissive Glow)
+  let baseIntensity;
+  let glowColor;
+  let combinedFireEnergy;
+  let pulseFactor;
+  
+  // Determine base glow color and intensity based on time mode
+  if (timeMode === "night" || timeMode === "rain") {
+    // Magical Glow: Deep, saturated magma red/orange, emphasizing magical energy flow
+    baseIntensity = 1.4 + Math.sin(t * 0.002) * 0.4; 
+    glowColor = 0x8c2200; // Deep, rich, saturated magma red-orange
+  } else if (timeMode === "sunset") {
+    // Warm Glow: Vibrant amber/orange, emphasizing sunset saturation and warmth
+    baseIntensity = 0.6 + Math.sin(t * 0.003) * 0.3; 
+    glowColor = 0xcc6600; // Warmer amber
+  } else {
+    // Day Glow: Subtle, earthy orange, maintaining ambient warmth
+    baseIntensity = 0.25 + Math.sin(t * 0.001) * 0.05; 
+    glowColor = 0xff4400; // Richer, glowing burnt orange color for day time
+  }
+  
+  // Calculate combined fire energy factor (Flame + Ember)
+  // Weighting the two primary light sources for a unified, stable energy reading.
+  const flameContribution = flame.intensity * 0.6; // Increased weight on flame
+  const emberContribution = ember.intensity * 0.6; // Increased weight on ember
+  combinedFireEnergy = (flameContribution + emberContribution) * 1.3; // Increased multiplier for balanced effect
+  
+  // Calculate total glow intensity: Base + Pulse + Energy Boost
+  // The pulse factor adds a visible, rhythmic fluctuation.
+  pulseFactor = Math.sin(t * 0.005) * 1.1; // Increased pulse amplitude for more dramatic effect
+  
+  // Calculate energy boost: The boost is proportional to the fire's current energy, scaled by a power function for dramatic effect.
+  const energyFactor = Math.pow(combinedFireEnergy, 1.4) * 1.2; // Increased exponent and multiplier for controlled reaction
+  
+  // The final intensity combines the base, the pulse, and the amplified energy ratio.
+  const coalGlowIntensity = baseIntensity + pulseFactor + energyFactor;
+  
+  // Apply the calculated intensity and the dynamic glow color
+  coalBed.material.emissive.setHex(glowColor);
+  // Ensure a minimum glow of 0.1 to maintain visible coal presence even when fire is low.
+  coalBed.material.emissiveIntensity = Math.max(0.1, coalGlowIntensity);
+
+  // Campfire Smoke Column Animation (Refined: Soft glow, dynamic speed, and drift)
+  if (typeof smokeParticles !== "undefined" && smokeParticles.length > 0) {
+    // Define time-based factors for glow and speed
+    const nightSpeedFactor = timeMode === "night" ? 1.5 : 1.0; // Slightly reduced speed for more ethereal rise
+    const dayOpacityBase = 0.04; // Reduced day base opacity for subtlety
+    const nightOpacityBase = 0.28; // Reduced night base opacity for softer glow
+    const dayScaleFactor = 1.0;
+    const nightScaleFactor = 1.3;
+
+    smokeParticles.forEach((p) => {
+      // Calculate velocity based on time mode
+      const velocity = p.userData.velocity * nightSpeedFactor;
+      p.position.y += velocity * 0.01; 
+      
+      // Subtle, continuous horizontal drift based on time
+      p.position.x += Math.sin(t * 0.001 + p.userData.initialY * 0.5) * 0.0006; // Reduced drift for softness
+      p.position.z += Math.cos(t * 0.001 + p.userData.initialY * 0.5) * 0.0006;
+      
+      const heightFrac = Math.max(0, Math.min(1, (p.position.y - 0.5) / 3.0));
+      
+      if (heightFrac < 1.0) {
+        // Scale based on height, making it appear more voluminous
+        const currentScale = dayScaleFactor + heightFrac * nightScaleFactor;
+        p.scale.setScalar(currentScale);
+        
+        // Opacity fades out as it rises, stronger glow at night
+        let targetOpacity = (1.0 - heightFrac);
+        // Apply time-based scaling to the opacity
+        p.material.opacity = Math.max(0.0, targetOpacity * (timeMode === "night" ? nightOpacityBase : dayOpacityBase));
+      } else {
+        // Respawn logic (Reset position and scale)
+        p.position.y = 0.5 + Math.random() * 0.15;
+        p.position.x = (Math.random() - 0.5) * 0.3;
+        p.position.z = (Math.random() - 0.5) * 0.3;
+        p.scale.setScalar(1.0);
+        p.material.opacity = timeMode === "night" ? nightOpacityBase * 0.6 : dayOpacityBase * 0.6;
+      }
+    });
+  }
+
+  fireGlowDisc.material.opacity = (timeMode === "day" ? 0.08 : 0.16) + Math.sin(t * 0.006) * 0.035;
 
   avatarYou.halo.rotation.z += 0.008;
   avatarYou.body.position.y = 0.52 + Math.sin(t * 0.002) * 0.035;
@@ -3124,7 +3986,9 @@ function animate(t = 0) {
   avatarYou.staffGem.rotation.y -= 0.016;
   avatarYou.staffHalo.rotation.z += 0.014;
   avatarYou.staffGlow.material.opacity = 0.14 + Math.sin(t * 0.005) * 0.08;
-  avatarYou.nameplate.position.y = 2.35 + Math.sin(t * 0.0018) * 0.035;
+  avatarYou.nameplate.position.x = avatarYou.group.position.x;
+  avatarYou.nameplate.position.y = avatarYou.group.position.y + 2.35 + Math.sin(t * 0.0018) * 0.035;
+  avatarYou.nameplate.position.z = avatarYou.group.position.z;
   avatarYou.nameplate.material.opacity = (timeMode === "day" ? 0.48 : 0.72) + Math.sin(t * 0.003) * 0.07;
   avatarYou.cheeks.forEach((cheek, idx) => { cheek.material.opacity = 0.26 + Math.sin(t * 0.003 + idx) * 0.08; });
   avatarYou.hairStrands.forEach((strand, idx) => { strand.rotation.z += Math.sin(t * 0.002 + idx) * 0.0008; });
@@ -3134,47 +3998,19 @@ function animate(t = 0) {
     if (i > 1) child.rotation.z = Math.sin(t * 0.0015 + i) * 0.08;
   });
 
-  cinematicAuroras.forEach((curtain, curtainIdx) => {
-    curtain.rotation.z = Math.sin(t * 0.00045 + curtainIdx) * 0.028;
-    curtain.children.forEach((band) => {
-      band.position.y = Math.sin(t * 0.0012 + band.userData.phase) * 0.22;
-      band.scale.x = 1 + Math.sin(t * 0.0009 + band.userData.phase) * 0.06;
-    });
-  });
-  cinematicBokeh.children.forEach((mote, idx) => {
-    const phase = t * 0.00085 + mote.userData.phase;
-    mote.position.set(
-      mote.userData.base.x + Math.sin(phase) * 0.32,
-      mote.userData.base.y + Math.sin(phase * 1.7) * 0.16,
-      mote.userData.base.z + Math.cos(phase * 0.8) * 0.28
-    );
-    mote.material.opacity = (timeMode === "day" ? 0.035 : timeMode === "rain" ? 0.12 : 0.16) + Math.sin(t * 0.002 + idx) * 0.045;
-  });
-  const motePositions = atmosphericMotes.geometry.attributes.position;
-  const moteBases = atmosphericMotes.userData.bases;
-  const motePhases = atmosphericMotes.userData.phases;
-  for (let i = 0; i < motePhases.length; i++) {
-    const p = i * 3;
-    const phase = t * 0.00045 + motePhases[i];
-    motePositions.array[p] = moteBases[p] + Math.sin(phase * 0.7) * 0.22;
-    motePositions.array[p + 1] = moteBases[p + 1] + Math.sin(phase * 1.8) * 0.32;
-    motePositions.array[p + 2] = moteBases[p + 2] + Math.cos(phase) * 0.2;
-  }
-  motePositions.needsUpdate = true;
-  atmosphericMotes.material.opacity = timeMode === "day" ? 0.16 : timeMode === "rain" ? 0.34 : 0.44;
-  mirrorPools.forEach((pool, idx) => {
-    pool.rotation.z += 0.0009 + idx * 0.00025;
-    pool.material.opacity = Math.max(0.035, pool.userData.baseOpacity + Math.sin(t * 0.0022 + idx) * 0.035);
-  });
-  etchedStoneDetails.forEach((etch, idx) => {
-    etch.material.opacity = Math.max(0.04, etch.userData.baseOpacity + Math.sin(t * 0.0028 + etch.userData.phase + idx * 0.03) * 0.035);
-  });
-  stonePebbleDetails.forEach((pebble, idx) => {
-    pebble.rotation.y += 0.0008 + idx * 0.00002;
-  });
-
   const target = new THREE.Vector3(camera.position.x + Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 7, camera.position.z + Math.cos(yaw) * 10);
   camera.lookAt(target);
+
+  // Animate the Epistemic Flora Crystals
+  if (typeof crystalGroup !== 'undefined') {
+    crystalGroup.children.forEach((crystal, idx) => {
+      crystal.rotation.y += 0.01;
+      crystal.rotation.z += 0.005;
+      crystal.position.y = crystal.userData.baseY + Math.sin(t * crystal.userData.floatSpeed + crystal.userData.floatOffset) * 0.3;
+      // Pulse emission
+      crystal.material.emissiveIntensity = 0.5 + Math.sin(t * 0.003 + idx) * 0.4;
+    });
+  }
 
   renderer.render(scene, camera);
   if (!worldReadySignaled) {
@@ -3182,22 +4018,185 @@ function animate(t = 0) {
     window.__lumariaWorldReady?.();
     window.parent?.postMessage({ type: "lumaria-world-health", ready: true, fps: 0, quality: appliedQuality, mode: timeMode }, "*");
   }
+
   requestAnimationFrame(animate);
 }
+
+// --- 20 EPISTEMIC FLORA CRYSTALS (Memory Geodes) ---
+const crystalGroup = new THREE.Group();
+crystalGroup.name = "epistemic_flora_crystals";
+scene.add(crystalGroup);
+
+const crystalColors = [0x3b82f6, 0x8b5cf6, 0x10b981, 0x06b6d4, 0xf59e0b];
+for (let i = 0; i < 20; i++) {
+  const angle = (i / 20) * Math.PI * 2;
+  // Scattered in a wider ring outside the immediate center
+  const radius = 12 + Math.random() * 8; 
+  const x = Math.cos(angle) * radius;
+  const z = Math.sin(angle) * radius;
+  const height = 0.8 + Math.random() * 2.5;
+  
+  const cColor = crystalColors[i % crystalColors.length];
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0xffffff, // White core
+    emissive: cColor,
+    emissiveIntensity: 0.8,
+    transparent: true,
+    opacity: 0.9,
+    roughness: 0.05,
+    metalness: 0.9
+  });
+  
+  const geo = new THREE.OctahedronGeometry(0.3 + Math.random() * 0.4, 0);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, height, z);
+  
+  mesh.rotation.x = Math.random() * Math.PI;
+  mesh.rotation.y = Math.random() * Math.PI;
+  
+  if (i % 2 === 0) {
+    const light = new THREE.PointLight(cColor, 0.6, 6);
+    mesh.add(light);
+  }
+  
+  mesh.userData = {
+    floatSpeed: 0.0015 + Math.random() * 0.002,
+    floatOffset: Math.random() * Math.PI * 2,
+    baseY: mesh.position.y
+  };
+  
+  crystalGroup.add(mesh);
+}
+
+
+// Village layout: keep generous clearings between the market, hearth and outer districts.
+const villagePaths = new THREE.Group();
+villagePaths.name = 'village_connecting_paths';
+const villagePathMat = new THREE.MeshStandardMaterial({color: 0x99836a, roughness: 1});
+function villagePath(points, width = 1.7) {
+  const curve = new THREE.CatmullRomCurve3(points.map(([x,z]) => new THREE.Vector3(x,0.09,z)));
+  const positions = [], indices = [];
+  const segments = 56;
+  for (let i=0; i<=segments; i++) {
+    const t=i/segments, p=curve.getPoint(t), tangent=curve.getTangent(t);
+    const side=new THREE.Vector3(-tangent.z,0,tangent.x).multiplyScalar(width/2);
+    positions.push(p.x+side.x,p.y,p.z+side.z,p.x-side.x,p.y,p.z-side.z);
+    if(i<segments) { const a=i*2; indices.push(a,a+2,a+1,a+1,a+2,a+3); }
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setIndex(indices); geo.computeVertexNormals();
+  const mesh=new THREE.Mesh(geo,villagePathMat); mesh.receiveShadow=true; villagePaths.add(mesh);
+}
+villagePath([[0,17],[0,10],[0,6],[5,5],[9,3],[14,1]],2.2);
+villagePath([[14,1],[20,4],[23,8],[25,10]]);
+villagePath([[14,1],[13,6],[16,13]]);
+villagePath([[-4,1],[-5,-4],[-8,-5]]);
+villagePath([[1,-4],[2,-7],[0,-16]]);
+villagePath([[14,1],[12,-6],[8,-4]]);
+villagePath([[14,1],[23,-2],[27,-7]]);
+scene.add(villagePaths);
+for(let i=0;i<34;i++) {
+  const angle=i/34*Math.PI*2;
+  // Leave the southern entrance open.
+  if(angle>1.35 && angle<1.8) continue;
+  const x=8+Math.cos(angle)*32, z=Math.sin(angle)*27;
+  canopyGroups.push(makeCanopyCluster('woodland_border_'+i,x,z,1.4+(i%3)*0.18,i%2?0x477d45:0x326744));
+}
+// Observatory landmark from the blue-domed building in the concept map.
+const observatory = new THREE.Group();
+observatory.name = 'observatory_blue_dome';
+const observatoryWall = new THREE.Mesh(new THREE.CylinderGeometry(2,2.2,2.5,24),surfaceMaterial({color:0xc5ab88,map:textureSet.stone}));
+observatoryWall.position.y=1.25;
+const observatoryDome = new THREE.Mesh(new THREE.SphereGeometry(2.2,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x427ca4,roughness:0.48,metalness:0.2}));
+observatoryDome.position.y=2.5;
+observatory.add(observatoryWall,observatoryDome); observatory.position.set(27,0,-7);
+markShadows(observatory); scene.add(observatory);
+makeZoneLabel('OBSERVATORY','Stars + Wonder',27,5,-7,'#b8dbff');
+makeZoneLabel('ARCHIVE','Memory + Stories',-8,4.5,-5,'#ddc4ff');
+makeZoneLabel('FORGE','Making + Repair',8,4.5,-4,'#ffd58a');
+makeZoneLabel('GARDEN','Growing + Rest',25,3.8,10,'#b9e6a0');
+document.getElementById('focus-observatory').addEventListener('click',()=>districtView(27,-7,8,11,'Observatory'));
+document.addEventListener('keydown',event=>{ if(event.key.toLowerCase()==='o') districtView(27,-7,8,11,'Observatory'); });
+// Warm hearth flames remain a small center point; violet magic belongs around its edges.
+for (let i=0;i<5;i++) {
+  const mat=new THREE.MeshBasicMaterial({color:i%2?0xffca70:0xf78b38,transparent:true,opacity:0.8,depthWrite:false});
+  const mesh=new THREE.Mesh(new THREE.ConeGeometry(0.22,0.85+i*0.1,7),mat);
+  mesh.position.set(Math.sin(i*2.4)*0.32,0.7,Math.cos(i*2.4)*0.32);
+  scene.add(mesh);
+}
+
 resetCameraView();
-applyTimeMode("night");
+applyTimeMode("day");
 applyRenderQuality("high", false);
 animate();
 
+// --- GLTF/GLB Export System ---
+const exportBtn = document.getElementById("export-gltf");
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    exportBtn.textContent = "📦 Exporting...";
+    exportBtn.style.opacity = "0.7";
+    exportBtn.disabled = true;
+
+    setTimeout(() => {
+      try {
+        const exporter = new GLTFExporter();
+        exporter.parse(
+          scene,
+          function (result) {
+            if (result instanceof ArrayBuffer) {
+              triggerBinaryDownload(result, "lumaria_world.glb");
+            } else {
+              const output = JSON.stringify(result, null, 2);
+              triggerDownload(output, "lumaria_world.gltf");
+            }
+            exportBtn.textContent = "📦 Export (gLTF)";
+            exportBtn.style.opacity = "1";
+            exportBtn.disabled = false;
+          },
+          function (error) {
+            console.error("An error occurred during GLTF export:", error);
+            exportBtn.textContent = "❌ Export Failed";
+            exportBtn.style.opacity = "1";
+            exportBtn.disabled = false;
+          },
+          { binary: true }
+        );
+      } catch (err) {
+        console.error(err);
+        exportBtn.textContent = "❌ Export Failed";
+        exportBtn.style.opacity = "1";
+        exportBtn.disabled = false;
+      }
+    }, 100);
+  });
+}
+
+function triggerDownload(content, fileName) {
+  const blob = new Blob([content], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+}
+
+function triggerBinaryDownload(buffer, fileName) {
+  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+  link.click();
+}
+
 function resizeWorld() {
+  if (!host.clientWidth || !host.clientHeight) return;
   camera.aspect = host.clientWidth / host.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(host.clientWidth, host.clientHeight);
 }
 window.addEventListener('resize', resizeWorld);
-if ("ResizeObserver" in window) {
-  new ResizeObserver(resizeWorld).observe(host);
-}
+if ('ResizeObserver' in window) new ResizeObserver(resizeWorld).observe(host);
 </script>
 </body>
 </html>

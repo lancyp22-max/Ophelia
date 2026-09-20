@@ -35,10 +35,11 @@ def main() -> int:
     args = parser.parse_args()
 
     module = extract_module(args.world.read_text(encoding="utf-8"))
-    with tempfile.NamedTemporaryFile("w", suffix=".mjs", encoding="utf-8") as handle:
-        handle.write(module)
-        handle.flush()
-        subprocess.run(["node", "--check", handle.name], check=True)
+    with tempfile.TemporaryDirectory() as directory:
+        module_path = Path(directory) / "world-check.mjs"
+        module_path.write_text(module, encoding="utf-8")
+        subprocess.run(["node", "--check", str(module_path)], check=True)
+    subprocess.run(["node", "--test", str(ROOT / "tests" / "crew-motion.test.mjs")], check=True)
 
     print(f"[world-module-check] passed: {args.world}")
     return 0
