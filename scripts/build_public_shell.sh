@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/artifacts/public-shell"
 
 rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR/demos" "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/canon-receipts" "$OUT_DIR/data/operations" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state" "$OUT_DIR/data/context" "$OUT_DIR/data/decision-boundaries" "$OUT_DIR/data/focus" "$OUT_DIR/data/handshakes" "$OUT_DIR/data/kernel" "$OUT_DIR/data/scene-actions" "$OUT_DIR/data/semantic-packets"
+mkdir -p "$OUT_DIR/tests" "$OUT_DIR/demos" "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/canon-receipts" "$OUT_DIR/data/operations" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state" "$OUT_DIR/data/context" "$OUT_DIR/data/decision-boundaries" "$OUT_DIR/data/focus" "$OUT_DIR/data/handshakes" "$OUT_DIR/data/kernel" "$OUT_DIR/data/scene-actions" "$OUT_DIR/data/semantic-packets"
 
 copy_if_exists() {
   local src="$1"
@@ -18,6 +18,7 @@ copy_if_exists() {
 copy_if_exists "$ROOT_DIR/index.html" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/script.js" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/world_agents.js" "$OUT_DIR/"
+copy_if_exists "$ROOT_DIR/tests/crew-motion.test.mjs" "$OUT_DIR/tests/"
 copy_if_exists "$ROOT_DIR/research-status.html" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/sw.js" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/manifest.json" "$OUT_DIR/"
