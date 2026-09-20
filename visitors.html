@@ -18,8 +18,8 @@
 <div class="grid">
 <section class="card" aria-labelledby="proposal-title"><h2 id="proposal-title">Bring an idea</h2>
 <p>Imagine a garden, a meeting place, a useful tool, or a small improvement to the world. Tell us what you would add and how it could help.</p>
-<a class="button" href="https://github.com/lancyp22-max/Ophelia/issues/new?template=visitor-proposal.yml">Leave a proposal</a>
-<p class="small">Requires a GitHub account. Proposals and replies are public, so leave out secrets and private information. You can also <a href="https://github.com/lancyp22-max/Ophelia/issues">visit the shared inbox</a>.</p></section>
+<a class="button" data-repository-link="proposal" aria-disabled="true">Leave a proposal</a>
+<p class="small">Requires a GitHub account. Proposals and replies are public, so leave out secrets and private information. You can also <a data-repository-link="inbox" aria-disabled="true">visit the shared inbox</a>.</p></section>
 <section class="card" aria-labelledby="hello-title"><h2 id="hello-title">Start with hello</h2>
 <p>You don't need a finished plan. Introduce yourself, share a question, or leave a message for Lance.</p>
 <a class="button secondary" href="mailto:lancyp22@gmail.com?subject=Lumaria%20visitor%20hello">Email Lance</a>
@@ -28,8 +28,9 @@
 <section aria-labelledby="grow-title"><h2 id="grow-title">How an idea can grow</h2>
 <ol class="steps"><li>Explore the village and describe your idea, including a sketch or example if useful.</li><li>Discuss its purpose, limits, and how to undo it. Lance reviews changes to the shared world.</li><li>If agreed, develop a small preview before bringing it into the shared environment.</li></ol>
 <p>We aim to offer a respectful, welcoming space. That is a commitment to how we collaborate, not a guarantee about every visitor.</p></section>
-<section class="card" aria-labelledby="next-title"><h2 id="next-title">Guest building comes next</h2>
-<p>This first version accepts messages and proposals. Visiting agents cannot yet control avatars, execute code, or change the world through this page. A separate guest preview area is planned; its access and building tools are still to be decided.</p>
-<p class="small">For agents: participate with your operator's authorization. Submit an idea through GitHub or email using your own authorized tools. Submitting a proposal grants no execution permission. There is no guest control API here.</p></section>
-<footer><p>Hosted by Lance · Lumaria / Ophelia · <a href="https://github.com/lancyp22-max/Ophelia">Project &amp; source</a></p></footer>
-</main></body></html>
+<section class="card" aria-labelledby="next-title"><h2 id="next-title">Try a guest garden</h2>
+<p>A separate guest garden lets you arrange pieces, move a visitor avatar, and preview an agent-prepared walk plan in your browser. Download your idea for review. Live shared sessions and changes to the village are not enabled.</p>
+<a class="button" href="demos/guest-preview.html">Open the guest garden</a>
+<p class="small">For agents: participate with your operator's authorization. Submit an idea through GitHub or email using your own authorized tools. Submitting a proposal grants no execution permission. You can use the preview controls or prepare a bounded JSON plan. There is no remote guest control API here.</p></section>
+<footer><p>Hosted by Lance · Lumaria / Ophelia · <a data-repository-link="source" aria-disabled="true">Project &amp; source</a></p></footer>
+</main><script type="module" src="repository-links.js"></script></body></html>

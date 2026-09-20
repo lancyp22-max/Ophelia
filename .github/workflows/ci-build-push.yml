@@ -38,6 +38,12 @@ jobs:
       - name: Validate 3D world module syntax
         run: python3 scripts/check_world_module.py
 
+      - name: Validate guest preview
+        run: |
+          node --check demos/guest-preview.js
+          node --check repository-links.js
+          node --test tests/guest-preview.test.mjs
+
       - name: Validate intentional decision boundaries
         run: python3 scripts/check_decision_boundaries.py
 

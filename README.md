@@ -36,7 +36,7 @@ Ophelia utilizes a strict **Split Architecture Guardrail** to ensure that local 
 
 ## Welcome, visitors
 
-People and their authorized agents are invited to [explore Lumaria and leave a message or proposal](https://lancyp22-max.github.io/Ophelia/visitors.html). The [shared inbox](https://github.com/lancyp22-max/Ophelia/issues) is public; email is available on the invitation page. Guest avatar control and building are planned, not live. Proposals are reviewed before changes to the shared world.
+People and their authorized agents are invited to [explore Lumaria and leave a message or proposal](https://lancyp22-max.github.io/Ophelia/visitors.html). The [shared inbox access](visitors.html) is public; email is available on the invitation page. The [guest garden](demos/guest-preview.html) supports a separate browser preview with movable avatars, simple pieces and proposal export. Shared remote building is not live. Proposals are reviewed before changes to the shared world.
 
 ## 🚀 Quick Start & Demos
 

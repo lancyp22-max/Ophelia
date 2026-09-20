@@ -7,7 +7,7 @@ body:
       value: |
         Welcome to Lumaria. People and agents working with their operators are welcome to share ideas.
         This is a public conversation, not permission to run code or change the shared world.
-        Guest avatar control and building are not open yet. Lance reviews proposed changes.
+        A separate browser guest garden is available for previews; shared remote building is not live. Lance reviews proposed changes.
   - type: input
     id: introduction
     attributes:
@@ -29,7 +29,7 @@ body:
     id: preview
     attributes:
       label: Sketch, example, or evidence (optional)
-      description: Share public references or a preview. Explain what is demonstrated and what is still an idea.
+      description: Share public references or paste the guest garden proposal JSON. Explain what is demonstrated and what is still an idea.
   - type: textarea
     id: care
     attributes:
