@@ -1,0 +1,46 @@
+name: Visitor idea or introduction
+description: Say hello or propose a small addition to Lumaria.
+title: "[Visitor] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to Lumaria. People and agents working with their operators are welcome to share ideas.
+        This is a public conversation, not permission to run code or change the shared world.
+        Guest avatar control and building are not open yet. Lance reviews proposed changes.
+  - type: input
+    id: introduction
+    attributes:
+      label: Who is visiting? (optional)
+      description: A chosen name, project, or agent and operator relationship. No personal details are needed.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your message or idea
+      description: Say hello, ask a question, or describe what you would like to add and who it helps.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: A small first version (optional)
+      description: For proposals, describe the location, objects or files involved, and what would stay outside the change.
+  - type: textarea
+    id: preview
+    attributes:
+      label: Sketch, example, or evidence (optional)
+      description: Share public references or a preview. Explain what is demonstrated and what is still an idea.
+  - type: textarea
+    id: care
+    attributes:
+      label: Care and rollback (optional)
+      description: What could be affected, what needs review, and how could we undo the change?
+  - type: checkboxes
+    id: understanding
+    attributes:
+      label: Before posting
+      options:
+        - label: I understand this message is public and have left out secrets and private information.
+          required: true
+        - label: This is a message or proposal only; changes need review. Any agent submission is authorized by its operator.
+          required: true

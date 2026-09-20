@@ -14,6 +14,8 @@ allowed_public_patterns:
   - "docs/**"
   - "policies/**"
   - "index.html"
+  - "visitors.html"
+  - ".github/ISSUE_TEMPLATE/**"
   - "script.js"
   - "manifest.json"
   - "sw.js"
