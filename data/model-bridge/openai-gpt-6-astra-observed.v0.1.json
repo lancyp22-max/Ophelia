@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.1",
+  "manifest_id": "openai-gpt-6-astra-observed-2026-09-04",
+  "provider": "openai",
+  "model": "gpt-6-astra",
+  "observed_at": "2026-09-04",
+  "api_family": "responses",
+  "evidence": [
+    {
+      "source": "https://developers.openai.com/api/docs/guides/latest-model",
+      "retrieved_at": "2026-09-04",
+      "notes": "Primary Astra model guidance and migration notes."
+    },
+    {
+      "source": "https://developers.openai.com/api/docs/guides/async-tool-calling",
+      "retrieved_at": "2026-09-04",
+      "notes": "Async tool lifecycle and call_id behavior."
+    },
+    {
+      "source": "https://developers.openai.com/api/docs/guides/steering",
+      "retrieved_at": "2026-09-04",
+      "notes": "Mid-turn steering behavior."
+    }
+  ],
+  "capabilities": {
+    "responses_api": {
+      "status": "supported"
+    },
+    "tool_calling": {
+      "status": "supported",
+      "notes": "Astra tool calling should use the Responses API."
+    },
+    "async_tool_calling": {
+      "status": "supported",
+      "notes": "Application executes the tool and returns the result using the original call_id."
+    },
+    "mid_turn_steering": {
+      "status": "supported",
+      "notes": "Supported in Responses API WebSocket workflows."
+    },
+    "configuration_update": {
+      "status": "supported",
+      "notes": "Reasoning effort may be changed mid-conversation with configuration_update input items subject to compatibility limits."
+    },
+    "structured_outputs": {
+      "status": "supported"
+    },
+    "streaming": {
+      "status": "supported"
+    },
+    "computer_use": {
+      "status": "supported"
+    },
+    "prompt_caching": {
+      "status": "supported"
+    },
+    "persisted_reasoning": {
+      "status": "supported"
+    },
+    "multi_agent_orchestration": {
+      "status": "supported"
+    },
+    "reasoning_effort_none": {
+      "status": "unsupported"
+    },
+    "temperature_parameter": {
+      "status": "unsupported"
+    },
+    "top_p_parameter": {
+      "status": "unsupported"
+    },
+    "top_logprobs_parameter": {
+      "status": "unsupported"
+    },
+    "fast_mode": {
+      "status": "conditional",
+      "conditions": [
+        "Fast mode is unavailable for GPT-6 Astra with EU data residency."
+      ]
+    }
+  },
+  "migration_hints": {
+    "preferred_api": "responses",
+    "reasoning_floor_when_migrating_from_none_or_minimal": "low",
+    "remove_temperature": true,
+    "remove_top_p": true,
+    "remove_top_logprobs": true
+  },
+  "unknowns": [
+    "Live Lumaria provider integration remains blocked by the repository provider credential boundary.",
+    "No model has been promoted by this manifest; promotion requires Lumaria-specific evaluation."
+  ],
+  "authority_notes": {
+    "does_not_grant_authority": true,
+    "canonical_state_owner": "lumaria_existing_authority_paths",
+    "notes": "This is a dated provider observation only. Capability support does not authorize state mutation, persistence, or scene changes."
+  }
+}
