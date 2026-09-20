@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumaria · Research status</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0b1420;color:#e8edf1}body{max-width:920px;margin:auto;padding:36px 24px 64px}a{color:#a9dada}nav{display:flex;gap:24px;margin-bottom:48px}h1{font:clamp(32px,6vw,52px) Georgia,serif;margin:12px 0}p{line-height:1.7;color:#c0ced8}.eyebrow{letter-spacing:.16em;text-transform:uppercase;color:#deb880;font-size:12px}.card{background:#13212e;border:1px solid #314554;border-radius:18px;padding:24px;margin:20px 0}h2{font:25px Georgia,serif;margin:0 0 14px}.badge{display:inline-block;background:#3b3426;color:#f3d79f;border-radius:20px;padding:5px 12px;font-size:13px}dl{display:grid;grid-template-columns:140px 1fr;gap:14px;margin-top:24px}dt{color:#9db0be}dd{margin:0;line-height:1.5}footer{border-top:1px solid #314554;margin-top:36px;padding-top:20px;font-size:13px}@media(max-width:540px){dl{grid-template-columns:1fr;gap:6px}dd{margin-bottom:12px}}
+</style>
+</head><body>
+<nav><a href="index.html">Flight Deck</a><a href="demos/world-3d-blockout.html?v=2026-09-20-crew-sync">Village</a></nav>
+<div class="eyebrow">Lumaria · Research notebook</div>
+<h1>Possibilities, with their status intact.</h1>
+<p>Updated September 20, 2026 from the supplied September 18–19 steward scans. This page records proposals; it does not activate them or certify their research claims.</p>
+<article class="card"><span class="badge">Parked · not implemented</span><h2>Read runtime state on demand</h2>
+<p>The supplied scan discusses On-Demand Attention and the distinction between retaining source state and reading it during a particular step.</p>
+<dl><dt>Possible experiment</dt><dd>An optional context-access experiment that preserves the source and records what was read.</dd><dt>Current decision</dt><dd>No recall model, memory curator, runtime scheduler, or new memory-state schema has been adopted.</dd><dt>Revisit when</dt><dd>A bounded experiment is selected and its source, local feasibility, correctness checks and rollback are established.</dd><dt>Boundary</dt><dd>Not read now does not mean forgotten or unimportant. Access scheduling does not decide retention or authority.</dd></dl></article>
+<article class="card"><span class="badge">Parked · not installed</span><h2>Measure before claiming an optimization</h2>
+<p>The supplied scan proposes reproducible inference measurements and discusses NVIDIA AIPerf as a possible instrument.</p>
+<dl><dt>Possible experiment</dt><dd>Record model and configuration, workload, latency, throughput, memory use, task outcome and state integrity for comparable runs.</dd><dt>Current decision</dt><dd>No AIPerf installation, benchmark service or new persistent receipt schema has been added.</dd><dt>Revisit when</dt><dd>A specific optimization and representative workload are selected for a small baseline-versus-change comparison.</dd><dt>Boundary</dt><dd>Performance evidence is separate from correctness and permission. No local speedup or memory saving is claimed.</dd></dl></article>
+<footer><p>Source lineage: user-supplied Lumaria Steward scans dated September 18 and 19, 2026. This is a shortened editorial view, version 1; quantitative claims, publication timestamps and source links have not been independently reverified here and are omitted. The original scans remain the source. This page grants no operational authority.</p></footer>
+</body></html>

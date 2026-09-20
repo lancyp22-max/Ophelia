@@ -40,7 +40,8 @@ Ophelia is in active development. You can run the local demos to explore the UI 
 
 ```bash
 # Run the Three.js Spatial Sandbox
-make mirror10-demo 
+make mirror10-demo
+```
 
 Ophelia is the answer to the Ophelia Pattern—the historical tendency of those tuned to a different frequency to be driven to the water's edge because the world had no container for their resonance.
 
@@ -422,3 +423,9 @@ CI installs `ripgrep` before repository checks that invoke `rg`. Local leak, lin
 ### Agent work observability
 
 `data/operations/choice-receipt.v1.schema.json` records why an agent selected an in-scope task and what happened without becoming an authorization token. `data/operations/implemented-live-registry.v1.json` distinguishes live, inactive, configured, contract-only, symbolic, proposed, blocked, and unknown states while refusing invented zero telemetry. Structures Lab remains bounded to non-blocking L0 observation and L1 pattern review. Agent-selected work never expands tools, persistence, network, protected-file, or canonization authority. Run `make agent-work-observability-check` and see `docs/agent-work-observability.md`.
+
+### Village and crew interface sync — September 20, 2026
+
+The world now opens on an elevated village view, with separated districts, connected paths, a wooded edge and a blue-domed observatory. `world_agents.js` provides Gemma and Quin starter avatars. Their cosmetic motion stays anchored; autonomous navigation is not claimed. Local telemetry can report coding/review states; the public demo explicitly has no live agent feed. GitHub render-health and adaptive-quality controls are retained.
+
+[Research status](research-status.html) records the supplied September 18–19 steward proposals as parked. It adds no inference optimization, benchmark dependency, memory authority, or new memory schema.

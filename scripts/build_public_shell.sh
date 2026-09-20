@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/artifacts/public-shell"
 
 rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/canon-receipts" "$OUT_DIR/data/operations" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state" "$OUT_DIR/data/context" "$OUT_DIR/data/decision-boundaries" "$OUT_DIR/data/focus" "$OUT_DIR/data/handshakes" "$OUT_DIR/data/kernel" "$OUT_DIR/data/scene-actions" "$OUT_DIR/data/semantic-packets"
+mkdir -p "$OUT_DIR/demos" "$OUT_DIR/docs" "$OUT_DIR/policies" "$OUT_DIR/scripts" "$OUT_DIR/data/canon-receipts" "$OUT_DIR/data/operations" "$OUT_DIR/data/reasoning-loops" "$OUT_DIR/data/visual-state" "$OUT_DIR/data/context" "$OUT_DIR/data/decision-boundaries" "$OUT_DIR/data/focus" "$OUT_DIR/data/handshakes" "$OUT_DIR/data/kernel" "$OUT_DIR/data/scene-actions" "$OUT_DIR/data/semantic-packets"
 
 copy_if_exists() {
   local src="$1"
@@ -17,6 +17,8 @@ copy_if_exists() {
 
 copy_if_exists "$ROOT_DIR/index.html" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/script.js" "$OUT_DIR/"
+copy_if_exists "$ROOT_DIR/world_agents.js" "$OUT_DIR/"
+copy_if_exists "$ROOT_DIR/research-status.html" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/sw.js" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/manifest.json" "$OUT_DIR/"
 copy_if_exists "$ROOT_DIR/.nojekyll" "$OUT_DIR/"
@@ -81,9 +83,9 @@ copy_if_exists "$ROOT_DIR/policies/public-exposure-guardrails.v0.1.yaml" "$OUT_D
 copy_if_exists "$ROOT_DIR/policies/public-publish-allowlist.v0.1.yaml" "$OUT_DIR/policies/"
 copy_if_exists "$ROOT_DIR/scripts/public_leak_guard.sh" "$OUT_DIR/scripts/"
 copy_if_exists "$ROOT_DIR/scripts/verify_repo_links.sh" "$OUT_DIR/scripts/"
-copy_if_exists "$ROOT_DIR/demos/mirror10-flora-phase-shift.html" "$OUT_DIR/"
-copy_if_exists "$ROOT_DIR/demos/world-bridge-map.html" "$OUT_DIR/"
-copy_if_exists "$ROOT_DIR/demos/world-3d-blockout.html" "$OUT_DIR/"
+copy_if_exists "$ROOT_DIR/demos/mirror10-flora-phase-shift.html" "$OUT_DIR/demos/"
+copy_if_exists "$ROOT_DIR/demos/world-bridge-map.html" "$OUT_DIR/demos/"
+copy_if_exists "$ROOT_DIR/demos/world-3d-blockout.html" "$OUT_DIR/demos/"
 
 cat > "$OUT_DIR/PUBLIC_SHELL_PROFILE.txt" <<'EOF'
 Profile: world-shaped interface experiment
