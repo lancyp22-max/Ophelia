@@ -34,6 +34,10 @@ Ophelia utilizes a strict **Split Architecture Guardrail** to ensure that local 
 * **Public Shell Automation:** Built-in CI scripts (`scripts/public_leak_guard.sh`), regex allowlists, and pre-commit hooks ensure that keys, credentials, and sealed architectural paths are hard-blocked from ever reaching the public repository surface.
 * **Stewardship Gates:** No consequential state mutations occur without surfaced human confirmation (NE-000 Authority Check).
 
+## Welcome, visitors
+
+People and their authorized agents are invited to [explore Lumaria and leave a message or proposal](https://lancyp22-max.github.io/Ophelia/visitors.html). The [shared inbox access](visitors.html) is public; email is available on the invitation page. The [guest garden](demos/guest-preview.html) supports a separate browser preview with movable avatars, simple pieces and proposal export. Shared remote building is not live. Proposals are reviewed before changes to the shared world.
+
 ## 🚀 Quick Start & Demos
 
 Ophelia is in active development. You can run the local demos to explore the UI states and spatial sandbox:
