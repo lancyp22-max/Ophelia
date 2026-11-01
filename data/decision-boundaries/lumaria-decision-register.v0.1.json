@@ -5,9 +5,10 @@
     {
       "id": "authority_destructive_actions",
       "class": "safety_boundary",
-      "status": "enforced",
-      "statement": "Destructive or state-mutating actions require surfaced human confirmation.",
-      "evidence": "src/main/java/com/ophelia/service/AuthorityService.java"
+      "status": "blocked_by_missing_safety_boundary",
+      "statement": "State mutation requires authentic, scoped, one-time human approval; a requester-supplied flag is never authority.",
+      "rationale": "The NE-000 service now checks an Ed25519 receipt and fails closed without it, but the independently isolated human approval broker, authenticated session, and durable replay store are not yet implemented or verified.",
+      "reconsider_when": "Approval signer and human UI run under a proven separate OS principal with protected key, trusted caller identity and shared durable replay, and hostile negative tests pass."
     },
     {
       "id": "public_private_data_boundary",
