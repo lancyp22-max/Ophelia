@@ -1,9 +1,12 @@
 version: "0.1"
 name: "Authority Receipt Trust Root"
 design_status: specified
-enforcement_status: not_implemented
-enforcement_scope: "Design contract only. Current AuthorityService still accepts requester-supplied surfaceAck and does not verify receipts."
-enforcement_evidence: []
+enforcement_status: partially_implemented
+enforcement_scope: "AuthorityService now ignores surfaceAck and verifies Ed25519 receipt signature, action/request/session binding, expiry, and process-local replay in code. Unconfigured verifier denies all mutations. Trusted approval broker, OS key isolation, durable shared replay store, and authenticated session binding are NOT implemented or proven."
+enforcement_evidence:
+  - src/main/java/com/ophelia/service/ApprovalReceiptVerifier.java
+  - src/main/java/com/ophelia/service/AuthorityService.java
+  - src/test/java/com/ophelia/AuthorityReceiptTest.java
 
 intent: "Move approval truth out of requester-controlled data and anchor it in a human + OS protected signing boundary."
 
@@ -27,7 +30,7 @@ root_of_trust:
   verifier:
     description: "The actuator/AuthorityService verifies receipt authenticity and binding before mutation."
     private_key_access: false
-    verification_material: "public key or equivalent verifier-only material"
+    verification_material: "Ed25519 X.509/SPKI public key from OPHELIA_AUTHORITY_PUBLIC_KEY_BASE64, pinned with OPHELIA_AUTHORITY_ISSUER_ID by trusted host"
 
 receipt_binding:
   required_fields:
@@ -46,6 +49,7 @@ receipt_binding:
     exact_scope_binding: true
     one_time_nonce: true
     replay_rejected: true
+    replay_scope_today: process_local_only_not_durable
     expiry_required: true
     caller_supplied_surface_ack_has_no_authority: true
 
