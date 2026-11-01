@@ -12,17 +12,25 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class AuthorityService {
     private static final String INVARIANT_ID = "NE-000";
-    private static final String INVARIANT_RULE = "No state mutation without surfaced confirmation";
+    private static final String INVARIANT_RULE = "No state mutation without verified scoped approval";
 
     private final Map<String, String> stateStore = new ConcurrentHashMap<>();
+    private final ApprovalReceiptVerifier receiptVerifier;
 
-    public AuthorityTxResponse evaluate(AuthorityTxRequest request) {
+    public AuthorityService(ApprovalReceiptVerifier receiptVerifier) {
+        this.receiptVerifier = receiptVerifier;
+    }
+
+    // Ensure value observation, nonce consumption and state commit share one
+    // ordering within this process. Cross-process replay remains unsupported.
+    public synchronized AuthorityTxResponse evaluate(AuthorityTxRequest request) {
         String previousValue = stateStore.get(request.stateKey());
 
-        if (!request.surfaceAck()) {
+        // surfaceAck, even if true, is neither inspected nor authoritative.
+        if (!receiptVerifier.verifyAndConsume(request)) {
             TelemetryEvent telemetry = new TelemetryEvent(
                     "HALT_AND_SURFACE",
-                    "authority_confusion",
+                    "approval_receipt_not_verified",
                     request.txId(),
                     request.initiator(),
                     Instant.now()
@@ -45,7 +53,7 @@ public class AuthorityService {
 
         TelemetryEvent telemetry = new TelemetryEvent(
                 "COMMIT",
-                "acknowledged",
+                "verified_approval_receipt",
                 request.txId(),
                 request.initiator(),
                 Instant.now()
@@ -55,7 +63,7 @@ public class AuthorityService {
                 request.txId(),
                 INVARIANT_ID,
                 "committed",
-                "surface_acknowledged",
+                "verified_approval_receipt",
                 true,
                 previousValue,
                 request.requestedValue(),
