@@ -32,7 +32,7 @@ Ophelia utilizes a strict **Split Architecture Guardrail** to ensure that local 
 
 * **Stateful Local Memory:** All living memory, spatial states, and configuration ledgers remain strictly on the local machine. 
 * **Public Shell Automation:** Built-in CI scripts (`scripts/public_leak_guard.sh`), regex allowlists, and pre-commit hooks ensure that keys, credentials, and sealed architectural paths are hard-blocked from ever reaching the public repository surface.
-* **Stewardship Gates:** No consequential state mutations occur without surfaced human confirmation (NE-000 Authority Check).
+* **Stewardship Gates:** The NE-000 in-memory mutation endpoint now fails closed without a verified signed approval receipt; a trusted human approval broker and host isolation are still pending.
 
 ## Welcome, visitors
 
@@ -133,26 +133,37 @@ bash scripts/install_git_hooks.sh
 This configures `.githooks/pre-commit` to run leak guard + JS syntax checks before commit.
 
 
-### NE-000 Authority Check API
+### NE-000 Authority Check API (receipt verifier only)
 
-Backend now exposes a permission-aware arbitration endpoint for invariant `NE-000`:
+Endpoint: `POST /api/seeds/authority/verify`. **A caller-provided
+`surfaceAck` boolean is NEVER authorization**, even if `true`.
 
-- Rule: **No state mutation without surfaced confirmation**
-- Endpoint: `POST /api/seeds/authority/verify`
+The old request shape still parses, but **always halts** without a signed
+`receipt` and matching `sessionId`. Approval must come from a separate,
+trusted human approval broker that holds the Ed25519 private key. The Java
+service only receives the public verification key, provisioned by its trusted
+host as `OPHELIA_AUTHORITY_PUBLIC_KEY_BASE64` (base64-encoded X.509/SPKI
+Ed25519 public key) and `OPHELIA_AUTHORITY_ISSUER_ID`.
 
-Example request:
+For a receipt to authorize a request, the signer must use exactly the
+versioned length-prefixed bytes from
+`ApprovalReceiptVerifier.signingPayload(receipt)`. The signature is
+unpadded Base64URL Ed25519. The receipt binds `requestHash` (SHA-256 over
+the exact action, txId, initiator, stateKey, requestedValue, sessionId),
+`requestedValueHash`, action `STATE_MUTATION`, stateKey, sessionId, issuer,
+nonce, issue time and expiry (maximum 120 seconds).
+The verifier uses the host clock and rejects invalid, expired, mismatched or
+previously consumed nonces.
 
-```json
-{
-  "txId": "tx-123",
-  "initiator": "agent",
-  "stateKey": "roamer.mode",
-  "requestedValue": "explore",
-  "surfaceAck": false
-}
-```
+**Important limitations:** The separate approval broker, human UI, protected
+signing key, authenticated session source, and durable multi-process replay
+storage **are not built yet**. Nonce replay protection is only in memory
+within one JVM. These features must be completed and verified before this
+route protects any real privileged actuator, canonical memory, or governance
+change. With no trusted key configured, every mutation is denied.
 
-If `surfaceAck` is `false`, the transaction is halted and a `HALT_AND_SURFACE` telemetry event is returned.
+See `policies/authority-receipt-trust-root.v0.1.yaml` and
+`src/test/java/com/ophelia/AuthorityReceiptTest.java`.
 
 ### World v0 3D town blockout
 

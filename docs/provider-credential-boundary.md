@@ -9,9 +9,11 @@ and secret-like values assigned to browser-public environment names.
 This is defense in depth, not a credential vault. Pattern scanning cannot prove
 that a repository contains no secret.
 
-The existing `POST /api/seeds/authority/verify` route enforces a surfaced
-confirmation invariant for its in-memory state operation. It does **not**
-currently provide:
+The `POST /api/seeds/authority/verify` route now refuses state mutation
+unless a trusted-key Ed25519 approval receipt verifies. A caller-provided
+`surfaceAck` flag has no authority; the route denies by default without
+trusted host verifier configuration. Its replay ledger is process-local.
+It does **not** currently provide:
 
 - user authentication;
 - role or scope authorization;

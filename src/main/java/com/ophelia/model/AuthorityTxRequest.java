@@ -1,5 +1,6 @@
 package com.ophelia.model;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 public record AuthorityTxRequest(
@@ -7,6 +8,9 @@ public record AuthorityTxRequest(
         @NotBlank String initiator,
         @NotBlank String stateKey,
         @NotBlank String requestedValue,
-        boolean surfaceAck
+        // Deprecated compatibility field: NEVER proof of authorization.
+        boolean surfaceAck,
+        String sessionId,
+        @Valid ApprovalReceipt receipt
 ) {
 }

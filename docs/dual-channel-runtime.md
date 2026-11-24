@@ -134,8 +134,9 @@ Unlisted effects park as `intentionally_not_decided_yet`.
 
 The public repository currently shows:
 
-- `AuthorityService` mutating an in-memory state store only after
-  `surfaceAck=true`;
+- `AuthorityService` mutating an in-memory state store only after an
+  Ed25519-signed, request-bound, short-lived approval receipt verifies;
+  the old `surfaceAck` flag has **no authority**;
 - `SeedService` reading canonical/operational files from disk;
 - separate Python and browser utilities that can write their own artifacts or
   browser-local state.
@@ -224,7 +225,7 @@ runtime, not just true in this document.
 
 ## Authority trust root is a separate subsystem
 
-The future receipt mechanism is specified in
+The receipt trust-root design is specified in
 `policies/authority-receipt-trust-root.v0.1.yaml`.
 
 Its root is intended to be:
@@ -243,9 +244,13 @@ scoped one-time receipt
 verifier with no signing key
 ```
 
-This is currently **design only**. The existing requester-supplied
-`surfaceAck` boolean remains non-authoritative proof and must not be mistaken
-for the future receipt system.
+The verifier portion is **partially implemented**: the request-supplied
+`surfaceAck` flag is ignored, and missing/invalid receipts deny mutation.
+The signing broker, trusted OS principal / signing-key ACL, real human approval
+surface, authenticated session binding, and durable/shared replay store are
+**not yet implemented or verified**. Until those are supplied, the API is
+fail-closed by default and must not be treated as a fully secured authority
+system. Replay is rejected only within the current process lifetime.
 
 The receipt policy also defines two incompatible-by-design clocks:
 
